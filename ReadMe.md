@@ -202,5 +202,7 @@ roslaunch ov_msckf <launch_file>
 Parameter
 - `launch_file` $\in$ ["stihl_d435i_mono.launch", "stihl_d455_mono.launch", "stihl_t265_mono.launch", "stihl_t265_stereo.launch"]: specifies launch file.
 
+<br/>
+
 ### Save Trajectory
 Edit the launch-file by setting parameter `dosave` to `true` and specify `path_est` as path where the estimated trajectory shall be saved.
