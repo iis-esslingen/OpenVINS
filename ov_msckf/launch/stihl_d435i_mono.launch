@@ -17,8 +17,8 @@
 <!--    <arg name="bag"         default="/datasets/$(arg config)/$(arg dataset).bag" />-->
 
     <!-- saving trajectory path and timing information -->
-    <arg name="dosave"      default="true" />
-    <arg name="dotime"      default="true" />
+    <arg name="dosave"      default="false" />
+    <arg name="dotime"      default="false" />
     <arg name="path_est"    default="/home/slam/datasets/stihl/Szene_3/ov_results/mono_inertial/stihl_3_d435i_cam_traj.txt" />
     <arg name="path_time"   default="/home/slam/datasets/stihl/Szene_3/ov_results/mono_inertial/stihl_3_d435i_traj_timing.txt" />
 
