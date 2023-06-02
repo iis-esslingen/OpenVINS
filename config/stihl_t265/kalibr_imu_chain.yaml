@@ -13,5 +13,5 @@ imu0:
   model: calibrated
   rostopic: /t265/imu
   time_offset: 0.0
-  update_rate: 60.0
+  update_rate: 65.0
 
