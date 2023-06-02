@@ -1,4 +1,10 @@
-# OpenVINS
+This repository contains the implementation of OpenVINS.
+
+## Installation
+See below for more information on how to setup the repository.
+
+<details>
+<summary><b>OpenVINS</summary></br>
 
 [![ROS 1 Workflow](https://github.com/rpng/open_vins/actions/workflows/build_ros1.yml/badge.svg)](https://github.com/rpng/open_vins/actions/workflows/build_ros1.yml)
 [![ROS 2 Workflow](https://github.com/rpng/open_vins/actions/workflows/build_ros2.yml/badge.svg)](https://github.com/rpng/open_vins/actions/workflows/build_ros2.yml)
@@ -21,6 +27,9 @@ details on what the system supports.
 
 ## News / Events
 
+
+* **April 15, 2023** - Minor update to v2.6.3 to support incremental feature triangulation of active features for downstream applications, faster zero-velocity update, small bug fixes, some example realsense configurations, and cached fast state prediction. Please check out the [release page](https://github.com/rpng/open_vins/releases/tag/v2.6.3) for details.
+* **April 3, 2023** - We have released a monocular plane-aided VINS, termed [ov_plane](https://github.com/rpng/ov_plane), which leverages the OpenVINS project. Both now support the released [Indoor AR Table](https://github.com/rpng/ar_table_dataset) dataset.
 * **July 14, 2022** - Improved feature extraction logic for >100hz tracking, some bug fixes and updated scripts. See v2.6.1 [PR#259](https://github.com/rpng/open_vins/pull/259) and v2.6.2 [PR#264](https://github.com/rpng/open_vins/pull/264).
 * **March 14, 2022** - Initial dynamic initialization open sourcing, asynchronous subscription to inertial readings and publishing of odometry, support for lower frequency feature tracking. See v2.6 [PR#232](https://github.com/rpng/open_vins/pull/232) for details.
 * **December 13, 2021** - New YAML configuration system, ROS2 support, Docker images, robust static initialization based on disparity, internal logging system to reduce verbosity, image transport publishers, dynamic number of features support, and other small fixes. See
@@ -91,6 +100,13 @@ details on what the system supports.
 * Extensive evaluation suite (ATE, RPE, NEES, RMSE, etc..)
 
 ## Codebase Extensions
+
+* **[ov_plane](https://github.com/rpng/ov_plane)** - A real-time monocular visual-inertial odometry (VIO) system which leverages
+  environmental planes. At the core it presents an efficient robust monocular-based plane detection algorithm which does
+  not require additional sensing modalities such as a stereo, depth camera or neural network. The plane detection and tracking
+  algorithm enables real-time regularization of point features to environmental planes which are either maintained in the state
+  vector as long-lived planes, or marginalized for efficiency. Planar regularities are applied to both in-state SLAM and
+  out-of-state MSCKF point features, enabling long-term point-to-plane loop-closures due to the large spacial volume of planes.
 
 * **[vicon2gt](https://github.com/rpng/vicon2gt)** - This utility was created to generate groundtruth trajectories using
   a motion capture system (e.g. Vicon or OptiTrack) for use in evaluating visual-inertial estimation systems.
@@ -171,4 +187,22 @@ following:
 The codebase and documentation is licensed under the [GNU General Public License v3 (GPL-3)](https://www.gnu.org/licenses/gpl-3.0.txt).
 You must preserve the copyright and license notices in your derivative work and make available the complete source code with modifications under the same license ([see this](https://choosealicense.com/licenses/gpl-3.0/); this is not legal advice).
 
+</details>
 
+<br/>
+
+## Usage
+
+### Launch
+Commands to launch the application.
+```
+roslaunch ov_msckf <launch_file>
+```
+
+Parameter
+- `launch_file` $\in$ ["stihl_d435i_mono.launch", "stihl_d455_mono.launch", "stihl_t265_mono.launch", "stihl_t265_stereo.launch"]: specifies launch file.
+
+<br/>
+
+### Save Trajectory
+Edit the launch-file by setting parameter `dosave` to `true` and specify `path_est` as path where the estimated trajectory shall be saved.

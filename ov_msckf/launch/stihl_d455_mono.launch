@@ -17,8 +17,13 @@
     <!-- saving trajectory path and timing information -->
     <arg name="dosave"      default="false" />
     <arg name="dotime"      default="false" />
+<<<<<<< HEAD
     <arg name="path_est"    default="" />
     <arg name="path_time"   default="" />
+=======
+    <arg name="path_est"    default="/home/slam/datasets/stihl/Szene_3/ov_results/mono_inertial/stihl_3_d455_cam_traj.txt" />
+    <arg name="path_time"   default="/home/slam/datasets/stihl/Szene_3/ov_results/mono_inertial/stihl_3_d455_traj_timing.txt" />
+>>>>>>> f1d8eaaf4b5a40455b179828203bd1af7094f1ba
 
     <!-- if we should viz the groundtruth -->
     <arg name="dolivetraj"  default="false" />
