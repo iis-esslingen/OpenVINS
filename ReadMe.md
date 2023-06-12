@@ -196,11 +196,19 @@ You must preserve the copyright and license notices in your derivative work and 
 ### Launch
 Commands to launch the application.
 ```
-roslaunch ov_msckf <launch_file>
+roslaunch ov_msckf <launch_file> dobag:=<dobag> bag:=<bag> bag_start:=<bag_start> bag_rate:=<bag_rate> dosave:=<dosave> path_est:=<path_est> dolivetraj:=<dolivetraj> path_gt:=<path_gt>
 ```
 
 Parameter
 - `launch_file` $\in$ ["stihl_d435i_mono.launch", "stihl_d455_mono.launch", "stihl_t265_mono.launch", "stihl_t265_stereo.launch"]: specifies launch file.
+- `dobag` $\in$ ["true", "false"], OPTIONAL: specifies to replay a bag.
+- `bag`, OPTIONAL: specifies path to rosbag.
+- `bag_start`, OPTIONAL: specifies where to start rosbag from [s]
+- `bag_rate`, OPTIONAL: specifies rate [hz] to replay rosbag.
+- `do_save` $\in$ ["true", "false"], OPTIONAL: specifies to save a predicted trajectory.
+- `path_est`, OPTIONAL: specifies path to estimated trajectory.
+- `dolivetraj` $\in$ ["true", "false"], OPTIONAL: specifies whether to live plot ground truth. 
+- `path_gt`, OPTIONAL: specifies path to ground truth file.
 
 <br/>
 
