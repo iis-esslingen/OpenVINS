@@ -194,9 +194,13 @@ You must preserve the copyright and license notices in your derivative work and 
 ## Usage
 
 ### Launch
+
 Commands to launch the application.
 ```
-roslaunch ov_msckf <launch_file> dobag:=<dobag> bag:=<bag> bag_start:=<bag_start> bag_rate:=<bag_rate> dosave:=<dosave> path_est:=<path_est> dolivetraj:=<dolivetraj> path_gt:=<path_gt>
+roslaunch ov_msckf <launch_file> \
+    dobag:=<dobag> bag:=<bag> bag_start:=<bag_start> bag_rate:=<bag_rate> \
+    dosave:=<dosave> path_est:=<path_est> \
+    dolivetraj:=<dolivetraj> path_gt:=<path_gt>
 ```
 
 Parameter
