@@ -198,7 +198,7 @@ You must preserve the copyright and license notices in your derivative work and 
 Commands to launch the application.
 ```
 roslaunch ov_msckf <launch_file> \
-    dodo_bagbag:=<do_bag> bag:=<bag> bag_start:=<bag_start> bag_rate:=<bag_rate> \
+    do_bag:=<do_bag> bag:=<bag> bag_start:=<bag_start> bag_rate:=<bag_rate> \
     do_save_traj:=<do_save_traj> traj_file_name:=<traj_file_name> \
     dolivetraj:=<dolivetraj> path_gt:=<path_gt>
 ```
