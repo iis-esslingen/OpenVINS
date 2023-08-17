@@ -198,14 +198,14 @@ You must preserve the copyright and license notices in your derivative work and 
 Commands to launch the application.
 ```
 roslaunch ov_msckf <launch_file> \
-    dobag:=<dobag> bag:=<bag> bag_start:=<bag_start> bag_rate:=<bag_rate> \
+    dodo_bagbag:=<do_bag> bag:=<bag> bag_start:=<bag_start> bag_rate:=<bag_rate> \
     do_save_traj:=<do_save_traj> traj_file_name:=<traj_file_name> \
     dolivetraj:=<dolivetraj> path_gt:=<path_gt>
 ```
 
 Parameter
 - `launch_file` $\in$ ["stihl_d435i_mono.launch", "stihl_d455_mono.launch", "stihl_t265_mono.launch", "stihl_t265_stereo.launch"]: specifies launch file.
-- `dobag` $\in$ ["true", "false"], OPTIONAL: specifies to replay a bag.
+- `do_bag` $\in$ ["true", "false"], OPTIONAL: specifies to replay a bag.
 - `bag`, OPTIONAL: specifies path to rosbag.
 - `bag_start`, OPTIONAL: specifies where to start rosbag from [s]
 - `bag_rate`, OPTIONAL: specifies rate [hz] to replay rosbag.
