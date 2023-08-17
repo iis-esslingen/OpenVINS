@@ -199,7 +199,7 @@ Commands to launch the application.
 ```
 roslaunch ov_msckf <launch_file> \
     dobag:=<dobag> bag:=<bag> bag_start:=<bag_start> bag_rate:=<bag_rate> \
-    dosave:=<dosave> path_est:=<path_est> \
+    do_save_traj:=<do_save_traj> traj_file_name:=<traj_file_name> \
     dolivetraj:=<dolivetraj> path_gt:=<path_gt>
 ```
 
@@ -209,12 +209,12 @@ Parameter
 - `bag`, OPTIONAL: specifies path to rosbag.
 - `bag_start`, OPTIONAL: specifies where to start rosbag from [s]
 - `bag_rate`, OPTIONAL: specifies rate [hz] to replay rosbag.
-- `do_save` $\in$ ["true", "false"], OPTIONAL: specifies to save a predicted trajectory.
-- `path_est`, OPTIONAL: specifies path to estimated trajectory.
+- `do_save_traj` $\in$ ["true", "false"], OPTIONAL: specifies to save a predicted trajectory.
+- `traj_file_name`, OPTIONAL: specifies path to estimated trajectory.
 - `dolivetraj` $\in$ ["true", "false"], OPTIONAL: specifies whether to live plot ground truth. 
 - `path_gt`, OPTIONAL: specifies path to ground truth file.
 
 <br/>
 
 ### Save Trajectory
-Edit the launch-file by setting parameter `dosave` to `true` and specify `path_est` as path where the estimated trajectory shall be saved.
+Edit the launch-file by setting parameter `do_save_traj` to `true` and specify `traj_file_name` as path where the estimated trajectory shall be saved.
