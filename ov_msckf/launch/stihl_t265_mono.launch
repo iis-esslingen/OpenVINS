@@ -9,6 +9,7 @@
     <arg name="max_cameras" default="1" />
     <arg name="use_stereo"  default="false" />
     <arg name="bag_start"   default="0" /> <!-- v1-2: 0, mh1: 40, mh2: 35, mh3: 17.5, mh4-5: 15 -->
+    <arg name="duration"    if="$(arg duration)" />
     <arg name="bag_rate"    default="1" />
     <arg name="dataset"     default="stihl" /> <!-- V1_01_easy, V1_02_medium, V2_02_medium -->
     <arg name="do_bag"       default="false" /> <!-- if we should play back the bag -->
@@ -46,7 +47,10 @@
 
     <!-- play the dataset -->
     <group if="$(arg do_bag)">
-        <node pkg="rosbag" type="play" name="rosbag" args="-d 1 -r $(arg bag_rate) -s $(arg bag_start) $(arg bag)" required="true"/>
+        <arg name="rosbag_args" if="$(arg duration)" value="-d 1 -r $(arg bag_rate) -s $(arg bag_start) -u $(arg duration) $(arg bag)" />
+        <arg name="rosbag_args" unless="$(arg duration)" value="-d 1 -r $(arg bag_rate) -s $(arg bag_start) $(arg bag)" />
+
+        <node pkg="rosbag" type="play" name="rosbag" args="$(arg rosbag_args)" required="true"/>
     </group>
 
     <!-- record the trajectory if enabled -->
