@@ -30,8 +30,8 @@
 #include "utils/print.h"
 #include "utils/sensor_data.h"
 
-namespace ov_msckf {
-
+namespace ov_msckf
+{
 class State;
 
 /**
@@ -41,15 +41,16 @@ class State;
  * We then compute the state transition matrix at each step and update the state and covariance.
  * For derivations look at @ref propagation page which has detailed equations.
  */
-class Propagator {
-
+class Propagator
+{
 public:
   /**
    * @brief Default constructor
    * @param noises imu noise characteristics (continuous time)
    * @param gravity_mag Global gravity magnitude of the system (normally 9.81)
    */
-  Propagator(NoiseManager noises, double gravity_mag) : _noises(noises) {
+  Propagator(NoiseManager noises, double gravity_mag) : _noises(noises)
+  {
     _noises.sigma_w_2 = std::pow(_noises.sigma_w, 2);
     _noises.sigma_a_2 = std::pow(_noises.sigma_a, 2);
     _noises.sigma_wb_2 = std::pow(_noises.sigma_wb, 2);
@@ -63,8 +64,8 @@ public:
    * @param message Contains our timestamp and inertial information
    * @param oldest_time Time that we can discard measurements before (in IMU clock)
    */
-  void feed_imu(const ov_core::ImuData &message, double oldest_time = -1) {
-
+  void feed_imu(const ov_core::ImuData& message, double oldest_time = -1)
+  {
     // Append it to our vector
     std::lock_guard<std::mutex> lck(imu_data_mtx);
     imu_data.emplace_back(message);
@@ -78,14 +79,19 @@ public:
    * @brief This will remove any IMU measurements that are older then the given measurement time
    * @param oldest_time Time that we can discard measurements before (in IMU clock)
    */
-  void clean_old_imu_measurements(double oldest_time) {
+  void clean_old_imu_measurements(double oldest_time)
+  {
     if (oldest_time < 0)
       return;
     auto it0 = imu_data.begin();
-    while (it0 != imu_data.end()) {
-      if (it0->timestamp < oldest_time) {
+    while (it0 != imu_data.end())
+    {
+      if (it0->timestamp < oldest_time)
+      {
         it0 = imu_data.erase(it0);
-      } else {
+      }
+      else
+      {
         it0++;
       }
     }
@@ -118,8 +124,8 @@ public:
    * @param covariance The propagated covariance (q_GtoI, p_IinG, v_IinI, w_IinI)
    * @return True if we were able to propagate the state to the current timestep
    */
-  bool fast_state_propagate(std::shared_ptr<State> state, double timestamp, Eigen::Matrix<double, 13, 1> &state_plus,
-                            Eigen::Matrix<double, 12, 12> &covariance);
+  bool fast_state_propagate(std::shared_ptr<State> state, double timestamp, Eigen::Matrix<double, 13, 1>& state_plus,
+                            Eigen::Matrix<double, 12, 12>& covariance);
 
   /**
    * @brief Helper function that given current imu data, will select imu readings between the two times.
@@ -131,11 +137,12 @@ public:
    * @param imu_data IMU data we will select measurements from
    * @param time0 Start timestamp
    * @param time1 End timestamp
-   * @param warn If we should warn if we don't have enough IMU to propagate with (e.g. fast prop will get warnings otherwise)
+   * @param warn If we should warn if we don't have enough IMU to propagate with (e.g. fast prop will get warnings
+   * otherwise)
    * @return Vector of measurements (if we could compute them)
    */
-  static std::vector<ov_core::ImuData> select_imu_readings(const std::vector<ov_core::ImuData> &imu_data, double time0, double time1,
-                                                           bool warn = true);
+  static std::vector<ov_core::ImuData> select_imu_readings(const std::vector<ov_core::ImuData>& imu_data, double time0,
+                                                           double time1, bool warn = true);
 
   /**
    * @brief Nice helper function that will linearly interpolate between two imu messages.
@@ -147,7 +154,9 @@ public:
    * @param imu_2 imu at end of interpolation interval
    * @param timestamp Timestamp being interpolated to
    */
-  static ov_core::ImuData interpolate_data(const ov_core::ImuData &imu_1, const ov_core::ImuData &imu_2, double timestamp) {
+  static ov_core::ImuData interpolate_data(const ov_core::ImuData& imu_1, const ov_core::ImuData& imu_2,
+                                           double timestamp)
+  {
     // time-distance lambda
     double lambda = (timestamp - imu_1.timestamp) / (imu_2.timestamp - imu_1.timestamp);
     // PRINT_DEBUG("lambda - %d\n", lambda);
@@ -179,8 +188,9 @@ protected:
    * @param F State-transition matrix over the interval
    * @param Qd Discrete-time noise covariance over the interval
    */
-  void predict_and_compute(std::shared_ptr<State> state, const ov_core::ImuData &data_minus, const ov_core::ImuData &data_plus,
-                           Eigen::Matrix<double, 15, 15> &F, Eigen::Matrix<double, 15, 15> &Qd);
+  void predict_and_compute(std::shared_ptr<State> state, const ov_core::ImuData& data_minus,
+                           const ov_core::ImuData& data_plus, Eigen::Matrix<double, 15, 15>& F,
+                           Eigen::Matrix<double, 15, 15>& Qd);
 
   /**
    * @brief Discrete imu mean propagation.
@@ -188,7 +198,8 @@ protected:
    * See @ref propagation for details on these equations.
    * \f{align*}{
    * \text{}^{I_{k+1}}_{G}\hat{\bar{q}}
-   * &= \exp\bigg(\frac{1}{2}\boldsymbol{\Omega}\big({\boldsymbol{\omega}}_{m,k}-\hat{\mathbf{b}}_{g,k}\big)\Delta t\bigg)
+   * &= \exp\bigg(\frac{1}{2}\boldsymbol{\Omega}\big({\boldsymbol{\omega}}_{m,k}-\hat{\mathbf{b}}_{g,k}\big)\Delta
+   * t\bigg)
    * \text{}^{I_{k}}_{G}\hat{\bar{q}} \\
    * ^G\hat{\mathbf{v}}_{k+1} &= \text{}^G\hat{\mathbf{v}}_{I_k} - {}^G\mathbf{g}\Delta t
    * +\text{}^{I_k}_G\hat{\mathbf{R}}^\top(\mathbf{a}_{m,k} - \hat{\mathbf{b}}_{\mathbf{a},k})\Delta t\\
@@ -208,17 +219,18 @@ protected:
    * @param new_v The resulting new velocity after integration
    * @param new_p The resulting new position after integration
    */
-  void predict_mean_discrete(std::shared_ptr<State> state, double dt, const Eigen::Vector3d &w_hat1, const Eigen::Vector3d &a_hat1,
-                             const Eigen::Vector3d &w_hat2, const Eigen::Vector3d &a_hat2, Eigen::Vector4d &new_q, Eigen::Vector3d &new_v,
-                             Eigen::Vector3d &new_p);
+  void predict_mean_discrete(std::shared_ptr<State> state, double dt, const Eigen::Vector3d& w_hat1,
+                             const Eigen::Vector3d& a_hat1, const Eigen::Vector3d& w_hat2,
+                             const Eigen::Vector3d& a_hat2, Eigen::Vector4d& new_q, Eigen::Vector3d& new_v,
+                             Eigen::Vector3d& new_p);
 
   /**
    * @brief RK4 imu mean propagation.
    *
    * See this wikipedia page on [Runge-Kutta Methods](https://en.wikipedia.org/wiki/Runge%E2%80%93Kutta_methods).
-   * We are doing a RK4 method, [this wolframe page](http://mathworld.wolfram.com/Runge-KuttaMethod.html) has the forth order equation
-   * defined below. We define function \f$ f(t,y) \f$ where y is a function of time t, see @ref imu_kinematic for the definition of the
-   * continous-time functions.
+   * We are doing a RK4 method, [this wolframe page](http://mathworld.wolfram.com/Runge-KuttaMethod.html) has the forth
+   * order equation defined below. We define function \f$ f(t,y) \f$ where y is a function of time t, see @ref
+   * imu_kinematic for the definition of the continous-time functions.
    *
    * \f{align*}{
    * {k_1} &= f({t_0}, y_0) \Delta t  \\
@@ -238,9 +250,9 @@ protected:
    * @param new_v The resulting new velocity after integration
    * @param new_p The resulting new position after integration
    */
-  void predict_mean_rk4(std::shared_ptr<State> state, double dt, const Eigen::Vector3d &w_hat1, const Eigen::Vector3d &a_hat1,
-                        const Eigen::Vector3d &w_hat2, const Eigen::Vector3d &a_hat2, Eigen::Vector4d &new_q, Eigen::Vector3d &new_v,
-                        Eigen::Vector3d &new_p);
+  void predict_mean_rk4(std::shared_ptr<State> state, double dt, const Eigen::Vector3d& w_hat1,
+                        const Eigen::Vector3d& a_hat1, const Eigen::Vector3d& w_hat2, const Eigen::Vector3d& a_hat2,
+                        Eigen::Vector4d& new_q, Eigen::Vector3d& new_v, Eigen::Vector3d& new_p);
 
   /// Container for the noise values
   NoiseManager _noises;
@@ -253,6 +265,6 @@ protected:
   Eigen::Vector3d _gravity;
 };
 
-} // namespace ov_msckf
+}  // namespace ov_msckf
 
-#endif // OV_MSCKF_STATE_PROPAGATOR_H
+#endif  // OV_MSCKF_STATE_PROPAGATOR_H

@@ -24,8 +24,8 @@
 
 #include "CamBase.h"
 
-namespace ov_core {
-
+namespace ov_core
+{
 /**
  * @brief Radial-tangential / Brown–Conrady model pinhole camera model class
  *
@@ -44,9 +44,9 @@ namespace ov_core {
  * r^2 &= x_n^2 + y_n^2
  * \f}
  *
- * where \f$ \mathbf{z}_{n,k} = [ x_n ~ y_n ]^\top\f$  are the normalized coordinates of the 3D feature and u and v are the distorted image
- * coordinates on the image plane. The following distortion and camera intrinsic (focal length and image center) parameters are involved in
- * the above distortion model, which can be estimated online:
+ * where \f$ \mathbf{z}_{n,k} = [ x_n ~ y_n ]^\top\f$  are the normalized coordinates of the 3D feature and u and v are
+ * the distorted image coordinates on the image plane. The following distortion and camera intrinsic (focal length and
+ * image center) parameters are involved in the above distortion model, which can be estimated online:
  *
  * \f{align*}{
  * \boldsymbol\zeta = \begin{bmatrix} f_x & f_y & c_x & c_y & k_1 & k_2 & p_1 & p_2 \end{bmatrix}^\top
@@ -79,25 +79,29 @@ namespace ov_core {
  * To equate this camera class to Kalibr's models, this is what you would use for `pinhole-radtan`.
  *
  */
-class CamRadtan : public CamBase {
-
+class CamRadtan : public CamBase
+{
 public:
   /**
    * @brief Default constructor
    * @param width Width of the camera (raw pixels)
    * @param height Height of the camera (raw pixels)
    */
-  CamRadtan(int width, int height) : CamBase(width, height) {}
+  CamRadtan(int width, int height) : CamBase(width, height)
+  {
+  }
 
-  ~CamRadtan() {}
+  ~CamRadtan()
+  {
+  }
 
   /**
    * @brief Given a raw uv point, this will undistort it based on the camera matrices into normalized camera coords.
    * @param uv_dist Raw uv coordinate we wish to undistort
    * @return 2d vector of normalized coordinates
    */
-  Eigen::Vector2f undistort_f(const Eigen::Vector2f &uv_dist) override {
-
+  Eigen::Vector2f undistort_f(const Eigen::Vector2f& uv_dist) override
+  {
     // Determine what camera parameters we should use
     cv::Matx33d camK = camera_k_OPENCV;
     cv::Vec4d camD = camera_d_OPENCV;
@@ -106,14 +110,14 @@ public:
     cv::Mat mat(1, 2, CV_32F);
     mat.at<float>(0, 0) = uv_dist(0);
     mat.at<float>(0, 1) = uv_dist(1);
-    mat = mat.reshape(2); // Nx1, 2-channel
+    mat = mat.reshape(2);  // Nx1, 2-channel
 
     // Undistort it!
     cv::undistortPoints(mat, mat, camK, camD);
 
     // Construct our return vector
     Eigen::Vector2f pt_out;
-    mat = mat.reshape(1); // Nx2, 1-channel
+    mat = mat.reshape(1);  // Nx2, 1-channel
     pt_out(0) = mat.at<float>(0, 0);
     pt_out(1) = mat.at<float>(0, 1);
     return pt_out;
@@ -124,8 +128,8 @@ public:
    * @param uv_norm Normalized coordinates we wish to distort
    * @return 2d vector of raw uv coordinate
    */
-  Eigen::Vector2f distort_f(const Eigen::Vector2f &uv_norm) override {
-
+  Eigen::Vector2f distort_f(const Eigen::Vector2f& uv_norm) override
+  {
     // Get our camera parameters
     Eigen::MatrixXd cam_d = camera_values;
 
@@ -151,8 +155,9 @@ public:
    * @param H_dz_dzn Derivative of measurement z in respect to normalized
    * @param H_dz_dzeta Derivative of measurement z in respect to intrinic parameters
    */
-  void compute_distort_jacobian(const Eigen::Vector2d &uv_norm, Eigen::MatrixXd &H_dz_dzn, Eigen::MatrixXd &H_dz_dzeta) override {
-
+  void compute_distort_jacobian(const Eigen::Vector2d& uv_norm, Eigen::MatrixXd& H_dz_dzn,
+                                Eigen::MatrixXd& H_dz_dzeta) override
+  {
     // Get our camera parameters
     Eigen::MatrixXd cam_d = camera_values;
 
@@ -168,12 +173,14 @@ public:
     double x_2 = uv_norm(0) * uv_norm(0);
     double y_2 = uv_norm(1) * uv_norm(1);
     double x_y = uv_norm(0) * uv_norm(1);
-    H_dz_dzn(0, 0) = cam_d(0) * ((1 + cam_d(4) * r_2 + cam_d(5) * r_4) + (2 * cam_d(4) * x_2 + 4 * cam_d(5) * x_2 * r_2) +
-                                 2 * cam_d(6) * y + (2 * cam_d(7) * x + 4 * cam_d(7) * x));
+    H_dz_dzn(0, 0) =
+        cam_d(0) * ((1 + cam_d(4) * r_2 + cam_d(5) * r_4) + (2 * cam_d(4) * x_2 + 4 * cam_d(5) * x_2 * r_2) +
+                    2 * cam_d(6) * y + (2 * cam_d(7) * x + 4 * cam_d(7) * x));
     H_dz_dzn(0, 1) = cam_d(0) * (2 * cam_d(4) * x_y + 4 * cam_d(5) * x_y * r_2 + 2 * cam_d(6) * x + 2 * cam_d(7) * y);
     H_dz_dzn(1, 0) = cam_d(1) * (2 * cam_d(4) * x_y + 4 * cam_d(5) * x_y * r_2 + 2 * cam_d(6) * x + 2 * cam_d(7) * y);
-    H_dz_dzn(1, 1) = cam_d(1) * ((1 + cam_d(4) * r_2 + cam_d(5) * r_4) + (2 * cam_d(4) * y_2 + 4 * cam_d(5) * y_2 * r_2) +
-                                 2 * cam_d(7) * x + (2 * cam_d(6) * y + 4 * cam_d(6) * y));
+    H_dz_dzn(1, 1) =
+        cam_d(1) * ((1 + cam_d(4) * r_2 + cam_d(5) * r_4) + (2 * cam_d(4) * y_2 + 4 * cam_d(5) * y_2 * r_2) +
+                    2 * cam_d(7) * x + (2 * cam_d(6) * y + 4 * cam_d(6) * y));
 
     // Calculate distorted coordinates for radtan
     double x1 = uv_norm(0) * (1 + cam_d(4) * r_2 + cam_d(5) * r_4) + 2 * cam_d(6) * uv_norm(0) * uv_norm(1) +
@@ -198,6 +205,6 @@ public:
   }
 };
 
-} // namespace ov_core
+}  // namespace ov_core
 
 #endif /* OV_CORE_CAM_RADTAN_H */

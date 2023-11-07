@@ -41,20 +41,22 @@
 
 #endif
 
-int main(int argc, char **argv) {
-
+int main(int argc, char** argv)
+{
   // Verbosity setting
   ov_core::Printer::setPrintLevel("INFO");
 
   // Ensure we have a path
-  if (argc < 2) {
+  if (argc < 2)
+  {
     PRINT_ERROR(RED "ERROR: Please specify a timing file\n" RESET);
     PRINT_ERROR(RED "ERROR: ./timing_flamegraph <file_times.txt> <subsample>\n" RESET);
     PRINT_ERROR(RED "ERROR: rosrun ov_eval timing_flamegraph <file_times.txt> <subsample>\n" RESET);
     std::exit(EXIT_FAILURE);
   }
   int keep_every = 10;
-  if (argc == 3) {
+  if (argc == 3)
+  {
     keep_every = atoi(argv[2]);
   }
 
@@ -71,15 +73,18 @@ int main(int argc, char **argv) {
     stats.push_back(ov_eval::Statistics());
 
   // Loop through each and report the average timing information
-  for (size_t i = 0; i < times.size(); i++) {
-    for (size_t c = 0; c < names.size(); c++) {
+  for (size_t i = 0; i < times.size(); i++)
+  {
+    for (size_t c = 0; c < names.size(); c++)
+    {
       stats.at(c).timestamps.push_back(times.at(i));
       stats.at(c).values.push_back(timing_values.at(i)(c));
     }
   }
 
   // Now print the statistic for this run
-  for (size_t i = 0; i < names.size(); i++) {
+  for (size_t i = 0; i < names.size(); i++)
+  {
     stats.at(i).calculate();
     PRINT_INFO("mean_time = %.4f | std = %.4f | 99th = %.4f  | max = %.4f (%s)\n", stats.at(i).mean, stats.at(i).std,
                stats.at(i).ninetynine, stats.at(i).max, names.at(i).c_str());
@@ -89,8 +94,10 @@ int main(int argc, char **argv) {
 
   // Sub-sample the time
   std::vector<double> times_skipped;
-  for (size_t t = 0; t < times.size(); t++) {
-    if (t % keep_every == 0) {
+  for (size_t t = 0; t < times.size(); t++)
+  {
+    if (t % keep_every == 0)
+    {
       times_skipped.push_back(times.at(t));
     }
   }
@@ -98,26 +105,30 @@ int main(int argc, char **argv) {
   // Zero our time arrays
   double starttime1 = (times_skipped.empty()) ? 0 : times_skipped.at(0);
   double endtime1 = (times_skipped.empty()) ? 0 : times_skipped.at(times_skipped.size() - 1);
-  for (size_t j = 0; j < times_skipped.size(); j++) {
+  for (size_t j = 0; j < times_skipped.size(); j++)
+  {
     times_skipped.at(j) -= starttime1;
   }
 
   // Valid colors
   // https://matplotlib.org/stable/tutorials/colors/colors.html
   // std::vector<std::string> colors_valid = {"blue","aqua","lightblue","lightgreen","yellowgreen","green"};
-  std::vector<std::string> colors_valid = {"navy", "blue", "lightgreen", "green", "gold", "goldenrod"};
+  std::vector<std::string> colors_valid = { "navy", "blue", "lightgreen", "green", "gold", "goldenrod" };
 
   // Create vector for each category
   // NOTE we skip the last category since it is the "total" time by convention
   std::vector<std::string> labels;
   std::vector<std::string> colors;
   std::vector<std::vector<double>> timings;
-  for (size_t i = 0; i < names.size() - 1; i++) {
+  for (size_t i = 0; i < names.size() - 1; i++)
+  {
     labels.push_back(names.at(i));
     colors.push_back(colors_valid.at(i % colors_valid.size()));
     std::vector<double> values_skipped;
-    for (size_t t = 0; t < stats.at(i).values.size(); t++) {
-      if (t % keep_every == 0) {
+    for (size_t t = 0; t < stats.at(i).values.size(); t++)
+    {
+      if (t % keep_every == 0)
+      {
         values_skipped.push_back(stats.at(i).values.at(t));
       }
     }

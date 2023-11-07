@@ -32,50 +32,57 @@
 
 #include "core/VioManagerOptions.h"
 
-namespace ov_core {
+namespace ov_core
+{
 class BsplineSE3;
-} // namespace ov_core
+}  // namespace ov_core
 
-namespace ov_msckf {
-
+namespace ov_msckf
+{
 /**
  * @brief Master simulator class that generated visual-inertial measurements
  *
  * Given a trajectory this will generate a SE(3) @ref ov_core::BsplineSE3 for that trajectory.
  * This allows us to get the inertial measurement information at each timestep during this trajectory.
- * After creating the bspline we will generate an environmental feature map which will be used as our feature measurements.
- * This map will be projected into the frame at each timestep to get our "raw" uv measurements.
- * We inject bias and white noises into our inertial readings while adding our white noise to the uv measurements also.
- * The user should specify the sensor rates that they desire along with the seeds of the random number generators.
+ * After creating the bspline we will generate an environmental feature map which will be used as our feature
+ * measurements. This map will be projected into the frame at each timestep to get our "raw" uv measurements. We inject
+ * bias and white noises into our inertial readings while adding our white noise to the uv measurements also. The user
+ * should specify the sensor rates that they desire along with the seeds of the random number generators.
  *
  */
-class Simulator {
-
+class Simulator
+{
 public:
   /**
    * @brief Default constructor, will load all configuration variables
    * @param params_ VioManager parameters. Should have already been loaded from cmd.
    */
-  Simulator(VioManagerOptions &params_);
+  Simulator(VioManagerOptions& params_);
 
   /**
    * @brief Will get a set of perturbed parameters
    * @param gen_state Random number gen to use
    * @param params_ Parameters we will perturb
    */
-  static void perturb_parameters(std::mt19937 gen_state, VioManagerOptions &params_);
+  static void perturb_parameters(std::mt19937 gen_state, VioManagerOptions& params_);
 
   /**
    * @brief Returns if we are actively simulating
    * @return True if we still have simulation data
    */
-  bool ok() { return is_running; }
+  bool ok()
+  {
+    return is_running;
+  }
 
   /**
    * @brief Gets the timestamp we have simulated up too
    * @return Timestamp
    */
-  double current_timestamp() { return timestamp; }
+  double current_timestamp()
+  {
+    return timestamp;
+  }
 
   /**
    * @brief Get the simulation state at a specified timestep
@@ -83,7 +90,7 @@ public:
    * @param imustate State in the MSCKF ordering: [time(sec),q_GtoI,p_IinG,v_IinG,b_gyro,b_accel]
    * @return True if we have a state
    */
-  bool get_state(double desired_time, Eigen::Matrix<double, 17, 1> &imustate);
+  bool get_state(double desired_time, Eigen::Matrix<double, 17, 1>& imustate);
 
   /**
    * @brief Gets the next inertial reading if we have one.
@@ -92,7 +99,7 @@ public:
    * @param am Linear velocity in the inertial frame
    * @return True if we have a measurement
    */
-  bool get_next_imu(double &time_imu, Eigen::Vector3d &wm, Eigen::Vector3d &am);
+  bool get_next_imu(double& time_imu, Eigen::Vector3d& wm, Eigen::Vector3d& am);
 
   /**
    * @brief Gets the next inertial reading if we have one.
@@ -101,21 +108,29 @@ public:
    * @param feats Noisy uv measurements and ids for the returned time
    * @return True if we have a measurement
    */
-  bool get_next_cam(double &time_cam, std::vector<int> &camids, std::vector<std::vector<std::pair<size_t, Eigen::VectorXf>>> &feats);
+  bool get_next_cam(double& time_cam, std::vector<int>& camids,
+                    std::vector<std::vector<std::pair<size_t, Eigen::VectorXf>>>& feats);
 
   /// Returns the true 3d map of features
-  std::unordered_map<size_t, Eigen::Vector3d> get_map() { return featmap; }
+  std::unordered_map<size_t, Eigen::Vector3d> get_map()
+  {
+    return featmap;
+  }
 
   /// Returns the true 3d map of features
-  std::vector<Eigen::Vector3d> get_map_vec() {
+  std::vector<Eigen::Vector3d> get_map_vec()
+  {
     std::vector<Eigen::Vector3d> feats;
-    for (auto const &feat : featmap)
+    for (auto const& feat : featmap)
       feats.push_back(feat.second);
     return feats;
   }
 
   /// Access function to get the true parameters (i.e. calibration and settings)
-  VioManagerOptions get_true_parameters() { return params; }
+  VioManagerOptions get_true_parameters()
+  {
+    return params;
+  }
 
 protected:
   /**
@@ -126,8 +141,9 @@ protected:
    * @param feats Our set of 3d features
    * @return True distorted raw image measurements and their ids for the specified camera
    */
-  std::vector<std::pair<size_t, Eigen::VectorXf>> project_pointcloud(const Eigen::Matrix3d &R_GtoI, const Eigen::Vector3d &p_IinG,
-                                                                     int camid, const std::unordered_map<size_t, Eigen::Vector3d> &feats);
+  std::vector<std::pair<size_t, Eigen::VectorXf>>
+  project_pointcloud(const Eigen::Matrix3d& R_GtoI, const Eigen::Vector3d& p_IinG, int camid,
+                     const std::unordered_map<size_t, Eigen::Vector3d>& feats);
 
   /**
    * @brief Will generate points in the fov of the specified camera
@@ -137,8 +153,8 @@ protected:
    * @param[out] feats Map we will append new features to
    * @param numpts Number of points we should generate
    */
-  void generate_points(const Eigen::Matrix3d &R_GtoI, const Eigen::Vector3d &p_IinG, int camid,
-                       std::unordered_map<size_t, Eigen::Vector3d> &feats, int numpts);
+  void generate_points(const Eigen::Matrix3d& R_GtoI, const Eigen::Vector3d& p_IinG, int camid,
+                       std::unordered_map<size_t, Eigen::Vector3d>& feats, int numpts);
 
   //===================================================================
   // Configuration variables
@@ -202,6 +218,6 @@ protected:
   std::vector<Eigen::Vector3d> hist_true_bias_gyro;
 };
 
-} // namespace ov_msckf
+}  // namespace ov_msckf
 
-#endif // OV_MSCKF_SIMULATOR_H
+#endif  // OV_MSCKF_SIMULATOR_H

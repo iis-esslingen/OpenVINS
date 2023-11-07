@@ -25,8 +25,8 @@
 #include "Type.h"
 #include "utils/quat_ops.h"
 
-namespace ov_type {
-
+namespace ov_type
+{
 /**
  * @brief Derived Type class that implements JPL quaternion
  *
@@ -36,17 +36,20 @@ namespace ov_type {
  * - http://mars.cs.umn.edu/tr/reports/Trawny05b.pdf
  * - ftp://naif.jpl.nasa.gov/pub/naif/misc/Quaternion_White_Paper/Quaternions_White_Paper.pdf
  */
-class JPLQuat : public Type {
-
+class JPLQuat : public Type
+{
 public:
-  JPLQuat() : Type(3) {
+  JPLQuat() : Type(3)
+  {
     Eigen::Vector4d q0 = Eigen::Vector4d::Zero();
     q0(3) = 1.0;
     set_value_internal(q0);
     set_fej_internal(q0);
   }
 
-  ~JPLQuat() {}
+  ~JPLQuat()
+  {
+  }
 
   /**
    * @brief Implements update operation by left-multiplying the current
@@ -58,8 +61,8 @@ public:
    *
    * @param dx Axis-angle representation of the perturbing quaternion
    */
-  void update(const Eigen::VectorXd &dx) override {
-
+  void update(const Eigen::VectorXd& dx) override
+  {
     assert(dx.rows() == _size);
 
     // Build perturbing quaternion
@@ -75,15 +78,22 @@ public:
    * @brief Sets the value of the estimate and recomputes the internal rotation matrix
    * @param new_value New value for the quaternion estimate
    */
-  void set_value(const Eigen::MatrixXd &new_value) override { set_value_internal(new_value); }
+  void set_value(const Eigen::MatrixXd& new_value) override
+  {
+    set_value_internal(new_value);
+  }
 
   /**
    * @brief Sets the fej value and recomputes the fej rotation matrix
    * @param new_value New value for the quaternion estimate
    */
-  void set_fej(const Eigen::MatrixXd &new_value) override { set_fej_internal(new_value); }
+  void set_fej(const Eigen::MatrixXd& new_value) override
+  {
+    set_fej_internal(new_value);
+  }
 
-  std::shared_ptr<Type> clone() override {
+  std::shared_ptr<Type> clone() override
+  {
     auto Clone = std::shared_ptr<JPLQuat>(new JPLQuat());
     Clone->set_value(value());
     Clone->set_fej(fej());
@@ -91,10 +101,16 @@ public:
   }
 
   /// Rotation access
-  Eigen::Matrix<double, 3, 3> Rot() const { return _R; }
+  Eigen::Matrix<double, 3, 3> Rot() const
+  {
+    return _R;
+  }
 
   /// FEJ Rotation access
-  Eigen::Matrix<double, 3, 3> Rot_fej() const { return _Rfej; }
+  Eigen::Matrix<double, 3, 3> Rot_fej() const
+  {
+    return _Rfej;
+  }
 
 protected:
   // Stores the rotation
@@ -107,8 +123,8 @@ protected:
    * @brief Sets the value of the estimate and recomputes the internal rotation matrix
    * @param new_value New value for the quaternion estimate
    */
-  void set_value_internal(const Eigen::MatrixXd &new_value) {
-
+  void set_value_internal(const Eigen::MatrixXd& new_value)
+  {
     assert(new_value.rows() == 4);
     assert(new_value.cols() == 1);
 
@@ -122,8 +138,8 @@ protected:
    * @brief Sets the fej value and recomputes the fej rotation matrix
    * @param new_value New value for the quaternion estimate
    */
-  void set_fej_internal(const Eigen::MatrixXd &new_value) {
-
+  void set_fej_internal(const Eigen::MatrixXd& new_value)
+  {
     assert(new_value.rows() == 4);
     assert(new_value.cols() == 1);
 
@@ -134,6 +150,6 @@ protected:
   }
 };
 
-} // namespace ov_type
+}  // namespace ov_type
 
-#endif // OV_TYPE_TYPE_JPLQUAT_H
+#endif  // OV_TYPE_TYPE_JPLQUAT_H

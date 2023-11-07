@@ -53,7 +53,7 @@
     <group if="$(arg do_save_traj)">
         <node name="recorder_estimate" pkg="ov_eval" type="pose_to_file" output="screen" required="true">
             <param name="topic"         type="str"  value="/ov_msckf/poseimu" />
-            <param name="topic_type"    type="str"  value="TransformStamped" />
+            <param name="topic_type"    type="str"  value="PoseWithCovarianceStampedTUM" />
             <param name="output"        type="str"  value="$(arg traj_file_name)" />
         </node>
     </group>

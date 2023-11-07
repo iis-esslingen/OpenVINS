@@ -25,12 +25,13 @@
 #include <Eigen/Eigen>
 #include <memory>
 
-namespace ov_type {
+namespace ov_type
+{
 class Type;
-} // namespace ov_type
+}  // namespace ov_type
 
-namespace ov_msckf {
-
+namespace ov_msckf
+{
 class State;
 
 /**
@@ -38,12 +39,12 @@ class State;
  *
  * In general, this class has all the core logic for an Extended Kalman Filter (EKF)-based system.
  * This has all functions that change the covariance along with addition and removing elements from the state.
- * All functions here are static, and thus are self-contained so that in the future multiple states could be tracked and updated.
- * We recommend you look directly at the code for this class for clarity on what exactly we are doing in each and the matching documentation
- * pages.
+ * All functions here are static, and thus are self-contained so that in the future multiple states could be tracked and
+ * updated. We recommend you look directly at the code for this class for clarity on what exactly we are doing in each
+ * and the matching documentation pages.
  */
-class StateHelper {
-
+class StateHelper
+{
 public:
   /**
    * @brief Performs EKF propagation of the state covariance.
@@ -73,9 +74,9 @@ public:
    * @param Phi State transition matrix (size order_NEW by size order_OLD)
    * @param Q Additive state propagation noise matrix (size order_NEW by size order_NEW)
    */
-  static void EKFPropagation(std::shared_ptr<State> state, const std::vector<std::shared_ptr<ov_type::Type>> &order_NEW,
-                             const std::vector<std::shared_ptr<ov_type::Type>> &order_OLD, const Eigen::MatrixXd &Phi,
-                             const Eigen::MatrixXd &Q);
+  static void EKFPropagation(std::shared_ptr<State> state, const std::vector<std::shared_ptr<ov_type::Type>>& order_NEW,
+                             const std::vector<std::shared_ptr<ov_type::Type>>& order_OLD, const Eigen::MatrixXd& Phi,
+                             const Eigen::MatrixXd& Q);
 
   /**
    * @brief Performs EKF update of the state (see @ref linear-meas page)
@@ -85,8 +86,8 @@ public:
    * @param res residual of updating measurement
    * @param R updating measurement covariance
    */
-  static void EKFUpdate(std::shared_ptr<State> state, const std::vector<std::shared_ptr<ov_type::Type>> &H_order, const Eigen::MatrixXd &H,
-                        const Eigen::VectorXd &res, const Eigen::MatrixXd &R);
+  static void EKFUpdate(std::shared_ptr<State> state, const std::vector<std::shared_ptr<ov_type::Type>>& H_order,
+                        const Eigen::MatrixXd& H, const Eigen::VectorXd& res, const Eigen::MatrixXd& R);
 
   /**
    * @brief This will set the initial covaraince of the specified state elements.
@@ -95,8 +96,8 @@ public:
    * @param covariance The covariance of the system state
    * @param order Order of the covariance matrix
    */
-  static void set_initial_covariance(std::shared_ptr<State> state, const Eigen::MatrixXd &covariance,
-                                     const std::vector<std::shared_ptr<ov_type::Type>> &order);
+  static void set_initial_covariance(std::shared_ptr<State> state, const Eigen::MatrixXd& covariance,
+                                     const std::vector<std::shared_ptr<ov_type::Type>>& order);
 
   /**
    * @brief For a given set of variables, this will this will calculate a smaller covariance.
@@ -110,7 +111,7 @@ public:
    * @return marginal covariance of the passed variables
    */
   static Eigen::MatrixXd get_marginal_covariance(std::shared_ptr<State> state,
-                                                 const std::vector<std::shared_ptr<ov_type::Type>> &small_variables);
+                                                 const std::vector<std::shared_ptr<ov_type::Type>>& small_variables);
 
   /**
    * @brief This gets the full covariance matrix.
@@ -143,15 +144,16 @@ public:
    * @param state Pointer to state
    * @param variable_to_clone Pointer to variable that will be cloned
    */
-  static std::shared_ptr<ov_type::Type> clone(std::shared_ptr<State> state, std::shared_ptr<ov_type::Type> variable_to_clone);
+  static std::shared_ptr<ov_type::Type> clone(std::shared_ptr<State> state,
+                                              std::shared_ptr<ov_type::Type> variable_to_clone);
 
   /**
    * @brief Initializes new variable into covariance.
    *
    * Uses Givens to separate into updating and initializing systems (therefore system must be fed as isotropic).
    * If you are not isotropic first whiten your system (TODO: we should add a helper function to do this).
-   * If your H_L Jacobian is already directly invertable, the just call the initialize_invertible() instead of this function.
-   * Please refer to @ref update-delay page for detailed derivation.
+   * If your H_L Jacobian is already directly invertable, the just call the initialize_invertible() instead of this
+   * function. Please refer to @ref update-delay page for detailed derivation.
    *
    * @param state Pointer to state
    * @param new_variable Pointer to variable to be initialized
@@ -160,11 +162,12 @@ public:
    * @param H_L Jacobian of initializing measurements wrt new variable
    * @param R Covariance of initializing measurements (isotropic)
    * @param res Residual of initializing measurements
-   * @param chi_2_mult Value we should multiply the chi2 threshold by (larger means it will be accepted more measurements)
+   * @param chi_2_mult Value we should multiply the chi2 threshold by (larger means it will be accepted more
+   * measurements)
    */
   static bool initialize(std::shared_ptr<State> state, std::shared_ptr<ov_type::Type> new_variable,
-                         const std::vector<std::shared_ptr<ov_type::Type>> &H_order, Eigen::MatrixXd &H_R, Eigen::MatrixXd &H_L,
-                         Eigen::MatrixXd &R, Eigen::VectorXd &res, double chi_2_mult);
+                         const std::vector<std::shared_ptr<ov_type::Type>>& H_order, Eigen::MatrixXd& H_R,
+                         Eigen::MatrixXd& H_L, Eigen::MatrixXd& R, Eigen::VectorXd& res, double chi_2_mult);
 
   /**
    * @brief Initializes new variable into covariance (H_L must be invertible)
@@ -181,8 +184,9 @@ public:
    * @param res Residual of initializing measurements
    */
   static void initialize_invertible(std::shared_ptr<State> state, std::shared_ptr<ov_type::Type> new_variable,
-                                    const std::vector<std::shared_ptr<ov_type::Type>> &H_order, const Eigen::MatrixXd &H_R,
-                                    const Eigen::MatrixXd &H_L, const Eigen::MatrixXd &R, const Eigen::VectorXd &res);
+                                    const std::vector<std::shared_ptr<ov_type::Type>>& H_order,
+                                    const Eigen::MatrixXd& H_R, const Eigen::MatrixXd& H_L, const Eigen::MatrixXd& R,
+                                    const Eigen::VectorXd& res);
 
   /**
    * @brief Augment the state with a stochastic copy of the current IMU pose
@@ -191,20 +195,20 @@ public:
    * This augmentation clones the IMU pose and adds it to our state's clone map.
    * If we are doing time offset calibration we also make our cloning a function of the time offset.
    * Time offset logic is based on Mingyang Li and Anastasios I. Mourikis paper:
-   * http://journals.sagepub.com/doi/pdf/10.1177/0278364913515286 We can write the current clone at the true imu base clock time as the
-   * follow: \f{align*}{
+   * http://journals.sagepub.com/doi/pdf/10.1177/0278364913515286 We can write the current clone at the true imu base
+   * clock time as the follow: \f{align*}{
    * {}^{I_{t+t_d}}_G\bar{q} &= \begin{bmatrix}\frac{1}{2} {}^{I_{t+\hat{t}_d}}\boldsymbol\omega \tilde{t}_d \\
    * 1\end{bmatrix}\otimes{}^{I_{t+\hat{t}_d}}_G\bar{q} \\
    * {}^G\mathbf{p}_{I_{t+t_d}} &= {}^G\mathbf{p}_{I_{t+\hat{t}_d}} + {}^G\mathbf{v}_{I_{t+\hat{t}_d}}\tilde{t}_d
    * \f}
    * where we say that we have propagated our state up to the current estimated true imaging time for the current image,
    * \f${}^{I_{t+\hat{t}_d}}\boldsymbol\omega\f$ is the angular velocity at the end of propagation with biases removed.
-   * This is off by some smaller error, so to get to the true imaging time in the imu base clock, we can append some small timeoffset error.
-   * Thus the Jacobian in respect to our time offset during our cloning procedure is the following:
-   * \f{align*}{
-   * \frac{\partial {}^{I_{t+t_d}}_G\tilde{\boldsymbol\theta}}{\partial \tilde{t}_d} &= {}^{I_{t+\hat{t}_d}}\boldsymbol\omega \\
-   * \frac{\partial {}^G\tilde{\mathbf{p}}_{I_{t+t_d}}}{\partial \tilde{t}_d} &= {}^G\mathbf{v}_{I_{t+\hat{t}_d}}
-   * \f}
+   * This is off by some smaller error, so to get to the true imaging time in the imu base clock, we can append some
+   * small timeoffset error. Thus the Jacobian in respect to our time offset during our cloning procedure is the
+   * following: \f{align*}{
+   * \frac{\partial {}^{I_{t+t_d}}_G\tilde{\boldsymbol\theta}}{\partial \tilde{t}_d} &=
+   * {}^{I_{t+\hat{t}_d}}\boldsymbol\omega \\ \frac{\partial {}^G\tilde{\mathbf{p}}_{I_{t+t_d}}}{\partial \tilde{t}_d}
+   * &= {}^G\mathbf{v}_{I_{t+\hat{t}_d}} \f}
    *
    * @param state Pointer to state
    * @param last_w The estimated angular velocity at cloning time (used to estimate imu-cam time offset)
@@ -233,9 +237,11 @@ private:
    * All function in this class should be static.
    * Thus an instance of this class cannot be created.
    */
-  StateHelper() {}
+  StateHelper()
+  {
+  }
 };
 
-} // namespace ov_msckf
+}  // namespace ov_msckf
 
-#endif // OV_MSCKF_STATE_HELPER_H
+#endif  // OV_MSCKF_STATE_HELPER_H

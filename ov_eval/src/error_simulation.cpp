@@ -32,13 +32,14 @@
 
 #endif
 
-int main(int argc, char **argv) {
-
+int main(int argc, char** argv)
+{
   // Verbosity setting
   ov_core::Printer::setPrintLevel("INFO");
 
   // Ensure we have a path
-  if (argc < 4) {
+  if (argc < 4)
+  {
     PRINT_ERROR(RED "ERROR: ./error_simulation <file_est.txt> <file_std.txt> <file_gt.txt>\n" RESET);
     PRINT_ERROR(RED "ERROR: rosrun ov_eval error_simulation <file_est.txt> <file_std.txt> <file_gt.txt>\n" RESET);
     std::exit(EXIT_FAILURE);

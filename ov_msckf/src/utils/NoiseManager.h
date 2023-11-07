@@ -26,13 +26,13 @@
 
 #include "utils/print.h"
 
-namespace ov_msckf {
-
+namespace ov_msckf
+{
 /**
  * @brief Struct of our imu noise parameters
  */
-struct NoiseManager {
-
+struct NoiseManager
+{
   /// Gyroscope white noise (rad/s/sqrt(hz))
   double sigma_w = 1.6968e-04;
 
@@ -58,7 +58,8 @@ struct NoiseManager {
   double sigma_ab_2 = pow(3.0000e-03, 2);
 
   /// Nice print function of what parameters we have loaded
-  void print() {
+  void print()
+  {
     PRINT_DEBUG("  - gyroscope_noise_density: %.6f\n", sigma_w);
     PRINT_DEBUG("  - accelerometer_noise_density: %.5f\n", sigma_a);
     PRINT_DEBUG("  - gyroscope_random_walk: %.7f\n", sigma_wb);
@@ -66,6 +67,6 @@ struct NoiseManager {
   }
 };
 
-} // namespace ov_msckf
+}  // namespace ov_msckf
 
-#endif // OV_MSCKF_NOISEMANAGER_H
+#endif  // OV_MSCKF_NOISEMANAGER_H

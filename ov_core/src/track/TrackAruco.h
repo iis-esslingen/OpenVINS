@@ -28,20 +28,20 @@
 
 #include "TrackBase.h"
 
-namespace ov_core {
-
+namespace ov_core
+{
 /**
  * @brief Tracking of OpenCV Aruoc tags.
  *
- * This class handles the tracking of [OpenCV Aruco tags](https://github.com/opencv/opencv_contrib/tree/master/modules/aruco).
- * We track the corners of the tag as compared to the pose of the tag or any other corners.
- * Right now we hardcode the dictionary to be `cv::aruco::DICT_6X6_1000`, so please generate tags in this family of tags.
- * You can generate these tags using an online utility: https://chev.me/arucogen/
- * The actual size of the tags do not matter since we do not recover the pose and instead just use this for re-detection and tracking of the
- * four corners of the tag.
+ * This class handles the tracking of [OpenCV Aruco
+ * tags](https://github.com/opencv/opencv_contrib/tree/master/modules/aruco). We track the corners of the tag as
+ * compared to the pose of the tag or any other corners. Right now we hardcode the dictionary to be
+ * `cv::aruco::DICT_6X6_1000`, so please generate tags in this family of tags. You can generate these tags using an
+ * online utility: https://chev.me/arucogen/ The actual size of the tags do not matter since we do not recover the pose
+ * and instead just use this for re-detection and tracking of the four corners of the tag.
  */
-class TrackAruco : public TrackBase {
-
+class TrackAruco : public TrackBase
+{
 public:
   /**
    * @brief Public constructor with configuration variables
@@ -51,9 +51,10 @@ public:
    * @param histmethod what type of histogram pre-processing should be done (histogram eq?)
    * @param downsize we can scale the image by 1/2 to increase Aruco tag extraction speed
    */
-  explicit TrackAruco(std::unordered_map<size_t, std::shared_ptr<CamBase>> cameras, int numaruco, bool stereo, HistogramMethod histmethod,
-                      bool downsize)
-      : TrackBase(cameras, 0, numaruco, stereo, histmethod), max_tag_id(numaruco), do_downsizing(downsize) {
+  explicit TrackAruco(std::unordered_map<size_t, std::shared_ptr<CamBase>> cameras, int numaruco, bool stereo,
+                      HistogramMethod histmethod, bool downsize)
+    : TrackBase(cameras, 0, numaruco, stereo, histmethod), max_tag_id(numaruco), do_downsizing(downsize)
+  {
 #if ENABLE_ARUCO_TAGS
     aruco_dict = cv::aruco::getPredefinedDictionary(cv::aruco::DICT_6X6_1000);
     aruco_params = cv::aruco::DetectorParameters::create();
@@ -69,7 +70,7 @@ public:
    * @brief Process a new image
    * @param message Contains our timestamp, images, and camera ids
    */
-  void feed_new_camera(const CameraData &message) override;
+  void feed_new_camera(const CameraData& message) override;
 
 #if ENABLE_ARUCO_TAGS
   /**
@@ -79,7 +80,8 @@ public:
    * @param r2,g2,b2 second color to draw in
    * @param overlay Text overlay to replace to normal "cam0" in the top left of screen
    */
-  void display_active(cv::Mat &img_out, int r1, int g1, int b1, int r2, int g2, int b2, std::string overlay = "") override;
+  void display_active(cv::Mat& img_out, int r1, int g1, int b1, int r2, int g2, int b2,
+                      std::string overlay = "") override;
 #endif
 
 protected:
@@ -91,7 +93,7 @@ protected:
    * @param cam_id the camera id that this new image corresponds too
    * @param maskin tracking mask for the given input image
    */
-  void perform_tracking(double timestamp, const cv::Mat &imgin, size_t cam_id, const cv::Mat &maskin);
+  void perform_tracking(double timestamp, const cv::Mat& imgin, size_t cam_id, const cv::Mat& maskin);
 #endif
 
   // Max tag ID we should extract from (i.e., number of aruco tags starting from zero)
@@ -113,6 +115,6 @@ protected:
 #endif
 };
 
-} // namespace ov_core
+}  // namespace ov_core
 
 #endif /* OV_CORE_TRACK_ARUCO_H */

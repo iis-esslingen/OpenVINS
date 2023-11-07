@@ -33,18 +33,20 @@
 
 #include "VioManagerOptions.h"
 
-namespace ov_core {
+namespace ov_core
+{
 struct ImuData;
 struct CameraData;
 class TrackBase;
 class FeatureInitializer;
-} // namespace ov_core
-namespace ov_init {
+}  // namespace ov_core
+namespace ov_init
+{
 class InertialInitializer;
-} // namespace ov_init
+}  // namespace ov_init
 
-namespace ov_msckf {
-
+namespace ov_msckf
+{
 class State;
 class StateHelper;
 class UpdaterMSCKF;
@@ -59,26 +61,29 @@ class Propagator;
  * We feed in measurements into this class and send them to their respective algorithms.
  * If we have measurements to propagate or update with, this class will call on our state to do that.
  */
-class VioManager {
-
+class VioManager
+{
 public:
   /**
    * @brief Default constructor, will load all configuration variables
    * @param params_ Parameters loaded from either ROS or CMDLINE
    */
-  VioManager(VioManagerOptions &params_);
+  VioManager(VioManagerOptions& params_);
 
   /**
    * @brief Feed function for inertial data
    * @param message Contains our timestamp and inertial information
    */
-  void feed_measurement_imu(const ov_core::ImuData &message);
+  void feed_measurement_imu(const ov_core::ImuData& message);
 
   /**
    * @brief Feed function for camera measurements
    * @param message Contains our timestamp, images, and camera ids
    */
-  void feed_measurement_camera(const ov_core::CameraData &message) { track_image_and_update(message); }
+  void feed_measurement_camera(const ov_core::CameraData& message)
+  {
+    track_image_and_update(message);
+  }
 
   /**
    * @brief Feed function for a synchronized simulated cameras
@@ -86,8 +91,8 @@ public:
    * @param camids Camera ids that we have simulated measurements for
    * @param feats Raw uv simulated measurements
    */
-  void feed_measurement_simulation(double timestamp, const std::vector<int> &camids,
-                                   const std::vector<std::vector<std::pair<size_t, Eigen::VectorXf>>> &feats);
+  void feed_measurement_simulation(double timestamp, const std::vector<int>& camids,
+                                   const std::vector<std::vector<std::pair<size_t, Eigen::VectorXf>>>& feats);
 
   /**
    * @brief Given a state, this will initialize our IMU state.
@@ -96,19 +101,34 @@ public:
   void initialize_with_gt(Eigen::Matrix<double, 17, 1> imustate);
 
   /// If we are initialized or not
-  bool initialized() { return is_initialized_vio; }
+  bool initialized()
+  {
+    return is_initialized_vio;
+  }
 
   /// Timestamp that the system was initialized at
-  double initialized_time() { return startup_time; }
+  double initialized_time()
+  {
+    return startup_time;
+  }
 
   /// Accessor for current system parameters
-  VioManagerOptions get_params() { return params; }
+  VioManagerOptions get_params()
+  {
+    return params;
+  }
 
   /// Accessor to get the current state
-  std::shared_ptr<State> get_state() { return state; }
+  std::shared_ptr<State> get_state()
+  {
+    return state;
+  }
 
   /// Accessor to get the current propagator
-  std::shared_ptr<Propagator> get_propagator() { return propagator; }
+  std::shared_ptr<Propagator> get_propagator()
+  {
+    return propagator;
+  }
 
   /// Get a nice visualization image of what tracks we have
   cv::Mat get_historical_viz_image();
@@ -120,17 +140,22 @@ public:
   std::vector<Eigen::Vector3d> get_features_ARUCO();
 
   /// Returns 3d features used in the last update in global frame
-  std::vector<Eigen::Vector3d> get_good_features_MSCKF() { return good_features_MSCKF; }
+  std::vector<Eigen::Vector3d> get_good_features_MSCKF()
+  {
+    return good_features_MSCKF;
+  }
 
   /// Return the image used when projecting the active tracks
-  void get_active_image(double &timestamp, cv::Mat &image) {
+  void get_active_image(double& timestamp, cv::Mat& image)
+  {
     timestamp = active_tracks_time;
     image = active_image;
   }
 
   /// Returns active tracked features in the current frame
-  void get_active_tracks(double &timestamp, std::unordered_map<size_t, Eigen::Vector3d> &feat_posinG,
-                         std::unordered_map<size_t, Eigen::Vector3d> &feat_tracks_uvd) {
+  void get_active_tracks(double& timestamp, std::unordered_map<size_t, Eigen::Vector3d>& feat_posinG,
+                         std::unordered_map<size_t, Eigen::Vector3d>& feat_tracks_uvd)
+  {
     timestamp = active_tracks_time;
     feat_posinG = active_tracks_posinG;
     feat_tracks_uvd = active_tracks_uvd;
@@ -145,13 +170,13 @@ protected:
    *
    * @param message Contains our timestamp, images, and camera ids
    */
-  void track_image_and_update(const ov_core::CameraData &message);
+  void track_image_and_update(const ov_core::CameraData& message);
 
   /**
    * @brief This will do the propagation and feature updates to the state
    * @param message Contains our timestamp, images, and camera ids
    */
-  void do_feature_propagate_update(const ov_core::CameraData &message);
+  void do_feature_propagate_update(const ov_core::CameraData& message);
 
   /**
    * @brief This function will try to initialize the state.
@@ -163,7 +188,7 @@ protected:
    * @param message Contains our timestamp, images, and camera ids
    * @return True if we have successfully initialized
    */
-  bool try_to_initialize(const ov_core::CameraData &message);
+  bool try_to_initialize(const ov_core::CameraData& message);
 
   /**
    * @brief This function will will re-triangulate all features in the current frame
@@ -174,7 +199,7 @@ protected:
    *
    * @param message Contains our timestamp, images, and camera ids
    */
-  void retriangulate_active_tracks(const ov_core::CameraData &message);
+  void retriangulate_active_tracks(const ov_core::CameraData& message);
 
   /// Manager parameters
   VioManagerOptions params;
@@ -246,6 +271,6 @@ protected:
   std::map<size_t, int> active_feat_linsys_count;
 };
 
-} // namespace ov_msckf
+}  // namespace ov_msckf
 
-#endif // OV_MSCKF_VIOMANAGER_H
+#endif  // OV_MSCKF_VIOMANAGER_H

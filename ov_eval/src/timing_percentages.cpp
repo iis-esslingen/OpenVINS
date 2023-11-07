@@ -41,13 +41,14 @@
 
 #endif
 
-int main(int argc, char **argv) {
-
+int main(int argc, char** argv)
+{
   // Verbosity setting
   ov_core::Printer::setPrintLevel("ALL");
 
   // Ensure we have a path
-  if (argc < 2) {
+  if (argc < 2)
+  {
     PRINT_ERROR(RED "ERROR: Please specify a timing and memory percent folder\n" RESET);
     PRINT_ERROR(RED "ERROR: ./timing_percentages <timings_folder>\n" RESET);
     PRINT_ERROR(RED "ERROR: rosrun ov_eval timing_percentages <timings_folder>\n" RESET);
@@ -58,8 +59,10 @@ int main(int argc, char **argv) {
   // Also create empty statistic objects for each of our datasets
   std::string path_algos(argv[1]);
   std::vector<boost::filesystem::path> path_algorithms;
-  for (const auto &entry : boost::filesystem::directory_iterator(path_algos)) {
-    if (boost::filesystem::is_directory(entry)) {
+  for (const auto& entry : boost::filesystem::directory_iterator(path_algos))
+  {
+    if (boost::filesystem::is_directory(entry))
+    {
       path_algorithms.push_back(entry.path());
     }
   }
@@ -71,14 +74,15 @@ int main(int argc, char **argv) {
 
   // Summary information (%cpu, %mem, threads)
   std::map<std::string, std::vector<ov_eval::Statistics>> algo_timings;
-  for (const auto &p : path_algorithms) {
-    std::vector<ov_eval::Statistics> temp = {ov_eval::Statistics(), ov_eval::Statistics(), ov_eval::Statistics()};
-    algo_timings.insert({p.stem().string(), temp});
+  for (const auto& p : path_algorithms)
+  {
+    std::vector<ov_eval::Statistics> temp = { ov_eval::Statistics(), ov_eval::Statistics(), ov_eval::Statistics() };
+    algo_timings.insert({ p.stem().string(), temp });
   }
 
   // Loop through each algorithm type
-  for (size_t i = 0; i < path_algorithms.size(); i++) {
-
+  for (size_t i = 0; i < path_algorithms.size(); i++)
+  {
     // Debug print
     PRINT_DEBUG("======================================\n");
     PRINT_DEBUG("[COMP]: processing %s algorithm\n", path_algorithms.at(i).stem().c_str());
@@ -88,8 +92,8 @@ int main(int argc, char **argv) {
     std::vector<Eigen::Vector3d> total_summed_values;
 
     // Loop through each sub-directory in this folder
-    for (auto &entry : boost::filesystem::recursive_directory_iterator(path_algorithms.at(i))) {
-
+    for (auto& entry : boost::filesystem::recursive_directory_iterator(path_algorithms.at(i)))
+    {
       // skip if not a directory
       if (boost::filesystem::is_directory(entry))
         continue;
@@ -111,7 +115,8 @@ int main(int argc, char **argv) {
 
     // append to the map
     std::string algo = path_algorithms.at(i).stem().string();
-    for (size_t j = 0; j < total_times.size(); j++) {
+    for (size_t j = 0; j < total_times.size(); j++)
+    {
       algo_timings.at(algo).at(0).timestamps.push_back(total_times.at(j));
       algo_timings.at(algo).at(0).values.push_back(total_summed_values.at(j)(0));
       algo_timings.at(algo).at(1).timestamps.push_back(total_times.at(j));
@@ -127,7 +132,8 @@ int main(int argc, char **argv) {
     algo_timings.at(algo).at(2).calculate();
     PRINT_DEBUG("\tPREC: mean_cpu = %.3f +- %.3f\n", algo_timings.at(algo).at(0).mean, algo_timings.at(algo).at(0).std);
     PRINT_DEBUG("\tPREC: mean_mem = %.3f +- %.3f\n", algo_timings.at(algo).at(1).mean, algo_timings.at(algo).at(1).std);
-    PRINT_DEBUG("\tTHR: mean_threads = %.3f +- %.3f\n", algo_timings.at(algo).at(2).mean, algo_timings.at(algo).at(2).std);
+    PRINT_DEBUG("\tTHR: mean_threads = %.3f +- %.3f\n", algo_timings.at(algo).at(2).mean,
+                algo_timings.at(algo).at(2).std);
     PRINT_DEBUG("======================================\n");
   }
 
@@ -138,14 +144,14 @@ int main(int argc, char **argv) {
 #ifdef HAVE_PYTHONLIBS
 
   // Plot line colors
-  std::vector<std::string> colors = {"blue", "red", "black", "green", "cyan", "magenta"};
-  std::vector<std::string> linestyle = {"-", "--", "-."};
+  std::vector<std::string> colors = { "blue", "red", "black", "green", "cyan", "magenta" };
+  std::vector<std::string> linestyle = { "-", "--", "-." };
   assert(algo_timings.size() <= colors.size() * linestyle.size());
 
   // Parameters
   std::map<std::string, std::string> params_rpe;
-  params_rpe.insert({"notch", "false"});
-  params_rpe.insert({"sym", ""});
+  params_rpe.insert({ "notch", "false" });
+  params_rpe.insert({ "sym", "" });
 
   //============================================================
   //============================================================
@@ -158,7 +164,8 @@ int main(int argc, char **argv) {
   std::vector<std::string> labels;
   int ct_algo = 0;
   double ct_pos = 0;
-  for (auto &algo : algo_timings) {
+  for (auto& algo : algo_timings)
+  {
     // Start based on what algorithm we are doing
     ct_pos = 1 + 1.5 * ct_algo * width;
     yticks.push_back(ct_pos);
@@ -172,11 +179,12 @@ int main(int argc, char **argv) {
 
   // Add "fake" plots for our legend
   ct_algo = 0;
-  for (const auto &algo : algo_timings) {
+  for (const auto& algo : algo_timings)
+  {
     std::map<std::string, std::string> params_empty;
-    params_empty.insert({"label", algo.first});
-    params_empty.insert({"linestyle", linestyle.at(ct_algo / colors.size())});
-    params_empty.insert({"color", colors.at(ct_algo % colors.size())});
+    params_empty.insert({ "label", algo.first });
+    params_empty.insert({ "linestyle", linestyle.at(ct_algo / colors.size()) });
+    params_empty.insert({ "color", colors.at(ct_algo % colors.size()) });
     std::vector<double> vec_empty;
     matplotlibcpp::plot(vec_empty, vec_empty, params_empty);
     ct_algo++;
@@ -200,7 +208,8 @@ int main(int argc, char **argv) {
   labels.clear();
   ct_algo = 0;
   ct_pos = 0;
-  for (auto &algo : algo_timings) {
+  for (auto& algo : algo_timings)
+  {
     // Start based on what algorithm we are doing
     ct_pos = 1 + 1.5 * ct_algo * width;
     yticks.push_back(ct_pos);
@@ -214,11 +223,12 @@ int main(int argc, char **argv) {
 
   // Add "fake" plots for our legend
   ct_algo = 0;
-  for (const auto &algo : algo_timings) {
+  for (const auto& algo : algo_timings)
+  {
     std::map<std::string, std::string> params_empty;
-    params_empty.insert({"label", algo.first});
-    params_empty.insert({"linestyle", linestyle.at(ct_algo / colors.size())});
-    params_empty.insert({"color", colors.at(ct_algo % colors.size())});
+    params_empty.insert({ "label", algo.first });
+    params_empty.insert({ "linestyle", linestyle.at(ct_algo / colors.size()) });
+    params_empty.insert({ "color", colors.at(ct_algo % colors.size()) });
     std::vector<double> vec_empty;
     matplotlibcpp::plot(vec_empty, vec_empty, params_empty);
     ct_algo++;

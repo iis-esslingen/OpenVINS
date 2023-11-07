@@ -26,13 +26,13 @@
 #include <opencv2/opencv.hpp>
 #include <vector>
 
-namespace ov_core {
-
+namespace ov_core
+{
 /**
  * @brief Struct for a single imu measurement (time, wm, am)
  */
-struct ImuData {
-
+struct ImuData
+{
   /// Timestamp of the reading
   double timestamp;
 
@@ -43,7 +43,10 @@ struct ImuData {
   Eigen::Matrix<double, 3, 1> am;
 
   /// Sort function to allow for using of STL containers
-  bool operator<(const ImuData &other) const { return timestamp < other.timestamp; }
+  bool operator<(const ImuData& other) const
+  {
+    return timestamp < other.timestamp;
+  }
 };
 
 /**
@@ -52,8 +55,8 @@ struct ImuData {
  * For each image we have a camera id and timestamp that it occured at.
  * If there are multiple cameras we will treat it as pair-wise stereo tracking.
  */
-struct CameraData {
-
+struct CameraData
+{
   /// Timestamp of the reading
   double timestamp;
 
@@ -67,17 +70,21 @@ struct CameraData {
   std::vector<cv::Mat> masks;
 
   /// Sort function to allow for using of STL containers
-  bool operator<(const CameraData &other) const {
-    if (timestamp == other.timestamp) {
+  bool operator<(const CameraData& other) const
+  {
+    if (timestamp == other.timestamp)
+    {
       int id = *std::min_element(sensor_ids.begin(), sensor_ids.end());
       int id_other = *std::min_element(other.sensor_ids.begin(), other.sensor_ids.end());
       return id < id_other;
-    } else {
+    }
+    else
+    {
       return timestamp < other.timestamp;
     }
   }
 };
 
-} // namespace ov_core
+}  // namespace ov_core
 
-#endif // OV_CORE_SENSOR_DATA_H
+#endif  // OV_CORE_SENSOR_DATA_H

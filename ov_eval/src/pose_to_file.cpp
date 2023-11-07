@@ -28,8 +28,8 @@
 #include "utils/Recorder.h"
 #include "utils/print.h"
 
-int main(int argc, char **argv) {
-
+int main(int argc, char** argv)
+{
   // Create ros node
   ros::init(argc, argv, "pose_to_file");
   ros::NodeHandle nh("~");
@@ -56,15 +56,28 @@ int main(int argc, char **argv) {
 
   // Subscribe to topic
   ros::Subscriber sub;
-  if (topic_type == std::string("PoseWithCovarianceStamped")) {
+  if (topic_type == std::string("PoseWithCovarianceStamped"))
+  {
     sub = nh.subscribe(topic, 9999, &ov_eval::Recorder::callback_posecovariance, &recorder);
-  } else if (topic_type == std::string("PoseStamped")) {
+  }
+  else if (topic_type == std::string("PoseWithCovarianceStampedTUM"))
+  {
+    sub = nh.subscribe(topic, 9999, &ov_eval::Recorder::callback_posecovariance_tum, &recorder);
+  }
+  else if (topic_type == std::string("PoseStamped"))
+  {
     sub = nh.subscribe(topic, 9999, &ov_eval::Recorder::callback_pose, &recorder);
-  } else if (topic_type == std::string("TransformStamped")) {
+  }
+  else if (topic_type == std::string("TransformStamped"))
+  {
     sub = nh.subscribe(topic, 9999, &ov_eval::Recorder::callback_transform, &recorder);
-  } else if (topic_type == std::string("Odometry")) {
+  }
+  else if (topic_type == std::string("Odometry"))
+  {
     sub = nh.subscribe(topic, 9999, &ov_eval::Recorder::callback_odometry, &recorder);
-  } else {
+  }
+  else
+  {
     PRINT_ERROR("The specified topic type is not supported");
     PRINT_ERROR("topic_type = %s", topic_type.c_str());
     PRINT_ERROR("please select from: PoseWithCovarianceStamped, PoseStamped, TransformStamped, Odometry");

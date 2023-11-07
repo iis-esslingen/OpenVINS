@@ -37,12 +37,13 @@
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #endif
 
-namespace ov_type {
+namespace ov_type
+{
 class PoseJPL;
 }
 
-namespace ov_msckf {
-
+namespace ov_msckf
+{
 class State;
 class VioManager;
 class Simulator;
@@ -50,8 +51,8 @@ class Simulator;
 /**
  * @brief Helper class that handles some common versions into and out of ROS formats
  */
-class ROSVisualizerHelper {
-
+class ROSVisualizerHelper
+{
 public:
 #if ROS_AVAILABLE == 1
   /**
@@ -59,7 +60,7 @@ public:
    * @param feats Vector of features we will convert into ros format
    * @return ROS pointcloud
    */
-  static sensor_msgs::PointCloud2 get_ros_pointcloud(const std::vector<Eigen::Vector3d> &feats);
+  static sensor_msgs::PointCloud2 get_ros_pointcloud(const std::vector<Eigen::Vector3d>& feats);
 
   /**
    * @brief Given a ov_type::PoseJPL this will convert into the ros format.
@@ -70,7 +71,8 @@ public:
    * @param flip_trans If we should flip / inverse the translation
    * @return TF of our pose in global (e.g. q_ItoG, p_IinG)
    */
-  static tf::StampedTransform get_stamped_transform_from_pose(const std::shared_ptr<ov_type::PoseJPL> &pose, bool flip_trans);
+  static tf::StampedTransform get_stamped_transform_from_pose(const std::shared_ptr<ov_type::PoseJPL>& pose,
+                                                              bool flip_trans);
 #endif
 
 #if ROS_AVAILABLE == 2
@@ -80,7 +82,8 @@ public:
    * @param feats Vector of features we will convert into ros format
    * @return ROS pointcloud
    */
-  static sensor_msgs::msg::PointCloud2 get_ros_pointcloud(std::shared_ptr<rclcpp::Node> node, const std::vector<Eigen::Vector3d> &feats);
+  static sensor_msgs::msg::PointCloud2 get_ros_pointcloud(std::shared_ptr<rclcpp::Node> node,
+                                                          const std::vector<Eigen::Vector3d>& feats);
 
   /**
    * @brief Given a ov_type::PoseJPL this will convert into the ros format.
@@ -92,16 +95,16 @@ public:
    * @param flip_trans If we should flip / inverse the translation
    * @return TF of our pose in global (e.g. q_ItoG, p_IinG)
    */
-  static geometry_msgs::msg::TransformStamped
-  get_stamped_transform_from_pose(std::shared_ptr<rclcpp::Node> node, const std::shared_ptr<ov_type::PoseJPL> &pose, bool flip_trans);
+  static geometry_msgs::msg::TransformStamped get_stamped_transform_from_pose(
+      std::shared_ptr<rclcpp::Node> node, const std::shared_ptr<ov_type::PoseJPL>& pose, bool flip_trans);
 
   /**
    * @brief Helper function that converts time in seconds to our rclcpp timestamp
    * @param seconds Time in seconds
    * @return Return ROS2 header timestamp
    */
-  static rclcpp::Time get_time_from_seconds(double seconds) {
-
+  static rclcpp::Time get_time_from_seconds(double seconds)
+  {
     // ROS2 time class has no double constructor
     // Extract compatible time from timestamp using ros1 implementation for now
     uint32_t sec, nsec;
@@ -127,14 +130,15 @@ public:
    * @param of_state_std Output file for covariance
    * @param of_state_gt Output file for groundtruth (if we have it from sim)
    */
-  static void sim_save_total_state_to_file(std::shared_ptr<State> state, std::shared_ptr<Simulator> sim, std::ofstream &of_state_est,
-                                           std::ofstream &of_state_std, std::ofstream &of_state_gt);
+  static void sim_save_total_state_to_file(std::shared_ptr<State> state, std::shared_ptr<Simulator> sim,
+                                           std::ofstream& of_state_est, std::ofstream& of_state_std,
+                                           std::ofstream& of_state_gt);
 
 private:
   // Cannot create this class
   ROSVisualizerHelper() = default;
 };
 
-} // namespace ov_msckf
+}  // namespace ov_msckf
 
-#endif // OV_MSCKF_ROSVISUALIZER_HELPER_H
+#endif  // OV_MSCKF_ROSVISUALIZER_HELPER_H

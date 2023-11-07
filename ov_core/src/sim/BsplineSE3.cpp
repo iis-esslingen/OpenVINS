@@ -23,11 +23,12 @@
 
 using namespace ov_core;
 
-void BsplineSE3::feed_trajectory(std::vector<Eigen::VectorXd> traj_points) {
-
+void BsplineSE3::feed_trajectory(std::vector<Eigen::VectorXd> traj_points)
+{
   // Find the average frequency to use as our uniform timesteps
   double sumdt = 0;
-  for (size_t i = 0; i < traj_points.size() - 1; i++) {
+  for (size_t i = 0; i < traj_points.size() - 1; i++)
+  {
     sumdt += traj_points.at(i + 1)(0) - traj_points.at(i)(0);
   }
   dt = sumdt / (traj_points.size() - 1);
@@ -37,21 +38,25 @@ void BsplineSE3::feed_trajectory(std::vector<Eigen::VectorXd> traj_points) {
   // convert all our trajectory points into SE(3) matrices
   // we are given [timestamp, p_IinG, q_GtoI]
   AlignedEigenMat4d trajectory_points;
-  for (size_t i = 0; i < traj_points.size() - 1; i++) {
+  for (size_t i = 0; i < traj_points.size() - 1; i++)
+  {
     Eigen::Matrix4d T_IinG = Eigen::Matrix4d::Identity();
     T_IinG.block(0, 0, 3, 3) = quat_2_Rot(traj_points.at(i).block(4, 0, 4, 1)).transpose();
     T_IinG.block(0, 3, 3, 1) = traj_points.at(i).block(1, 0, 3, 1);
-    trajectory_points.insert({traj_points.at(i)(0), T_IinG});
+    trajectory_points.insert({ traj_points.at(i)(0), T_IinG });
   }
 
   // Get the oldest timestamp
   double timestamp_min = INFINITY;
   double timestamp_max = -INFINITY;
-  for (const auto &pose : trajectory_points) {
-    if (pose.first <= timestamp_min) {
+  for (const auto& pose : trajectory_points)
+  {
+    if (pose.first <= timestamp_min)
+    {
       timestamp_min = pose.first;
     }
-    if (pose.first >= timestamp_max) {
+    if (pose.first >= timestamp_max)
+    {
       timestamp_max = pose.first;
     }
   }
@@ -60,8 +65,8 @@ void BsplineSE3::feed_trajectory(std::vector<Eigen::VectorXd> traj_points) {
 
   // then create spline control points
   double timestamp_curr = timestamp_min;
-  while (true) {
-
+  while (true)
+  {
     // Get bounding posed for the current time
     double t0, t1;
     Eigen::Matrix4d pose0, pose1;
@@ -77,7 +82,7 @@ void BsplineSE3::feed_trajectory(std::vector<Eigen::VectorXd> traj_points) {
     // Linear interpolation and append to our control points
     double lambda = (timestamp_curr - t0) / (t1 - t0);
     Eigen::Matrix4d pose_interp = exp_se3(lambda * log_se3(pose1 * Inv_se3(pose0))) * pose0;
-    control_points.insert({timestamp_curr, pose_interp});
+    control_points.insert({ timestamp_curr, pose_interp });
     timestamp_curr += dt;
     // std::stringstream ss;
     // ss << pose_interp(0,3) << "," << pose_interp(1,3) << "," << pose_interp(2,3) << std::endl;
@@ -89,8 +94,8 @@ void BsplineSE3::feed_trajectory(std::vector<Eigen::VectorXd> traj_points) {
   PRINT_DEBUG("[B-SPLINE]: start trajectory time of %.6f\n", timestamp_start);
 }
 
-bool BsplineSE3::get_pose(double timestamp, Eigen::Matrix3d &R_GtoI, Eigen::Vector3d &p_IinG) {
-
+bool BsplineSE3::get_pose(double timestamp, Eigen::Matrix3d& R_GtoI, Eigen::Vector3d& p_IinG)
+{
   // Get the bounding poses for the desired timestamp
   double t0, t1, t2, t3;
   Eigen::Matrix4d pose0, pose1, pose2, pose3;
@@ -99,7 +104,8 @@ bool BsplineSE3::get_pose(double timestamp, Eigen::Matrix3d &R_GtoI, Eigen::Vect
   // %d\n",timestamp,t0-timestamp,t1-timestamp,t2-timestamp,t3-timestamp,(int)success);
 
   // Return failure if we can't get bounding poses
-  if (!success) {
+  if (!success)
+  {
     R_GtoI.setIdentity();
     p_IinG.setZero();
     return false;
@@ -124,9 +130,9 @@ bool BsplineSE3::get_pose(double timestamp, Eigen::Matrix3d &R_GtoI, Eigen::Vect
   return true;
 }
 
-bool BsplineSE3::get_velocity(double timestamp, Eigen::Matrix3d &R_GtoI, Eigen::Vector3d &p_IinG, Eigen::Vector3d &w_IinI,
-                              Eigen::Vector3d &v_IinG) {
-
+bool BsplineSE3::get_velocity(double timestamp, Eigen::Matrix3d& R_GtoI, Eigen::Vector3d& p_IinG,
+                              Eigen::Vector3d& w_IinI, Eigen::Vector3d& v_IinG)
+{
   // Get the bounding poses for the desired timestamp
   double t0, t1, t2, t3;
   Eigen::Matrix4d pose0, pose1, pose2, pose3;
@@ -135,7 +141,8 @@ bool BsplineSE3::get_velocity(double timestamp, Eigen::Matrix3d &R_GtoI, Eigen::
   // %d\n",timestamp,t0-timestamp,t1-timestamp,t2-timestamp,t3-timestamp,(int)success);
 
   // Return failure if we can't get bounding poses
-  if (!success) {
+  if (!success)
+  {
     w_IinI.setZero();
     v_IinG.setZero();
     return false;
@@ -177,16 +184,18 @@ bool BsplineSE3::get_velocity(double timestamp, Eigen::Matrix3d &R_GtoI, Eigen::
   return true;
 }
 
-bool BsplineSE3::get_acceleration(double timestamp, Eigen::Matrix3d &R_GtoI, Eigen::Vector3d &p_IinG, Eigen::Vector3d &w_IinI,
-                                  Eigen::Vector3d &v_IinG, Eigen::Vector3d &alpha_IinI, Eigen::Vector3d &a_IinG) {
-
+bool BsplineSE3::get_acceleration(double timestamp, Eigen::Matrix3d& R_GtoI, Eigen::Vector3d& p_IinG,
+                                  Eigen::Vector3d& w_IinI, Eigen::Vector3d& v_IinG, Eigen::Vector3d& alpha_IinI,
+                                  Eigen::Vector3d& a_IinG)
+{
   // Get the bounding poses for the desired timestamp
   double t0, t1, t2, t3;
   Eigen::Matrix4d pose0, pose1, pose2, pose3;
   bool success = find_bounding_control_points(timestamp, control_points, t0, pose0, t1, pose1, t2, pose2, t3, pose3);
 
   // Return failure if we can't get bounding poses
-  if (!success) {
+  if (!success)
+  {
     alpha_IinI.setZero();
     a_IinG.setZero();
     return false;
@@ -238,17 +247,18 @@ bool BsplineSE3::get_acceleration(double timestamp, Eigen::Matrix3d &R_GtoI, Eig
   // Finally get the interpolated velocities
   // NOTE: Rdot = R*skew(omega)
   // NOTE: Rdotdot = Rdot*skew(omega) + R*skew(alpha) => R^T*(Rdotdot-Rdot*skew(omega))=skew(alpha)
-  Eigen::Matrix4d acc_interp = pose0 * (A0dotdot * A1 * A2 + A0 * A1dotdot * A2 + A0 * A1 * A2dotdot + 2 * A0dot * A1dot * A2 +
-                                        2 * A0 * A1dot * A2dot + 2 * A0dot * A1 * A2dot);
+  Eigen::Matrix4d acc_interp = pose0 * (A0dotdot * A1 * A2 + A0 * A1dotdot * A2 + A0 * A1 * A2dotdot +
+                                        2 * A0dot * A1dot * A2 + 2 * A0 * A1dot * A2dot + 2 * A0dot * A1 * A2dot);
   Eigen::Matrix3d omegaskew = pose_interp.block(0, 0, 3, 3).transpose() * vel_interp.block(0, 0, 3, 3);
-  alpha_IinI = vee(pose_interp.block(0, 0, 3, 3).transpose() * (acc_interp.block(0, 0, 3, 3) - vel_interp.block(0, 0, 3, 3) * omegaskew));
+  alpha_IinI = vee(pose_interp.block(0, 0, 3, 3).transpose() *
+                   (acc_interp.block(0, 0, 3, 3) - vel_interp.block(0, 0, 3, 3) * omegaskew));
   a_IinG = acc_interp.block(0, 3, 3, 1);
   return true;
 }
 
-bool BsplineSE3::find_bounding_poses(const double timestamp, const AlignedEigenMat4d &poses, double &t0, Eigen::Matrix4d &pose0, double &t1,
-                                     Eigen::Matrix4d &pose1) {
-
+bool BsplineSE3::find_bounding_poses(const double timestamp, const AlignedEigenMat4d& poses, double& t0,
+                                     Eigen::Matrix4d& pose0, double& t1, Eigen::Matrix4d& pose1)
+{
   // Set the default values
   t0 = -1;
   t1 = -1;
@@ -260,32 +270,39 @@ bool BsplineSE3::find_bounding_poses(const double timestamp, const AlignedEigenM
   bool found_newer = false;
 
   // Find the bounding poses for interpolation.
-  auto lower_bound = poses.lower_bound(timestamp); // Finds timestamp or next(timestamp) if not available
-  auto upper_bound = poses.upper_bound(timestamp); // Finds next(timestamp)
+  auto lower_bound = poses.lower_bound(timestamp);  // Finds timestamp or next(timestamp) if not available
+  auto upper_bound = poses.upper_bound(timestamp);  // Finds next(timestamp)
 
-  if (lower_bound != poses.end()) {
+  if (lower_bound != poses.end())
+  {
     // Check that the lower bound is the timestamp.
     // If not then we move iterator to previous timestamp so that the timestamp is bounded
-    if (lower_bound->first == timestamp) {
+    if (lower_bound->first == timestamp)
+    {
       found_older = true;
-    } else if (lower_bound != poses.begin()) {
+    }
+    else if (lower_bound != poses.begin())
+    {
       --lower_bound;
       found_older = true;
     }
   }
 
-  if (upper_bound != poses.end()) {
+  if (upper_bound != poses.end())
+  {
     found_newer = true;
   }
 
   // If we found the older one, set it
-  if (found_older) {
+  if (found_older)
+  {
     t0 = lower_bound->first;
     pose0 = lower_bound->second;
   }
 
   // If we found the newest one, set it
-  if (found_newer) {
+  if (found_newer)
+  {
     t1 = upper_bound->first;
     pose1 = upper_bound->second;
   }
@@ -298,10 +315,10 @@ bool BsplineSE3::find_bounding_poses(const double timestamp, const AlignedEigenM
   return (found_older && found_newer);
 }
 
-bool BsplineSE3::find_bounding_control_points(const double timestamp, const AlignedEigenMat4d &poses, double &t0, Eigen::Matrix4d &pose0,
-                                              double &t1, Eigen::Matrix4d &pose1, double &t2, Eigen::Matrix4d &pose2, double &t3,
-                                              Eigen::Matrix4d &pose3) {
-
+bool BsplineSE3::find_bounding_control_points(const double timestamp, const AlignedEigenMat4d& poses, double& t0,
+                                              Eigen::Matrix4d& pose0, double& t1, Eigen::Matrix4d& pose1, double& t2,
+                                              Eigen::Matrix4d& pose2, double& t3, Eigen::Matrix4d& pose3)
+{
   // Set the default values
   t0 = -1;
   t1 = -1;
@@ -324,7 +341,8 @@ bool BsplineSE3::find_bounding_control_points(const double timestamp, const Alig
   auto iter_t2 = poses.find(t2);
 
   // Check that t1 is not the first timestamp
-  if (iter_t1 == poses.begin()) {
+  if (iter_t1 == poses.begin())
+  {
     return false;
   }
 
@@ -334,7 +352,8 @@ bool BsplineSE3::find_bounding_control_points(const double timestamp, const Alig
   auto iter_t3 = ++iter_t2;
 
   // Check that it is valid
-  if (iter_t3 == poses.end()) {
+  if (iter_t3 == poses.end())
+  {
     return false;
   }
 
@@ -347,7 +366,8 @@ bool BsplineSE3::find_bounding_control_points(const double timestamp, const Alig
   pose3 = iter_t3->second;
 
   // Assert the timestamps
-  if (success) {
+  if (success)
+  {
     assert(t0 < t1);
     assert(t1 < t2);
     assert(t2 < t3);

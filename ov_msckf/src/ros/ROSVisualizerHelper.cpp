@@ -32,8 +32,8 @@ using namespace ov_msckf;
 using namespace std;
 
 #if ROS_AVAILABLE == 1
-sensor_msgs::PointCloud2 ROSVisualizerHelper::get_ros_pointcloud(const std::vector<Eigen::Vector3d> &feats) {
-
+sensor_msgs::PointCloud2 ROSVisualizerHelper::get_ros_pointcloud(const std::vector<Eigen::Vector3d>& feats)
+{
   // Declare message and sizes
   sensor_msgs::PointCloud2 cloud;
   cloud.header.frame_id = "global";
@@ -41,7 +41,7 @@ sensor_msgs::PointCloud2 ROSVisualizerHelper::get_ros_pointcloud(const std::vect
   cloud.width = 3 * feats.size();
   cloud.height = 1;
   cloud.is_bigendian = false;
-  cloud.is_dense = false; // there may be invalid points
+  cloud.is_dense = false;  // there may be invalid points
 
   // Setup pointcloud fields
   sensor_msgs::PointCloud2Modifier modifier(cloud);
@@ -54,7 +54,8 @@ sensor_msgs::PointCloud2 ROSVisualizerHelper::get_ros_pointcloud(const std::vect
   sensor_msgs::PointCloud2Iterator<float> out_z(cloud, "z");
 
   // Fill our iterators
-  for (const auto &pt : feats) {
+  for (const auto& pt : feats)
+  {
     *out_x = (float)pt(0);
     ++out_x;
     *out_y = (float)pt(1);
@@ -66,12 +67,14 @@ sensor_msgs::PointCloud2 ROSVisualizerHelper::get_ros_pointcloud(const std::vect
   return cloud;
 }
 
-tf::StampedTransform ROSVisualizerHelper::get_stamped_transform_from_pose(const std::shared_ptr<ov_type::PoseJPL> &pose, bool flip_trans) {
-
+tf::StampedTransform ROSVisualizerHelper::get_stamped_transform_from_pose(const std::shared_ptr<ov_type::PoseJPL>& pose,
+                                                                          bool flip_trans)
+{
   // Need to flip the transform to the IMU frame
   Eigen::Vector4d q_ItoC = pose->quat();
   Eigen::Vector3d p_CinI = pose->pos();
-  if (flip_trans) {
+  if (flip_trans)
+  {
     p_CinI = -pose->Rot().transpose() * pose->pos();
   }
 
@@ -90,8 +93,8 @@ tf::StampedTransform ROSVisualizerHelper::get_stamped_transform_from_pose(const 
 
 #if ROS_AVAILABLE == 2
 sensor_msgs::msg::PointCloud2 ROSVisualizerHelper::get_ros_pointcloud(std::shared_ptr<rclcpp::Node> node,
-                                                                      const std::vector<Eigen::Vector3d> &feats) {
-
+                                                                      const std::vector<Eigen::Vector3d>& feats)
+{
   // Declare message and sizes
   sensor_msgs::msg::PointCloud2 cloud;
   cloud.header.frame_id = "global";
@@ -99,7 +102,7 @@ sensor_msgs::msg::PointCloud2 ROSVisualizerHelper::get_ros_pointcloud(std::share
   cloud.width = 3 * feats.size();
   cloud.height = 1;
   cloud.is_bigendian = false;
-  cloud.is_dense = false; // there may be invalid points
+  cloud.is_dense = false;  // there may be invalid points
 
   // Setup pointcloud fields
   sensor_msgs::PointCloud2Modifier modifier(cloud);
@@ -112,7 +115,8 @@ sensor_msgs::msg::PointCloud2 ROSVisualizerHelper::get_ros_pointcloud(std::share
   sensor_msgs::PointCloud2Iterator<float> out_z(cloud, "z");
 
   // Fill our iterators
-  for (const auto &pt : feats) {
+  for (const auto& pt : feats)
+  {
     *out_x = (float)pt(0);
     ++out_x;
     *out_y = (float)pt(1);
@@ -124,14 +128,14 @@ sensor_msgs::msg::PointCloud2 ROSVisualizerHelper::get_ros_pointcloud(std::share
   return cloud;
 }
 
-geometry_msgs::msg::TransformStamped ROSVisualizerHelper::get_stamped_transform_from_pose(std::shared_ptr<rclcpp::Node> node,
-                                                                                          const std::shared_ptr<ov_type::PoseJPL> &pose,
-                                                                                          bool flip_trans) {
-
+geometry_msgs::msg::TransformStamped ROSVisualizerHelper::get_stamped_transform_from_pose(
+    std::shared_ptr<rclcpp::Node> node, const std::shared_ptr<ov_type::PoseJPL>& pose, bool flip_trans)
+{
   // Need to flip the transform to the IMU frame
   Eigen::Vector4d q_ItoC = pose->quat();
   Eigen::Vector3d p_CinI = pose->pos();
-  if (flip_trans) {
+  if (flip_trans)
+  {
     p_CinI = -pose->Rot().transpose() * pose->pos();
   }
 
@@ -152,22 +156,23 @@ geometry_msgs::msg::TransformStamped ROSVisualizerHelper::get_stamped_transform_
 #endif
 
 void ROSVisualizerHelper::sim_save_total_state_to_file(std::shared_ptr<State> state, std::shared_ptr<Simulator> sim,
-                                                       std::ofstream &of_state_est, std::ofstream &of_state_std,
-                                                       std::ofstream &of_state_gt) {
-
+                                                       std::ofstream& of_state_est, std::ofstream& of_state_std,
+                                                       std::ofstream& of_state_gt)
+{
   // We want to publish in the IMU clock frame
   // The timestamp in the state will be the last camera time
   double t_ItoC = state->_calib_dt_CAMtoIMU->value()(0);
   double timestamp_inI = state->_timestamp + t_ItoC;
 
   // If we have our simulator, then save it to our groundtruth file
-  if (sim != nullptr) {
-
+  if (sim != nullptr)
+  {
     // Note that we get the true time in the IMU clock frame
     // NOTE: we record both the estimate and groundtruth with the same "true" timestamp if we are doing simulation
     Eigen::Matrix<double, 17, 1> state_gt;
     timestamp_inI = state->_timestamp + sim->get_true_parameters().calib_camimu_dt;
-    if (sim->get_state(timestamp_inI, state_gt)) {
+    if (sim->get_state(timestamp_inI, state_gt))
+    {
       // STATE: write current true state
       of_state_gt.precision(5);
       of_state_gt.setf(std::ios::fixed, std::ios::floatfield);
@@ -188,7 +193,8 @@ void ROSVisualizerHelper::sim_save_total_state_to_file(std::shared_ptr<State> st
 
       // CALIBRATION: Write the camera values to file
       assert(state->_options.num_cameras == sim->get_true_parameters().state_options.num_cameras);
-      for (int i = 0; i < state->_options.num_cameras; i++) {
+      for (int i = 0; i < state->_options.num_cameras; i++)
+      {
         // Intrinsics values
         of_state_gt << sim->get_true_parameters().camera_intrinsics.at(i)->get_value()(0) << " "
                     << sim->get_true_parameters().camera_intrinsics.at(i)->get_value()(1) << " "
@@ -199,11 +205,13 @@ void ROSVisualizerHelper::sim_save_total_state_to_file(std::shared_ptr<State> st
                     << sim->get_true_parameters().camera_intrinsics.at(i)->get_value()(6) << " "
                     << sim->get_true_parameters().camera_intrinsics.at(i)->get_value()(7) << " ";
         // Rotation and position
-        of_state_gt << sim->get_true_parameters().camera_extrinsics.at(i)(0) << " " << sim->get_true_parameters().camera_extrinsics.at(i)(1)
-                    << " " << sim->get_true_parameters().camera_extrinsics.at(i)(2) << " "
+        of_state_gt << sim->get_true_parameters().camera_extrinsics.at(i)(0) << " "
+                    << sim->get_true_parameters().camera_extrinsics.at(i)(1) << " "
+                    << sim->get_true_parameters().camera_extrinsics.at(i)(2) << " "
                     << sim->get_true_parameters().camera_extrinsics.at(i)(3) << " ";
-        of_state_gt << sim->get_true_parameters().camera_extrinsics.at(i)(4) << " " << sim->get_true_parameters().camera_extrinsics.at(i)(5)
-                    << " " << sim->get_true_parameters().camera_extrinsics.at(i)(6) << " ";
+        of_state_gt << sim->get_true_parameters().camera_extrinsics.at(i)(4) << " "
+                    << sim->get_true_parameters().camera_extrinsics.at(i)(5) << " "
+                    << sim->get_true_parameters().camera_extrinsics.at(i)(6) << " ";
       }
 
       // New line
@@ -223,8 +231,8 @@ void ROSVisualizerHelper::sim_save_total_state_to_file(std::shared_ptr<State> st
   of_state_est.setf(std::ios::fixed, std::ios::floatfield);
   of_state_est << timestamp_inI << " ";
   of_state_est.precision(6);
-  of_state_est << state->_imu->quat()(0) << " " << state->_imu->quat()(1) << " " << state->_imu->quat()(2) << " " << state->_imu->quat()(3)
-               << " ";
+  of_state_est << state->_imu->quat()(0) << " " << state->_imu->quat()(1) << " " << state->_imu->quat()(2) << " "
+               << state->_imu->quat()(3) << " ";
   of_state_est << state->_imu->pos()(0) << " " << state->_imu->pos()(1) << " " << state->_imu->pos()(2) << " ";
   of_state_est << state->_imu->vel()(0) << " " << state->_imu->vel()(1) << " " << state->_imu->vel()(2) << " ";
   of_state_est << state->_imu->bias_g()(0) << " " << state->_imu->bias_g()(1) << " " << state->_imu->bias_g()(2) << " ";
@@ -236,15 +244,20 @@ void ROSVisualizerHelper::sim_save_total_state_to_file(std::shared_ptr<State> st
   of_state_std << timestamp_inI << " ";
   of_state_std.precision(6);
   int id = state->_imu->q()->id();
-  of_state_std << std::sqrt(cov(id + 0, id + 0)) << " " << std::sqrt(cov(id + 1, id + 1)) << " " << std::sqrt(cov(id + 2, id + 2)) << " ";
+  of_state_std << std::sqrt(cov(id + 0, id + 0)) << " " << std::sqrt(cov(id + 1, id + 1)) << " "
+               << std::sqrt(cov(id + 2, id + 2)) << " ";
   id = state->_imu->p()->id();
-  of_state_std << std::sqrt(cov(id + 0, id + 0)) << " " << std::sqrt(cov(id + 1, id + 1)) << " " << std::sqrt(cov(id + 2, id + 2)) << " ";
+  of_state_std << std::sqrt(cov(id + 0, id + 0)) << " " << std::sqrt(cov(id + 1, id + 1)) << " "
+               << std::sqrt(cov(id + 2, id + 2)) << " ";
   id = state->_imu->v()->id();
-  of_state_std << std::sqrt(cov(id + 0, id + 0)) << " " << std::sqrt(cov(id + 1, id + 1)) << " " << std::sqrt(cov(id + 2, id + 2)) << " ";
+  of_state_std << std::sqrt(cov(id + 0, id + 0)) << " " << std::sqrt(cov(id + 1, id + 1)) << " "
+               << std::sqrt(cov(id + 2, id + 2)) << " ";
   id = state->_imu->bg()->id();
-  of_state_std << std::sqrt(cov(id + 0, id + 0)) << " " << std::sqrt(cov(id + 1, id + 1)) << " " << std::sqrt(cov(id + 2, id + 2)) << " ";
+  of_state_std << std::sqrt(cov(id + 0, id + 0)) << " " << std::sqrt(cov(id + 1, id + 1)) << " "
+               << std::sqrt(cov(id + 2, id + 2)) << " ";
   id = state->_imu->ba()->id();
-  of_state_std << std::sqrt(cov(id + 0, id + 0)) << " " << std::sqrt(cov(id + 1, id + 1)) << " " << std::sqrt(cov(id + 2, id + 2)) << " ";
+  of_state_std << std::sqrt(cov(id + 0, id + 0)) << " " << std::sqrt(cov(id + 1, id + 1)) << " "
+               << std::sqrt(cov(id + 2, id + 2)) << " ";
 
   // TIMEOFF: Get the current estimate time offset
   of_state_est.precision(7);
@@ -254,9 +267,12 @@ void ROSVisualizerHelper::sim_save_total_state_to_file(std::shared_ptr<State> st
   of_state_est.precision(6);
 
   // TIMEOFF: Get the current std values
-  if (state->_options.do_calib_camera_timeoffset) {
+  if (state->_options.do_calib_camera_timeoffset)
+  {
     of_state_std << std::sqrt(cov(state->_calib_dt_CAMtoIMU->id(), state->_calib_dt_CAMtoIMU->id())) << " ";
-  } else {
+  }
+  else
+  {
     of_state_std << 0.0 << " ";
   }
   of_state_std.precision(0);
@@ -264,7 +280,8 @@ void ROSVisualizerHelper::sim_save_total_state_to_file(std::shared_ptr<State> st
   of_state_std.precision(6);
 
   // CALIBRATION: Write the camera values to file
-  for (int i = 0; i < state->_options.num_cameras; i++) {
+  for (int i = 0; i < state->_options.num_cameras; i++)
+  {
     // Intrinsics values
     of_state_est << state->_cam_intrinsics.at(i)->value()(0) << " " << state->_cam_intrinsics.at(i)->value()(1) << " "
                  << state->_cam_intrinsics.at(i)->value()(2) << " " << state->_cam_intrinsics.at(i)->value()(3) << " ";
@@ -276,23 +293,31 @@ void ROSVisualizerHelper::sim_save_total_state_to_file(std::shared_ptr<State> st
     of_state_est << state->_calib_IMUtoCAM.at(i)->value()(4) << " " << state->_calib_IMUtoCAM.at(i)->value()(5) << " "
                  << state->_calib_IMUtoCAM.at(i)->value()(6) << " ";
     // Covariance
-    if (state->_options.do_calib_camera_intrinsics) {
+    if (state->_options.do_calib_camera_intrinsics)
+    {
       int index_in = state->_cam_intrinsics.at(i)->id();
-      of_state_std << std::sqrt(cov(index_in + 0, index_in + 0)) << " " << std::sqrt(cov(index_in + 1, index_in + 1)) << " "
-                   << std::sqrt(cov(index_in + 2, index_in + 2)) << " " << std::sqrt(cov(index_in + 3, index_in + 3)) << " ";
-      of_state_std << std::sqrt(cov(index_in + 4, index_in + 4)) << " " << std::sqrt(cov(index_in + 5, index_in + 5)) << " "
-                   << std::sqrt(cov(index_in + 6, index_in + 6)) << " " << std::sqrt(cov(index_in + 7, index_in + 7)) << " ";
-    } else {
+      of_state_std << std::sqrt(cov(index_in + 0, index_in + 0)) << " " << std::sqrt(cov(index_in + 1, index_in + 1))
+                   << " " << std::sqrt(cov(index_in + 2, index_in + 2)) << " "
+                   << std::sqrt(cov(index_in + 3, index_in + 3)) << " ";
+      of_state_std << std::sqrt(cov(index_in + 4, index_in + 4)) << " " << std::sqrt(cov(index_in + 5, index_in + 5))
+                   << " " << std::sqrt(cov(index_in + 6, index_in + 6)) << " "
+                   << std::sqrt(cov(index_in + 7, index_in + 7)) << " ";
+    }
+    else
+    {
       of_state_std << 0.0 << " " << 0.0 << " " << 0.0 << " " << 0.0 << " ";
       of_state_std << 0.0 << " " << 0.0 << " " << 0.0 << " " << 0.0 << " ";
     }
-    if (state->_options.do_calib_camera_pose) {
+    if (state->_options.do_calib_camera_pose)
+    {
       int index_ex = state->_calib_IMUtoCAM.at(i)->id();
-      of_state_std << std::sqrt(cov(index_ex + 0, index_ex + 0)) << " " << std::sqrt(cov(index_ex + 1, index_ex + 1)) << " "
-                   << std::sqrt(cov(index_ex + 2, index_ex + 2)) << " ";
-      of_state_std << std::sqrt(cov(index_ex + 3, index_ex + 3)) << " " << std::sqrt(cov(index_ex + 4, index_ex + 4)) << " "
-                   << std::sqrt(cov(index_ex + 5, index_ex + 5)) << " ";
-    } else {
+      of_state_std << std::sqrt(cov(index_ex + 0, index_ex + 0)) << " " << std::sqrt(cov(index_ex + 1, index_ex + 1))
+                   << " " << std::sqrt(cov(index_ex + 2, index_ex + 2)) << " ";
+      of_state_std << std::sqrt(cov(index_ex + 3, index_ex + 3)) << " " << std::sqrt(cov(index_ex + 4, index_ex + 4))
+                   << " " << std::sqrt(cov(index_ex + 5, index_ex + 5)) << " ";
+    }
+    else
+    {
       of_state_std << 0.0 << " " << 0.0 << " " << 0.0 << " ";
       of_state_std << 0.0 << " " << 0.0 << " " << 0.0 << " ";
     }

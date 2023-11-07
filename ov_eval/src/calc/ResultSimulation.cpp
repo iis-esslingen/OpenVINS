@@ -23,8 +23,8 @@
 
 using namespace ov_eval;
 
-ResultSimulation::ResultSimulation(std::string path_est, std::string path_std, std::string path_gt) {
-
+ResultSimulation::ResultSimulation(std::string path_est, std::string path_std, std::string path_gt)
+{
   // Load from disk
   Loader::load_simulation(path_est, est_state);
   Loader::load_simulation(path_std, state_cov);
@@ -39,15 +39,15 @@ ResultSimulation::ResultSimulation(std::string path_est, std::string path_std, s
   PRINT_DEBUG("[SIM]: we have %d cameras in total!!\n", (int)est_state.at(0)(18));
 }
 
-void ResultSimulation::plot_state(bool doplotting, double max_time) {
-
+void ResultSimulation::plot_state(bool doplotting, double max_time)
+{
   // Errors for each xyz direction
   Statistics error_ori[3], error_pos[3], error_vel[3], error_bg[3], error_ba[3];
 
   // Calculate the position and orientation error at every timestep
   double start_time = est_state.at(0)(0);
-  for (size_t i = 0; i < est_state.size(); i++) {
-
+  for (size_t i = 0; i < est_state.size(); i++)
+  {
     // Exit if we have reached our max time
     if ((est_state.at(i)(0) - start_time) > max_time)
       break;
@@ -57,10 +57,11 @@ void ResultSimulation::plot_state(bool doplotting, double max_time) {
 
     // Calculate orientation error
     // NOTE: we define our error as e_R = -Log(R*Rhat^T)
-    Eigen::Matrix3d e_R =
-        ov_core::quat_2_Rot(gt_state.at(i).block(1, 0, 4, 1)) * ov_core::quat_2_Rot(est_state.at(i).block(1, 0, 4, 1)).transpose();
+    Eigen::Matrix3d e_R = ov_core::quat_2_Rot(gt_state.at(i).block(1, 0, 4, 1)) *
+                          ov_core::quat_2_Rot(est_state.at(i).block(1, 0, 4, 1)).transpose();
     Eigen::Vector3d ori_err = -180.0 / M_PI * ov_core::log_so3(e_R);
-    for (int j = 0; j < 3; j++) {
+    for (int j = 0; j < 3; j++)
+    {
       error_ori[j].timestamps.push_back(est_state.at(i)(0));
       error_ori[j].values.push_back(ori_err(j));
       error_ori[j].values_bound.push_back(3 * 180.0 / M_PI * state_cov.at(i)(1 + j));
@@ -69,7 +70,8 @@ void ResultSimulation::plot_state(bool doplotting, double max_time) {
 
     // Calculate position error
     Eigen::Vector3d pos_err = gt_state.at(i).block(5, 0, 3, 1) - est_state.at(i).block(5, 0, 3, 1);
-    for (int j = 0; j < 3; j++) {
+    for (int j = 0; j < 3; j++)
+    {
       error_pos[j].timestamps.push_back(est_state.at(i)(0));
       error_pos[j].values.push_back(pos_err(j));
       error_pos[j].values_bound.push_back(3 * state_cov.at(i)(4 + j));
@@ -78,7 +80,8 @@ void ResultSimulation::plot_state(bool doplotting, double max_time) {
 
     // Calculate velocity error
     Eigen::Vector3d vel_err = gt_state.at(i).block(8, 0, 3, 1) - est_state.at(i).block(8, 0, 3, 1);
-    for (int j = 0; j < 3; j++) {
+    for (int j = 0; j < 3; j++)
+    {
       error_vel[j].timestamps.push_back(est_state.at(i)(0));
       error_vel[j].values.push_back(vel_err(j));
       error_vel[j].values_bound.push_back(3 * state_cov.at(i)(7 + j));
@@ -87,7 +90,8 @@ void ResultSimulation::plot_state(bool doplotting, double max_time) {
 
     // Calculate gyro bias error
     Eigen::Vector3d bg_err = gt_state.at(i).block(11, 0, 3, 1) - est_state.at(i).block(11, 0, 3, 1);
-    for (int j = 0; j < 3; j++) {
+    for (int j = 0; j < 3; j++)
+    {
       error_bg[j].timestamps.push_back(est_state.at(i)(0));
       error_bg[j].values.push_back(bg_err(j));
       error_bg[j].values_bound.push_back(3 * state_cov.at(i)(10 + j));
@@ -96,7 +100,8 @@ void ResultSimulation::plot_state(bool doplotting, double max_time) {
 
     // Calculate accel bias error
     Eigen::Vector3d ba_err = gt_state.at(i).block(14, 0, 3, 1) - est_state.at(i).block(14, 0, 3, 1);
-    for (int j = 0; j < 3; j++) {
+    for (int j = 0; j < 3; j++)
+    {
       error_ba[j].timestamps.push_back(est_state.at(i)(0));
       error_ba[j].values.push_back(ba_err(j));
       error_ba[j].values_bound.push_back(3 * state_cov.at(i)(13 + j));
@@ -196,13 +201,13 @@ void ResultSimulation::plot_state(bool doplotting, double max_time) {
 #endif
 }
 
-void ResultSimulation::plot_timeoff(bool doplotting, double max_time) {
-
+void ResultSimulation::plot_timeoff(bool doplotting, double max_time)
+{
   // Calculate the time offset error at every timestep
   Statistics error_time;
   double start_time = est_state.at(0)(0);
-  for (size_t i = 0; i < est_state.size(); i++) {
-
+  for (size_t i = 0; i < est_state.size(); i++)
+  {
     // Exit if we have reached our max time
     if ((est_state.at(i)(0) - start_time) > max_time)
       break;
@@ -211,7 +216,8 @@ void ResultSimulation::plot_timeoff(bool doplotting, double max_time) {
     assert(est_state.at(i)(0) == gt_state.at(i)(0));
 
     // If we are not calibrating then don't plot it!
-    if (state_cov.at(i)(16) == 0.0) {
+    if (state_cov.at(i)(16) == 0.0)
+    {
       PRINT_WARNING(YELLOW "Time offset was not calibrated online, so will not plot...\n" RESET);
       return;
     }
@@ -239,24 +245,27 @@ void ResultSimulation::plot_timeoff(bool doplotting, double max_time) {
   // Zero our time array
   double starttime = (error_time.timestamps.empty()) ? 0 : error_time.timestamps.at(0);
   double endtime = (error_time.timestamps.empty()) ? 0 : error_time.timestamps.at(error_time.timestamps.size() - 1);
-  for (size_t i = 0; i < error_time.timestamps.size(); i++) {
+  for (size_t i = 0; i < error_time.timestamps.size(); i++)
+  {
     error_time.timestamps.at(i) -= starttime;
   }
 
   // Parameters that define the line styles
   std::map<std::string, std::string> params_value, params_bound;
-  params_value.insert({"label", "error"});
-  params_value.insert({"linestyle", "-"});
-  params_value.insert({"color", "blue"});
-  params_bound.insert({"label", "3 sigma bound"});
-  params_bound.insert({"linestyle", "--"});
-  params_bound.insert({"color", "red"});
+  params_value.insert({ "label", "error" });
+  params_value.insert({ "linestyle", "-" });
+  params_value.insert({ "color", "blue" });
+  params_bound.insert({ "label", "3 sigma bound" });
+  params_bound.insert({ "linestyle", "--" });
+  params_bound.insert({ "color", "red" });
 
   // Plot our error value
   matplotlibcpp::plot(error_time.timestamps, error_time.values, params_value);
-  if (!error_time.values_bound.empty()) {
+  if (!error_time.values_bound.empty())
+  {
     matplotlibcpp::plot(error_time.timestamps, error_time.values_bound, params_bound);
-    for (size_t i = 0; i < error_time.timestamps.size(); i++) {
+    for (size_t i = 0; i < error_time.timestamps.size(); i++)
+    {
       error_time.values_bound.at(i) *= -1;
     }
     matplotlibcpp::plot(error_time.timestamps, error_time.values_bound, "r--");
@@ -273,19 +282,22 @@ void ResultSimulation::plot_timeoff(bool doplotting, double max_time) {
 #endif
 }
 
-void ResultSimulation::plot_cam_instrinsics(bool doplotting, double max_time) {
-
+void ResultSimulation::plot_cam_instrinsics(bool doplotting, double max_time)
+{
   // Check that we have cameras
-  if ((int)est_state.at(0)(18) < 1) {
+  if ((int)est_state.at(0)(18) < 1)
+  {
     PRINT_ERROR(YELLOW "You need at least one camera to plot intrinsics...\n" RESET);
     return;
   }
 
   // Camera intrinsics statistic storage
   std::vector<std::vector<Statistics>> error_cam_k, error_cam_d;
-  for (int i = 0; i < (int)est_state.at(0)(18); i++) {
+  for (int i = 0; i < (int)est_state.at(0)(18); i++)
+  {
     std::vector<Statistics> temp1, temp2;
-    for (int j = 0; j < 4; j++) {
+    for (int j = 0; j < 4; j++)
+    {
       temp1.push_back(Statistics());
       temp2.push_back(Statistics());
     }
@@ -295,8 +307,8 @@ void ResultSimulation::plot_cam_instrinsics(bool doplotting, double max_time) {
 
   // Loop through and calculate error
   double start_time = est_state.at(0)(0);
-  for (size_t i = 0; i < est_state.size(); i++) {
-
+  for (size_t i = 0; i < est_state.size(); i++)
+  {
     // Exit if we have reached our max time
     if ((est_state.at(i)(0) - start_time) > max_time)
       break;
@@ -305,19 +317,23 @@ void ResultSimulation::plot_cam_instrinsics(bool doplotting, double max_time) {
     assert(est_state.at(i)(0) == gt_state.at(i)(0));
 
     // If we are not calibrating then don't plot it!
-    if (state_cov.at(i)(18) == 0.0) {
+    if (state_cov.at(i)(18) == 0.0)
+    {
       PRINT_WARNING(YELLOW "Camera intrinsics not calibrated online, so will not plot...\n" RESET);
       return;
     }
 
     // Loop through each camera and calculate error
-    for (int n = 0; n < (int)est_state.at(0)(18); n++) {
-      for (int j = 0; j < 4; j++) {
+    for (int n = 0; n < (int)est_state.at(0)(18); n++)
+    {
+      for (int j = 0; j < 4; j++)
+      {
         error_cam_k.at(n).at(j).timestamps.push_back(est_state.at(i)(0));
         error_cam_k.at(n).at(j).values.push_back(est_state.at(i)(19 + 15 * n + j) - gt_state.at(i)(19 + 15 * n + j));
         error_cam_k.at(n).at(j).values_bound.push_back(3 * state_cov.at(i)(18 + 14 * n + j));
         error_cam_d.at(n).at(j).timestamps.push_back(est_state.at(i)(0));
-        error_cam_d.at(n).at(j).values.push_back(est_state.at(i)(19 + 4 + 15 * n + j) - gt_state.at(i)(19 + 4 + 15 * n + j));
+        error_cam_d.at(n).at(j).values.push_back(est_state.at(i)(19 + 4 + 15 * n + j) -
+                                                 gt_state.at(i)(19 + 4 + 15 * n + j));
         error_cam_d.at(n).at(j).values_bound.push_back(3 * state_cov.at(i)(18 + 4 + 14 * n + j));
       }
     }
@@ -333,16 +349,18 @@ void ResultSimulation::plot_cam_instrinsics(bool doplotting, double max_time) {
 #else
 
   // Plot line colors
-  std::vector<std::string> colors = {"blue", "red", "black", "green", "cyan", "magenta"};
+  std::vector<std::string> colors = { "blue", "red", "black", "green", "cyan", "magenta" };
   assert(error_cam_k.size() <= colors.size());
 
   //=====================================================
   // Plot this figure
   matplotlibcpp::figure_size(800, 600);
-  for (int n = 0; n < (int)est_state.at(0)(18); n++) {
+  for (int n = 0; n < (int)est_state.at(0)(18); n++)
+  {
     std::string estcolor = ((int)est_state.at(0)(18) == 1) ? "blue" : colors.at(n);
     std::string stdcolor = ((int)est_state.at(0)(18) == 1) ? "red" : colors.at(n);
-    plot_4errors(error_cam_k.at(n)[0], error_cam_k.at(n)[1], error_cam_k.at(n)[2], error_cam_k.at(n)[3], colors.at(n), stdcolor);
+    plot_4errors(error_cam_k.at(n)[0], error_cam_k.at(n)[1], error_cam_k.at(n)[2], error_cam_k.at(n)[3], colors.at(n),
+                 stdcolor);
   }
 
   // Update the title and axis labels
@@ -362,10 +380,12 @@ void ResultSimulation::plot_cam_instrinsics(bool doplotting, double max_time) {
   //=====================================================
   // Plot this figure
   matplotlibcpp::figure_size(800, 600);
-  for (int n = 0; n < (int)est_state.at(0)(18); n++) {
+  for (int n = 0; n < (int)est_state.at(0)(18); n++)
+  {
     std::string estcolor = ((int)est_state.at(0)(18) == 1) ? "blue" : colors.at(n);
     std::string stdcolor = ((int)est_state.at(0)(18) == 1) ? "red" : colors.at(n);
-    plot_4errors(error_cam_d.at(n)[0], error_cam_d.at(n)[1], error_cam_d.at(n)[2], error_cam_d.at(n)[3], estcolor, stdcolor);
+    plot_4errors(error_cam_d.at(n)[0], error_cam_d.at(n)[1], error_cam_d.at(n)[2], error_cam_d.at(n)[3], estcolor,
+                 stdcolor);
   }
 
   // Update the title and axis labels
@@ -385,19 +405,22 @@ void ResultSimulation::plot_cam_instrinsics(bool doplotting, double max_time) {
 #endif
 }
 
-void ResultSimulation::plot_cam_extrinsics(bool doplotting, double max_time) {
-
+void ResultSimulation::plot_cam_extrinsics(bool doplotting, double max_time)
+{
   // Check that we have cameras
-  if ((int)est_state.at(0)(18) < 1) {
+  if ((int)est_state.at(0)(18) < 1)
+  {
     PRINT_ERROR(YELLOW "You need at least one camera to plot intrinsics...\n" RESET);
     return;
   }
 
   // Camera extrinsics statistic storage
   std::vector<std::vector<Statistics>> error_cam_ori, error_cam_pos;
-  for (int i = 0; i < (int)est_state.at(0)(18); i++) {
+  for (int i = 0; i < (int)est_state.at(0)(18); i++)
+  {
     std::vector<Statistics> temp1, temp2;
-    for (int j = 0; j < 3; j++) {
+    for (int j = 0; j < 3; j++)
+    {
       temp1.push_back(Statistics());
       temp2.push_back(Statistics());
     }
@@ -407,8 +430,8 @@ void ResultSimulation::plot_cam_extrinsics(bool doplotting, double max_time) {
 
   // Loop through and calculate error
   double start_time = est_state.at(0)(0);
-  for (size_t i = 0; i < est_state.size(); i++) {
-
+  for (size_t i = 0; i < est_state.size(); i++)
+  {
     // Exit if we have reached our max time
     if ((est_state.at(i)(0) - start_time) > max_time)
       break;
@@ -417,25 +440,29 @@ void ResultSimulation::plot_cam_extrinsics(bool doplotting, double max_time) {
     assert(est_state.at(i)(0) == gt_state.at(i)(0));
 
     // If we are not calibrating then don't plot it!
-    if (state_cov.at(i)(26) == 0.0) {
+    if (state_cov.at(i)(26) == 0.0)
+    {
       PRINT_WARNING(YELLOW "Camera extrinsics not calibrated online, so will not plot...\n" RESET);
       return;
     }
 
     // Loop through each camera and calculate error
-    for (int n = 0; n < (int)est_state.at(0)(18); n++) {
+    for (int n = 0; n < (int)est_state.at(0)(18); n++)
+    {
       // NOTE: we define our error as e_R = -Log(R*Rhat^T)
       Eigen::Matrix3d e_R = ov_core::quat_2_Rot(gt_state.at(i).block(27 + 15 * n, 0, 4, 1)) *
                             ov_core::quat_2_Rot(est_state.at(i).block(27 + 15 * n, 0, 4, 1)).transpose();
       Eigen::Vector3d ori_err = -180.0 / M_PI * ov_core::log_so3(e_R);
       // Eigen::Matrix3d e_R = Math::quat_2_Rot(est_state.at(i).block(27+15*n,0,4,1)).transpose() *
       // Math::quat_2_Rot(gt_state.at(i).block(27+15*n,0,4,1)); Eigen::Vector3d ori_err = 180.0/M_PI*Math::log_so3(e_R);
-      for (int j = 0; j < 3; j++) {
+      for (int j = 0; j < 3; j++)
+      {
         error_cam_ori.at(n).at(j).timestamps.push_back(est_state.at(i)(0));
         error_cam_ori.at(n).at(j).values.push_back(ori_err(j));
         error_cam_ori.at(n).at(j).values_bound.push_back(3 * 180.0 / M_PI * state_cov.at(i)(26 + 14 * n + j));
         error_cam_pos.at(n).at(j).timestamps.push_back(est_state.at(i)(0));
-        error_cam_pos.at(n).at(j).values.push_back(est_state.at(i)(27 + 4 + 15 * n + j) - gt_state.at(i)(27 + 4 + 15 * n + j));
+        error_cam_pos.at(n).at(j).values.push_back(est_state.at(i)(27 + 4 + 15 * n + j) -
+                                                   gt_state.at(i)(27 + 4 + 15 * n + j));
         error_cam_pos.at(n).at(j).values_bound.push_back(3 * state_cov.at(i)(26 + 3 + 14 * n + j));
       }
     }
@@ -451,13 +478,14 @@ void ResultSimulation::plot_cam_extrinsics(bool doplotting, double max_time) {
 #else
 
   // Plot line colors
-  std::vector<std::string> colors = {"blue", "red", "black", "green", "cyan", "magenta"};
+  std::vector<std::string> colors = { "blue", "red", "black", "green", "cyan", "magenta" };
   assert(error_cam_ori.size() <= colors.size());
 
   //=====================================================
   // Plot this figure
   matplotlibcpp::figure_size(800, 500);
-  for (int n = 0; n < (int)est_state.at(0)(18); n++) {
+  for (int n = 0; n < (int)est_state.at(0)(18); n++)
+  {
     std::string estcolor = ((int)est_state.at(0)(18) == 1) ? "blue" : colors.at(n);
     std::string stdcolor = ((int)est_state.at(0)(18) == 1) ? "red" : colors.at(n);
     plot_3errors(error_cam_ori.at(n)[0], error_cam_ori.at(n)[1], error_cam_ori.at(n)[2], colors.at(n), stdcolor);
@@ -478,7 +506,8 @@ void ResultSimulation::plot_cam_extrinsics(bool doplotting, double max_time) {
   //=====================================================
   // Plot this figure
   matplotlibcpp::figure_size(800, 500);
-  for (int n = 0; n < (int)est_state.at(0)(18); n++) {
+  for (int n = 0; n < (int)est_state.at(0)(18); n++)
+  {
     std::string estcolor = ((int)est_state.at(0)(18) == 1) ? "blue" : colors.at(n);
     std::string stdcolor = ((int)est_state.at(0)(18) == 1) ? "red" : colors.at(n);
     plot_3errors(error_cam_pos.at(n)[0], error_cam_pos.at(n)[1], error_cam_pos.at(n)[2], estcolor, stdcolor);

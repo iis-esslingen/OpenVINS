@@ -30,10 +30,12 @@
 
 using namespace ov_core;
 
-void TrackDescriptor::feed_new_camera(const CameraData &message) {
-
+void TrackDescriptor::feed_new_camera(const CameraData& message)
+{
   // Error check that we have all the data
-  if (message.sensor_ids.empty() || message.sensor_ids.size() != message.images.size() || message.images.size() != message.masks.size()) {
+  if (message.sensor_ids.empty() || message.sensor_ids.size() != message.images.size() ||
+      message.images.size() != message.masks.size())
+  {
     PRINT_ERROR(RED "[ERROR]: MESSAGE DATA SIZES DO NOT MATCH OR EMPTY!!!\n" RESET);
     PRINT_ERROR(RED "[ERROR]:   - message.sensor_ids.size() = %zu\n" RESET, message.sensor_ids.size());
     PRINT_ERROR(RED "[ERROR]:   - message.images.size() = %zu\n" RESET, message.images.size());
@@ -44,24 +46,33 @@ void TrackDescriptor::feed_new_camera(const CameraData &message) {
   // Either call our stereo or monocular version
   // If we are doing binocular tracking, then we should parallize our tracking
   size_t num_images = message.images.size();
-  if (num_images == 1) {
+  if (num_images == 1)
+  {
     feed_monocular(message, 0);
-  } else if (num_images == 2 && use_stereo) {
+  }
+  else if (num_images == 2 && use_stereo)
+  {
     feed_stereo(message, 0, 1);
-  } else if (!use_stereo) {
-    parallel_for_(cv::Range(0, (int)num_images), LambdaBody([&](const cv::Range &range) {
-                    for (int i = range.start; i < range.end; i++) {
+  }
+  else if (!use_stereo)
+  {
+    parallel_for_(cv::Range(0, (int)num_images), LambdaBody([&](const cv::Range& range) {
+                    for (int i = range.start; i < range.end; i++)
+                    {
                       feed_monocular(message, i);
                     }
                   }));
-  } else {
-    PRINT_ERROR(RED "[ERROR]: invalid number of images passed %zu, we only support mono or stereo tracking", num_images);
+  }
+  else
+  {
+    PRINT_ERROR(RED "[ERROR]: invalid number of images passed %zu, we only support mono or stereo tracking",
+                num_images);
     std::exit(EXIT_FAILURE);
   }
 }
 
-void TrackDescriptor::feed_monocular(const CameraData &message, size_t msg_id) {
-
+void TrackDescriptor::feed_monocular(const CameraData& message, size_t msg_id)
+{
   // Start timing
   rT1 = boost::posix_time::microsec_clock::local_time();
 
@@ -71,20 +82,26 @@ void TrackDescriptor::feed_monocular(const CameraData &message, size_t msg_id) {
 
   // Histogram equalize
   cv::Mat img, mask;
-  if (histogram_method == HistogramMethod::HISTOGRAM) {
+  if (histogram_method == HistogramMethod::HISTOGRAM)
+  {
     cv::equalizeHist(message.images.at(msg_id), img);
-  } else if (histogram_method == HistogramMethod::CLAHE) {
+  }
+  else if (histogram_method == HistogramMethod::CLAHE)
+  {
     double eq_clip_limit = 10.0;
     cv::Size eq_win_size = cv::Size(8, 8);
     cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE(eq_clip_limit, eq_win_size);
     clahe->apply(message.images.at(msg_id), img);
-  } else {
+  }
+  else
+  {
     img = message.images.at(msg_id);
   }
   mask = message.masks.at(msg_id);
 
   // If we are the first frame (or have lost tracking), initialize our descriptors
-  if (pts_last.find(cam_id) == pts_last.end() || pts_last[cam_id].empty()) {
+  if (pts_last.find(cam_id) == pts_last.end() || pts_last[cam_id].empty())
+  {
     std::vector<cv::KeyPoint> good_left;
     std::vector<size_t> good_ids_left;
     cv::Mat good_desc_left;
@@ -125,12 +142,14 @@ void TrackDescriptor::feed_monocular(const CameraData &message, size_t msg_id) {
   // Loop through all current left to right points
   // We want to see if any of theses have matches to the previous frame
   // If we have a match new->old then we want to use that ID instead of the new one
-  for (size_t i = 0; i < pts_new.size(); i++) {
-
+  for (size_t i = 0; i < pts_new.size(); i++)
+  {
     // Loop through all left matches, and find the old "train" id
     int idll = -1;
-    for (size_t j = 0; j < matches_ll.size(); j++) {
-      if (matches_ll[j].trainIdx == (int)i) {
+    for (size_t j = 0; j < matches_ll.size(); j++)
+    {
+      if (matches_ll[j].trainIdx == (int)i)
+      {
         idll = matches_ll[j].queryIdx;
       }
     }
@@ -139,19 +158,24 @@ void TrackDescriptor::feed_monocular(const CameraData &message, size_t msg_id) {
     // Else just append the current feature and its unique ID
     good_left.push_back(pts_new[i]);
     good_desc_left.push_back(desc_new.row((int)i));
-    if (idll != -1) {
+    if (idll != -1)
+    {
       good_ids_left.push_back(ids_last[cam_id][idll]);
       num_tracklast++;
-    } else {
+    }
+    else
+    {
       good_ids_left.push_back(ids_new[i]);
     }
   }
   rT4 = boost::posix_time::microsec_clock::local_time();
 
   // Update our feature database, with theses new observations
-  for (size_t i = 0; i < good_left.size(); i++) {
+  for (size_t i = 0; i < good_left.size(); i++)
+  {
     cv::Point2f npt_l = camera_calib.at(cam_id)->undistort_cv(good_left.at(i).pt);
-    database->update_feature(good_ids_left.at(i), message.timestamp, cam_id, good_left.at(i).pt.x, good_left.at(i).pt.y, npt_l.x, npt_l.y);
+    database->update_feature(good_ids_left.at(i), message.timestamp, cam_id, good_left.at(i).pt.x, good_left.at(i).pt.y,
+                             npt_l.x, npt_l.y);
   }
 
   // Debug info
@@ -177,8 +201,8 @@ void TrackDescriptor::feed_monocular(const CameraData &message, size_t msg_id) {
   PRINT_ALL("[TIME-DESC]: %.4f seconds for total\n", (rT5 - rT1).total_microseconds() * 1e-6);
 }
 
-void TrackDescriptor::feed_stereo(const CameraData &message, size_t msg_id_left, size_t msg_id_right) {
-
+void TrackDescriptor::feed_stereo(const CameraData& message, size_t msg_id_left, size_t msg_id_right)
+{
   // Start timing
   rT1 = boost::posix_time::microsec_clock::local_time();
 
@@ -190,16 +214,21 @@ void TrackDescriptor::feed_stereo(const CameraData &message, size_t msg_id_left,
 
   // Histogram equalize images
   cv::Mat img_left, img_right, mask_left, mask_right;
-  if (histogram_method == HistogramMethod::HISTOGRAM) {
+  if (histogram_method == HistogramMethod::HISTOGRAM)
+  {
     cv::equalizeHist(message.images.at(msg_id_left), img_left);
     cv::equalizeHist(message.images.at(msg_id_right), img_right);
-  } else if (histogram_method == HistogramMethod::CLAHE) {
+  }
+  else if (histogram_method == HistogramMethod::CLAHE)
+  {
     double eq_clip_limit = 10.0;
     cv::Size eq_win_size = cv::Size(8, 8);
     cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE(eq_clip_limit, eq_win_size);
     clahe->apply(message.images.at(msg_id_left), img_left);
     clahe->apply(message.images.at(msg_id_right), img_right);
-  } else {
+  }
+  else
+  {
     img_left = message.images.at(msg_id_left);
     img_right = message.images.at(msg_id_right);
   }
@@ -207,12 +236,13 @@ void TrackDescriptor::feed_stereo(const CameraData &message, size_t msg_id_left,
   mask_right = message.masks.at(msg_id_right);
 
   // If we are the first frame (or have lost tracking), initialize our descriptors
-  if (pts_last[cam_id_left].empty() || pts_last[cam_id_right].empty()) {
+  if (pts_last[cam_id_left].empty() || pts_last[cam_id_right].empty())
+  {
     std::vector<cv::KeyPoint> good_left, good_right;
     std::vector<size_t> good_ids_left, good_ids_right;
     cv::Mat good_desc_left, good_desc_right;
-    perform_detection_stereo(img_left, img_right, mask_left, mask_right, good_left, good_right, good_desc_left, good_desc_right,
-                             cam_id_left, cam_id_right, good_ids_left, good_ids_right);
+    perform_detection_stereo(img_left, img_right, mask_left, mask_right, good_left, good_right, good_desc_left,
+                             good_desc_right, cam_id_left, cam_id_right, good_ids_left, good_ids_right);
     std::lock_guard<std::mutex> lckv(mtx_last_vars);
     img_last[cam_id_left] = img_left;
     img_last[cam_id_right] = img_right;
@@ -233,19 +263,20 @@ void TrackDescriptor::feed_stereo(const CameraData &message, size_t msg_id_left,
   std::vector<size_t> ids_left_new, ids_right_new;
 
   // First, extract new descriptors for this new image
-  perform_detection_stereo(img_left, img_right, mask_left, mask_right, pts_left_new, pts_right_new, desc_left_new, desc_right_new,
-                           cam_id_left, cam_id_right, ids_left_new, ids_right_new);
+  perform_detection_stereo(img_left, img_right, mask_left, mask_right, pts_left_new, pts_right_new, desc_left_new,
+                           desc_right_new, cam_id_left, cam_id_right, ids_left_new, ids_right_new);
   rT2 = boost::posix_time::microsec_clock::local_time();
 
   // Our matches temporally
   std::vector<cv::DMatch> matches_ll, matches_rr;
-  parallel_for_(cv::Range(0, 2), LambdaBody([&](const cv::Range &range) {
-                  for (int i = range.start; i < range.end; i++) {
+  parallel_for_(cv::Range(0, 2), LambdaBody([&](const cv::Range& range) {
+                  for (int i = range.start; i < range.end; i++)
+                  {
                     bool is_left = (i == 0);
                     robust_match(pts_last[is_left ? cam_id_left : cam_id_right], is_left ? pts_left_new : pts_right_new,
-                                 desc_last[is_left ? cam_id_left : cam_id_right], is_left ? desc_left_new : desc_right_new,
-                                 is_left ? cam_id_left : cam_id_right, is_left ? cam_id_left : cam_id_right,
-                                 is_left ? matches_ll : matches_rr);
+                                 desc_last[is_left ? cam_id_left : cam_id_right],
+                                 is_left ? desc_left_new : desc_right_new, is_left ? cam_id_left : cam_id_right,
+                                 is_left ? cam_id_left : cam_id_right, is_left ? matches_ll : matches_rr);
                   }
                 }));
   rT3 = boost::posix_time::microsec_clock::local_time();
@@ -265,20 +296,24 @@ void TrackDescriptor::feed_stereo(const CameraData &message, size_t msg_id_left,
   // Loop through all current left to right points
   // We want to see if any of theses have matches to the previous frame
   // If we have a match new->old then we want to use that ID instead of the new one
-  for (size_t i = 0; i < pts_left_new.size(); i++) {
-
+  for (size_t i = 0; i < pts_left_new.size(); i++)
+  {
     // Loop through all left matches, and find the old "train" id
     int idll = -1;
-    for (size_t j = 0; j < matches_ll.size(); j++) {
-      if (matches_ll[j].trainIdx == (int)i) {
+    for (size_t j = 0; j < matches_ll.size(); j++)
+    {
+      if (matches_ll[j].trainIdx == (int)i)
+      {
         idll = matches_ll[j].queryIdx;
       }
     }
 
     // Loop through all left matches, and find the old "train" id
     int idrr = -1;
-    for (size_t j = 0; j < matches_rr.size(); j++) {
-      if (matches_rr[j].trainIdx == (int)i) {
+    for (size_t j = 0; j < matches_rr.size(); j++)
+    {
+      if (matches_rr[j].trainIdx == (int)i)
+      {
         idrr = matches_rr[j].queryIdx;
       }
     }
@@ -286,7 +321,8 @@ void TrackDescriptor::feed_stereo(const CameraData &message, size_t msg_id_left,
     // If we found a good stereo track from left to left, and right to right
     // Then lets replace the current ID with the old ID
     // We also check that we are linked to the same past ID value
-    if (idll != -1 && idrr != -1 && ids_last[cam_id_left][idll] == ids_last[cam_id_right][idrr]) {
+    if (idll != -1 && idrr != -1 && ids_last[cam_id_left][idll] == ids_last[cam_id_right][idrr])
+    {
       good_left.push_back(pts_left_new[i]);
       good_right.push_back(pts_right_new[i]);
       good_desc_left.push_back(desc_left_new.row((int)i));
@@ -294,7 +330,9 @@ void TrackDescriptor::feed_stereo(const CameraData &message, size_t msg_id_left,
       good_ids_left.push_back(ids_last[cam_id_left][idll]);
       good_ids_right.push_back(ids_last[cam_id_right][idrr]);
       num_tracklast++;
-    } else {
+    }
+    else
+    {
       // Else just append the current feature and its unique ID
       good_left.push_back(pts_left_new[i]);
       good_right.push_back(pts_right_new[i]);
@@ -310,17 +348,18 @@ void TrackDescriptor::feed_stereo(const CameraData &message, size_t msg_id_left,
   //===================================================================================
 
   // Update our feature database, with theses new observations
-  for (size_t i = 0; i < good_left.size(); i++) {
+  for (size_t i = 0; i < good_left.size(); i++)
+  {
     // Assert that our IDs are the same
     assert(good_ids_left.at(i) == good_ids_right.at(i));
     // Try to undistort the point
     cv::Point2f npt_l = camera_calib.at(cam_id_left)->undistort_cv(good_left.at(i).pt);
     cv::Point2f npt_r = camera_calib.at(cam_id_right)->undistort_cv(good_right.at(i).pt);
     // Append to the database
-    database->update_feature(good_ids_left.at(i), message.timestamp, cam_id_left, good_left.at(i).pt.x, good_left.at(i).pt.y, npt_l.x,
-                             npt_l.y);
-    database->update_feature(good_ids_left.at(i), message.timestamp, cam_id_right, good_right.at(i).pt.x, good_right.at(i).pt.y, npt_r.x,
-                             npt_r.y);
+    database->update_feature(good_ids_left.at(i), message.timestamp, cam_id_left, good_left.at(i).pt.x,
+                             good_left.at(i).pt.y, npt_l.x, npt_l.y);
+    database->update_feature(good_ids_left.at(i), message.timestamp, cam_id_right, good_right.at(i).pt.x,
+                             good_right.at(i).pt.y, npt_r.x, npt_r.y);
   }
 
   // Debug info
@@ -352,9 +391,10 @@ void TrackDescriptor::feed_stereo(const CameraData &message, size_t msg_id_left,
   PRINT_ALL("[TIME-DESC]: %.4f seconds for total\n", (rT5 - rT1).total_microseconds() * 1e-6);
 }
 
-void TrackDescriptor::perform_detection_monocular(const cv::Mat &img0, const cv::Mat &mask0, std::vector<cv::KeyPoint> &pts0,
-                                                  cv::Mat &desc0, std::vector<size_t> &ids0) {
-
+void TrackDescriptor::perform_detection_monocular(const cv::Mat& img0, const cv::Mat& mask0,
+                                                  std::vector<cv::KeyPoint>& pts0, cv::Mat& desc0,
+                                                  std::vector<size_t>& ids0)
+{
   // Assert that we need features
   assert(pts0.empty());
 
@@ -377,14 +417,17 @@ void TrackDescriptor::perform_detection_monocular(const cv::Mat &img0, const cv:
   // NOTE: this is due to the fact that we select update features based on feat id
   // NOTE: thus the order will matter since we try to select oldest (smallest id) to update with
   // NOTE: not sure how to remove... maybe a better way?
-  for (size_t i = 0; i < pts0_ext.size(); i++) {
+  for (size_t i = 0; i < pts0_ext.size(); i++)
+  {
     // Get current left keypoint, check that it is in bounds
     cv::KeyPoint kpt = pts0_ext.at(i);
     int x = (int)kpt.pt.x;
     int y = (int)kpt.pt.y;
     int x_grid = (int)(kpt.pt.x / (float)min_px_dist);
     int y_grid = (int)(kpt.pt.y / (float)min_px_dist);
-    if (x_grid < 0 || x_grid >= size.width || y_grid < 0 || y_grid >= size.height || x < 0 || x >= img0.cols || y < 0 || y >= img0.rows) {
+    if (x_grid < 0 || x_grid >= size.width || y_grid < 0 || y_grid >= size.height || x < 0 || x >= img0.cols || y < 0 ||
+        y >= img0.rows)
+    {
       continue;
     }
     // Check if this keypoint is near another point
@@ -400,11 +443,12 @@ void TrackDescriptor::perform_detection_monocular(const cv::Mat &img0, const cv:
   }
 }
 
-void TrackDescriptor::perform_detection_stereo(const cv::Mat &img0, const cv::Mat &img1, const cv::Mat &mask0, const cv::Mat &mask1,
-                                               std::vector<cv::KeyPoint> &pts0, std::vector<cv::KeyPoint> &pts1, cv::Mat &desc0,
-                                               cv::Mat &desc1, size_t cam_id0, size_t cam_id1, std::vector<size_t> &ids0,
-                                               std::vector<size_t> &ids1) {
-
+void TrackDescriptor::perform_detection_stereo(const cv::Mat& img0, const cv::Mat& img1, const cv::Mat& mask0,
+                                               const cv::Mat& mask1, std::vector<cv::KeyPoint>& pts0,
+                                               std::vector<cv::KeyPoint>& pts1, cv::Mat& desc0, cv::Mat& desc1,
+                                               size_t cam_id0, size_t cam_id1, std::vector<size_t>& ids0,
+                                               std::vector<size_t>& ids1)
+{
   // Assert that we need features
   assert(pts0.empty());
   assert(pts1.empty());
@@ -412,14 +456,17 @@ void TrackDescriptor::perform_detection_stereo(const cv::Mat &img0, const cv::Ma
   // Extract our features (use FAST with griding), and their descriptors
   std::vector<cv::KeyPoint> pts0_ext, pts1_ext;
   cv::Mat desc0_ext, desc1_ext;
-  parallel_for_(cv::Range(0, 2), LambdaBody([&](const cv::Range &range) {
-                  for (int i = range.start; i < range.end; i++) {
-                    bool is_left = (i == 0);
-                    Grider_FAST::perform_griding(is_left ? img0 : img1, is_left ? mask0 : mask1, is_left ? pts0_ext : pts1_ext,
-                                                 num_features, grid_x, grid_y, threshold, true);
-                    (is_left ? orb0 : orb1)->compute(is_left ? img0 : img1, is_left ? pts0_ext : pts1_ext, is_left ? desc0_ext : desc1_ext);
-                  }
-                }));
+  parallel_for_(
+      cv::Range(0, 2), LambdaBody([&](const cv::Range& range) {
+        for (int i = range.start; i < range.end; i++)
+        {
+          bool is_left = (i == 0);
+          Grider_FAST::perform_griding(is_left ? img0 : img1, is_left ? mask0 : mask1, is_left ? pts0_ext : pts1_ext,
+                                       num_features, grid_x, grid_y, threshold, true);
+          (is_left ? orb0 : orb1)
+              ->compute(is_left ? img0 : img1, is_left ? pts0_ext : pts1_ext, is_left ? desc0_ext : desc1_ext);
+        }
+      }));
 
   // Do matching from the left to the right image
   std::vector<cv::DMatch> matches;
@@ -434,8 +481,8 @@ void TrackDescriptor::perform_detection_stereo(const cv::Mat &img0, const cv::Ma
   cv::Mat grid_2d_1 = cv::Mat::zeros(size1, CV_8UC1);
 
   // For all good matches, lets append to our returned vectors
-  for (size_t i = 0; i < matches.size(); i++) {
-
+  for (size_t i = 0; i < matches.size(); i++)
+  {
     // Get our ids
     int index_pt0 = matches.at(i).queryIdx;
     int index_pt1 = matches.at(i).trainIdx;
@@ -447,16 +494,18 @@ void TrackDescriptor::perform_detection_stereo(const cv::Mat &img0, const cv::Ma
     int y0 = (int)kpt0.pt.y;
     int x0_grid = (int)(kpt0.pt.x / (float)min_px_dist);
     int y0_grid = (int)(kpt0.pt.y / (float)min_px_dist);
-    if (x0_grid < 0 || x0_grid >= size0.width || y0_grid < 0 || y0_grid >= size0.height || x0 < 0 || x0 >= img0.cols || y0 < 0 ||
-        y0 >= img0.rows) {
+    if (x0_grid < 0 || x0_grid >= size0.width || y0_grid < 0 || y0_grid >= size0.height || x0 < 0 || x0 >= img0.cols ||
+        y0 < 0 || y0 >= img0.rows)
+    {
       continue;
     }
     int x1 = (int)kpt1.pt.x;
     int y1 = (int)kpt1.pt.y;
     int x1_grid = (int)(kpt1.pt.x / (float)min_px_dist);
     int y1_grid = (int)(kpt1.pt.y / (float)min_px_dist);
-    if (x1_grid < 0 || x1_grid >= size1.width || y1_grid < 0 || y1_grid >= size1.height || x1 < 0 || x1 >= img0.cols || y1 < 0 ||
-        y1 >= img0.rows) {
+    if (x1_grid < 0 || x1_grid >= size1.width || y1_grid < 0 || y1_grid >= size1.height || x1 < 0 || x1 >= img0.cols ||
+        y1 < 0 || y1 >= img0.rows)
+    {
       continue;
     }
 
@@ -477,9 +526,10 @@ void TrackDescriptor::perform_detection_stereo(const cv::Mat &img0, const cv::Ma
   }
 }
 
-void TrackDescriptor::robust_match(const std::vector<cv::KeyPoint> &pts0, const std::vector<cv::KeyPoint> &pts1, const cv::Mat &desc0,
-                                   const cv::Mat &desc1, size_t id0, size_t id1, std::vector<cv::DMatch> &matches) {
-
+void TrackDescriptor::robust_match(const std::vector<cv::KeyPoint>& pts0, const std::vector<cv::KeyPoint>& pts1,
+                                   const cv::Mat& desc0, const cv::Mat& desc1, size_t id0, size_t id1,
+                                   std::vector<cv::DMatch>& matches)
+{
   // Our 1to2 and 2to1 match vectors
   std::vector<std::vector<cv::DMatch>> matches0to1, matches1to0;
 
@@ -497,7 +547,8 @@ void TrackDescriptor::robust_match(const std::vector<cv::KeyPoint> &pts0, const 
 
   // Convert points into points for RANSAC
   std::vector<cv::Point2f> pts0_rsc, pts1_rsc;
-  for (size_t i = 0; i < matches_good.size(); i++) {
+  for (size_t i = 0; i < matches_good.size(); i++)
+  {
     // Get our ids
     int index_pt0 = matches_good.at(i).queryIdx;
     int index_pt1 = matches_good.at(i).trainIdx;
@@ -513,7 +564,8 @@ void TrackDescriptor::robust_match(const std::vector<cv::KeyPoint> &pts0, const 
   // Normalize these points, so we can then do ransac
   // We don't want to do ransac on distorted image uvs since the mapping is nonlinear
   std::vector<cv::Point2f> pts0_n, pts1_n;
-  for (size_t i = 0; i < pts0_rsc.size(); i++) {
+  for (size_t i = 0; i < pts0_rsc.size(); i++)
+  {
     pts0_n.push_back(camera_calib.at(id0)->undistort_cv(pts0_rsc.at(i)));
     pts1_n.push_back(camera_calib.at(id1)->undistort_cv(pts1_rsc.at(i)));
   }
@@ -526,7 +578,8 @@ void TrackDescriptor::robust_match(const std::vector<cv::KeyPoint> &pts0, const 
   cv::findFundamentalMat(pts0_n, pts1_n, cv::FM_RANSAC, 1 / max_focallength, 0.999, mask_rsc);
 
   // Loop through all good matches, and only append ones that have passed RANSAC
-  for (size_t i = 0; i < matches_good.size(); i++) {
+  for (size_t i = 0; i < matches_good.size(); i++)
+  {
     // Skip if bad ransac id
     if (mask_rsc[i] != 1)
       continue;
@@ -535,36 +588,47 @@ void TrackDescriptor::robust_match(const std::vector<cv::KeyPoint> &pts0, const 
   }
 }
 
-void TrackDescriptor::robust_ratio_test(std::vector<std::vector<cv::DMatch>> &matches) {
+void TrackDescriptor::robust_ratio_test(std::vector<std::vector<cv::DMatch>>& matches)
+{
   // Loop through all matches
-  for (auto &match : matches) {
+  for (auto& match : matches)
+  {
     // If 2 NN has been identified, else remove this feature
-    if (match.size() > 1) {
+    if (match.size() > 1)
+    {
       // check distance ratio, remove it if the ratio is larger
-      if (match[0].distance / match[1].distance > knn_ratio) {
+      if (match[0].distance / match[1].distance > knn_ratio)
+      {
         match.clear();
       }
-    } else {
+    }
+    else
+    {
       // does not have 2 neighbours, so remove it
       match.clear();
     }
   }
 }
 
-void TrackDescriptor::robust_symmetry_test(std::vector<std::vector<cv::DMatch>> &matches1, std::vector<std::vector<cv::DMatch>> &matches2,
-                                           std::vector<cv::DMatch> &good_matches) {
+void TrackDescriptor::robust_symmetry_test(std::vector<std::vector<cv::DMatch>>& matches1,
+                                           std::vector<std::vector<cv::DMatch>>& matches2,
+                                           std::vector<cv::DMatch>& good_matches)
+{
   // for all matches image 1 -> image 2
-  for (auto &match1 : matches1) {
+  for (auto& match1 : matches1)
+  {
     // ignore deleted matches
     if (match1.empty() || match1.size() < 2)
       continue;
     // for all matches image 2 -> image 1
-    for (auto &match2 : matches2) {
+    for (auto& match2 : matches2)
+    {
       // ignore deleted matches
       if (match2.empty() || match2.size() < 2)
         continue;
       // Match symmetry test
-      if (match1[0].queryIdx == match2[0].trainIdx && match2[0].queryIdx == match1[0].trainIdx) {
+      if (match1[0].queryIdx == match2[0].trainIdx && match2[0].queryIdx == match1[0].trainIdx)
+      {
         // add symmetrical match
         good_matches.emplace_back(cv::DMatch(match1[0].queryIdx, match1[0].trainIdx, match1[0].distance));
         // next match in image 1 -> image 2

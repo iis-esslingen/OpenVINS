@@ -33,12 +33,13 @@
 #include "cam/CamRadtan.h"
 #include "utils/quat_ops.h"
 
-namespace ov_init {
-
+namespace ov_init
+{
 /**
  * @brief Factor of feature bearing observation (raw) with calibration
  */
-class Factor_ImageReprojCalib : public ceres::CostFunction {
+class Factor_ImageReprojCalib : public ceres::CostFunction
+{
 public:
   // Measurement observation of the feature (raw pixel coordinates)
   Eigen::Vector2d uv_meas;
@@ -59,9 +60,11 @@ public:
    * @param pix_sigma_ Raw pixel measurement uncertainty (typically 1)
    * @param is_fisheye_ If this raw pixel camera uses fisheye distortion
    */
-  Factor_ImageReprojCalib(const Eigen::Vector2d &uv_meas_, double pix_sigma_, bool is_fisheye_);
+  Factor_ImageReprojCalib(const Eigen::Vector2d& uv_meas_, double pix_sigma_, bool is_fisheye_);
 
-  virtual ~Factor_ImageReprojCalib() {}
+  virtual ~Factor_ImageReprojCalib()
+  {
+  }
 
   /**
    * @brief Error residual and Jacobian calculation
@@ -71,9 +74,9 @@ public:
    * The normalized pixel coordinates are found and then distorted using the camera distortion model.
    * See the @ref update-feat page for more details.
    */
-  bool Evaluate(double const *const *parameters, double *residuals, double **jacobians) const override;
+  bool Evaluate(double const* const* parameters, double* residuals, double** jacobians) const override;
 };
 
-} // namespace ov_init
+}  // namespace ov_init
 
-#endif // OV_INIT_CERES_IMAGEREPROJCALIB_H
+#endif  // OV_INIT_CERES_IMAGEREPROJCALIB_H

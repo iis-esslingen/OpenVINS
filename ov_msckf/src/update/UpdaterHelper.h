@@ -28,12 +28,13 @@
 
 #include "types/LandmarkRepresentation.h"
 
-namespace ov_type {
+namespace ov_type
+{
 class Type;
-} // namespace ov_type
+}  // namespace ov_type
 
-namespace ov_msckf {
-
+namespace ov_msckf
+{
 class State;
 
 /**
@@ -46,13 +47,14 @@ class State;
  * For derivations look at @ref update-feat page which has detailed equations.
  *
  */
-class UpdaterHelper {
+class UpdaterHelper
+{
 public:
   /**
    * @brief Feature object that our UpdaterHelper leverages, has all measurements and means
    */
-  struct UpdaterHelperFeature {
-
+  struct UpdaterHelperFeature
+  {
     /// Unique ID of this feature
     size_t featid;
 
@@ -96,8 +98,9 @@ public:
    * @param[out] H_x Extra Jacobians in respect to the state (for example anchored pose)
    * @param[out] x_order Extra variables our extra Jacobian has (for example anchored pose)
    */
-  static void get_feature_jacobian_representation(std::shared_ptr<State> state, UpdaterHelperFeature &feature, Eigen::MatrixXd &H_f,
-                                                  std::vector<Eigen::MatrixXd> &H_x, std::vector<std::shared_ptr<ov_type::Type>> &x_order);
+  static void get_feature_jacobian_representation(std::shared_ptr<State> state, UpdaterHelperFeature& feature,
+                                                  Eigen::MatrixXd& H_f, std::vector<Eigen::MatrixXd>& H_x,
+                                                  std::vector<std::shared_ptr<ov_type::Type>>& x_order);
 
   /**
    * @brief Will construct the "stacked" Jacobians for a single feature from all its measurements
@@ -109,8 +112,9 @@ public:
    * @param[out] res Measurement residual for this feature
    * @param[out] x_order Extra variables our extra Jacobian has (for example anchored pose)
    */
-  static void get_feature_jacobian_full(std::shared_ptr<State> state, UpdaterHelperFeature &feature, Eigen::MatrixXd &H_f,
-                                        Eigen::MatrixXd &H_x, Eigen::VectorXd &res, std::vector<std::shared_ptr<ov_type::Type>> &x_order);
+  static void get_feature_jacobian_full(std::shared_ptr<State> state, UpdaterHelperFeature& feature,
+                                        Eigen::MatrixXd& H_f, Eigen::MatrixXd& H_x, Eigen::VectorXd& res,
+                                        std::vector<std::shared_ptr<ov_type::Type>>& x_order);
 
   /**
    * @brief This will project the left nullspace of H_f onto the linear system.
@@ -123,7 +127,7 @@ public:
    * @param H_x State jacobian
    * @param res Measurement residual
    */
-  static void nullspace_project_inplace(Eigen::MatrixXd &H_f, Eigen::MatrixXd &H_x, Eigen::VectorXd &res);
+  static void nullspace_project_inplace(Eigen::MatrixXd& H_f, Eigen::MatrixXd& H_x, Eigen::VectorXd& res);
 
   /**
    * @brief This will perform measurement compression
@@ -134,9 +138,9 @@ public:
    * @param H_x State jacobian
    * @param res Measurement residual
    */
-  static void measurement_compress_inplace(Eigen::MatrixXd &H_x, Eigen::VectorXd &res);
+  static void measurement_compress_inplace(Eigen::MatrixXd& H_x, Eigen::VectorXd& res);
 };
 
-} // namespace ov_msckf
+}  // namespace ov_msckf
 
-#endif // OV_MSCKF_UPDATER_HELPER_H
+#endif  // OV_MSCKF_UPDATER_HELPER_H

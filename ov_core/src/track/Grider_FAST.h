@@ -33,8 +33,8 @@
 
 #include "utils/opencv_lambda_body.h"
 
-namespace ov_core {
-
+namespace ov_core
+{
 /**
  * @brief Extracts FAST features in a grid pattern.
  *
@@ -43,8 +43,8 @@ namespace ov_core {
  * Thus we split the image into a bunch of small grids, and extract points in each.
  * We then pick enough top points in each grid so that we have the total number of desired points.
  */
-class Grider_FAST {
-
+class Grider_FAST
+{
 public:
   /**
    * @brief Compare keypoints based on their response value.
@@ -54,7 +54,10 @@ public:
    * We want to have the keypoints with the highest values!
    * See: https://stackoverflow.com/a/10910921
    */
-  static bool compare_response(cv::KeyPoint first, cv::KeyPoint second) { return first.response > second.response; }
+  static bool compare_response(cv::KeyPoint first, cv::KeyPoint second)
+  {
+    return first.response > second.response;
+  }
 
   /**
    * @brief This function will perform grid extraction using FAST.
@@ -70,16 +73,17 @@ public:
    * Given a specified grid size, this will try to extract fast features from each grid.
    * It will then return the best from each grid in the return vector.
    */
-  static void perform_griding(const cv::Mat &img, const cv::Mat &mask, std::vector<cv::KeyPoint> &pts, int num_features, int grid_x,
-                              int grid_y, int threshold, bool nonmaxSuppression) {
-
+  static void perform_griding(const cv::Mat& img, const cv::Mat& mask, std::vector<cv::KeyPoint>& pts, int num_features,
+                              int grid_x, int grid_y, int threshold, bool nonmaxSuppression)
+  {
     // We want to have equally distributed features
     // NOTE: If we have more grids than number of total points, we calc the biggest grid we can do
     // NOTE: Thus if we extract 1 point per grid we have
     // NOTE:    -> 1 = num_features / (grid_x * grid_y))
     // NOTE:    -> grid_x = ratio * grid_y (keep the original grid ratio)
     // NOTE:    -> grid_y = sqrt(num_features / ratio)
-    if (num_features < grid_x * grid_y) {
+    if (num_features < grid_x * grid_y)
+    {
       double ratio = (double)grid_x / (double)grid_y;
       grid_y = std::ceil(std::sqrt(num_features / ratio));
       grid_x = std::ceil(grid_y * ratio);
@@ -101,8 +105,9 @@ public:
     int ct_cols = std::floor(img.cols / size_x);
     int ct_rows = std::floor(img.rows / size_y);
     std::vector<std::vector<cv::KeyPoint>> collection(ct_cols * ct_rows);
-    parallel_for_(cv::Range(0, ct_cols * ct_rows), LambdaBody([&](const cv::Range &range) {
-                    for (int r = range.start; r < range.end; r++) {
+    parallel_for_(cv::Range(0, ct_cols * ct_rows), LambdaBody([&](const cv::Range& range) {
+                    for (int r = range.start; r < range.end; r++)
+                    {
                       // Calculate what cell xy value we are in
                       int x = r % ct_cols * size_x;
                       int y = r / ct_cols * size_y;
@@ -124,15 +129,16 @@ public:
                       // Append the "best" ones to our vector
                       // Note that we need to "correct" the point u,v since we extracted it in a ROI
                       // So we should append the location of that ROI in the image
-                      for (size_t i = 0; i < (size_t)num_features_grid && i < pts_new.size(); i++) {
-
+                      for (size_t i = 0; i < (size_t)num_features_grid && i < pts_new.size(); i++)
+                      {
                         // Create keypoint
                         cv::KeyPoint pt_cor = pts_new.at(i);
                         pt_cor.pt.x += (float)x;
                         pt_cor.pt.y += (float)y;
 
                         // Reject if out of bounds (shouldn't be possible...)
-                        if ((int)pt_cor.pt.x < 0 || (int)pt_cor.pt.x > img.cols || (int)pt_cor.pt.y < 0 || (int)pt_cor.pt.y > img.rows)
+                        if ((int)pt_cor.pt.x < 0 || (int)pt_cor.pt.x > img.cols || (int)pt_cor.pt.y < 0 ||
+                            (int)pt_cor.pt.y > img.rows)
                           continue;
 
                         // Check if it is in the mask region
@@ -145,7 +151,8 @@ public:
                   }));
 
     // Combine all the collections into our single vector
-    for (size_t r = 0; r < collection.size(); r++) {
+    for (size_t r = 0; r < collection.size(); r++)
+    {
       pts.insert(pts.end(), collection.at(r).begin(), collection.at(r).end());
     }
 
@@ -160,7 +167,8 @@ public:
 
     // Get vector of points
     std::vector<cv::Point2f> pts_refined;
-    for (size_t i = 0; i < pts.size(); i++) {
+    for (size_t i = 0; i < pts.size(); i++)
+    {
       pts_refined.push_back(pts.at(i).pt);
     }
 
@@ -168,12 +176,13 @@ public:
     cv::cornerSubPix(img, pts_refined, win_size, zero_zone, term_crit);
 
     // Save the refined points!
-    for (size_t i = 0; i < pts.size(); i++) {
+    for (size_t i = 0; i < pts.size(); i++)
+    {
       pts.at(i).pt = pts_refined.at(i);
     }
   }
 };
 
-} // namespace ov_core
+}  // namespace ov_core
 
 #endif /* OV_CORE_GRIDER_FAST_H */

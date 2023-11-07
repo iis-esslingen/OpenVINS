@@ -24,8 +24,8 @@
 
 #include "TrackBase.h"
 
-namespace ov_core {
-
+namespace ov_core
+{
 /**
  * @brief KLT tracking of features.
  *
@@ -36,8 +36,8 @@ namespace ov_core {
  * This uses the [calcOpticalFlowPyrLK](https://github.com/opencv/opencv/blob/master/modules/video/src/lkpyramid.cpp)
  * OpenCV function to do the KLT tracking.
  */
-class TrackKLT : public TrackBase {
-
+class TrackKLT : public TrackBase
+{
 public:
   /**
    * @brief Public constructor with configuration variables
@@ -51,16 +51,21 @@ public:
    * @param gridy size of grid in the y-direction / v-direction
    * @param minpxdist features need to be at least this number pixels away from each other
    */
-  explicit TrackKLT(std::unordered_map<size_t, std::shared_ptr<CamBase>> cameras, int numfeats, int numaruco, bool stereo,
-                    HistogramMethod histmethod, int fast_threshold, int gridx, int gridy, int minpxdist)
-      : TrackBase(cameras, numfeats, numaruco, stereo, histmethod), threshold(fast_threshold), grid_x(gridx), grid_y(gridy),
-        min_px_dist(minpxdist) {}
+  explicit TrackKLT(std::unordered_map<size_t, std::shared_ptr<CamBase>> cameras, int numfeats, int numaruco,
+                    bool stereo, HistogramMethod histmethod, int fast_threshold, int gridx, int gridy, int minpxdist)
+    : TrackBase(cameras, numfeats, numaruco, stereo, histmethod)
+    , threshold(fast_threshold)
+    , grid_x(gridx)
+    , grid_y(gridy)
+    , min_px_dist(minpxdist)
+  {
+  }
 
   /**
    * @brief Process a new image
    * @param message Contains our timestamp, images, and camera ids
    */
-  void feed_new_camera(const CameraData &message) override;
+  void feed_new_camera(const CameraData& message) override;
 
 protected:
   /**
@@ -68,7 +73,7 @@ protected:
    * @param message Contains our timestamp, images, and camera ids
    * @param msg_id the camera index in message data vector
    */
-  void feed_monocular(const CameraData &message, size_t msg_id);
+  void feed_monocular(const CameraData& message, size_t msg_id);
 
   /**
    * @brief Process new stereo pair of images
@@ -76,7 +81,7 @@ protected:
    * @param msg_id_left first image index in message data vector
    * @param msg_id_right second image index in message data vector
    */
-  void feed_stereo(const CameraData &message, size_t msg_id_left, size_t msg_id_right);
+  void feed_stereo(const CameraData& message, size_t msg_id_left, size_t msg_id_right);
 
   /**
    * @brief Detects new features in the current image
@@ -89,8 +94,8 @@ protected:
    * Will try to always have the "max_features" being tracked through KLT at each timestep.
    * Passed images should already be grayscaled.
    */
-  void perform_detection_monocular(const std::vector<cv::Mat> &img0pyr, const cv::Mat &mask0, std::vector<cv::KeyPoint> &pts0,
-                                   std::vector<size_t> &ids0);
+  void perform_detection_monocular(const std::vector<cv::Mat>& img0pyr, const cv::Mat& mask0,
+                                   std::vector<cv::KeyPoint>& pts0, std::vector<size_t>& ids0);
 
   /**
    * @brief Detects new features in the current stereo pair
@@ -110,9 +115,10 @@ protected:
    * If we have valid tracks, then we have both the keypoint on the left and its matching point in the right image.
    * Will try to always have the "max_features" being tracked through KLT at each timestep.
    */
-  void perform_detection_stereo(const std::vector<cv::Mat> &img0pyr, const std::vector<cv::Mat> &img1pyr, const cv::Mat &mask0,
-                                const cv::Mat &mask1, size_t cam_id_left, size_t cam_id_right, std::vector<cv::KeyPoint> &pts0,
-                                std::vector<cv::KeyPoint> &pts1, std::vector<size_t> &ids0, std::vector<size_t> &ids1);
+  void perform_detection_stereo(const std::vector<cv::Mat>& img0pyr, const std::vector<cv::Mat>& img1pyr,
+                                const cv::Mat& mask0, const cv::Mat& mask1, size_t cam_id_left, size_t cam_id_right,
+                                std::vector<cv::KeyPoint>& pts0, std::vector<cv::KeyPoint>& pts1,
+                                std::vector<size_t>& ids0, std::vector<size_t>& ids1);
 
   /**
    * @brief KLT track between two images, and do RANSAC afterwards
@@ -126,10 +132,12 @@ protected:
    *
    * This will track features from the first image into the second image.
    * The two point vectors will be of equal size, but the mask_out variable will specify which points are good or bad.
-   * If the second vector is non-empty, it will be used as an initial guess of where the keypoints are in the second image.
+   * If the second vector is non-empty, it will be used as an initial guess of where the keypoints are in the second
+   * image.
    */
-  void perform_matching(const std::vector<cv::Mat> &img0pyr, const std::vector<cv::Mat> &img1pyr, std::vector<cv::KeyPoint> &pts0,
-                        std::vector<cv::KeyPoint> &pts1, size_t id0, size_t id1, std::vector<uchar> &mask_out);
+  void perform_matching(const std::vector<cv::Mat>& img0pyr, const std::vector<cv::Mat>& img1pyr,
+                        std::vector<cv::KeyPoint>& pts0, std::vector<cv::KeyPoint>& pts1, size_t id0, size_t id1,
+                        std::vector<uchar>& mask_out);
 
   // Parameters for our FAST grid detector
   int threshold;
@@ -149,6 +157,6 @@ protected:
   std::map<size_t, std::vector<cv::Mat>> img_pyramid_curr;
 };
 
-} // namespace ov_core
+}  // namespace ov_core
 
 #endif /* OV_CORE_TRACK_KLT_H */

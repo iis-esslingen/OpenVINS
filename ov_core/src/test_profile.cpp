@@ -34,14 +34,18 @@
 #include "utils/print.h"
 
 // Define the function to be called when ctrl-c (SIGINT) is sent to process
-void signal_callback_handler(int signum) { std::exit(signum); }
+void signal_callback_handler(int signum)
+{
+  std::exit(signum);
+}
 
-void print_stats(std::string title, std::vector<double> times, std::string title2 = "", std::vector<int> stats = {}) {
-
+void print_stats(std::string title, std::vector<double> times, std::string title2 = "", std::vector<int> stats = {})
+{
   // Compute mean and rmse
   double mean = 0.0;
   double rmse = 0.0;
-  for (size_t i = 0; i < times.size(); i++) {
+  for (size_t i = 0; i < times.size(); i++)
+  {
     assert(!std::isnan(times.at(i)));
     mean += times.at(i);
     rmse += times.at(i) * times.at(i);
@@ -51,17 +55,22 @@ void print_stats(std::string title, std::vector<double> times, std::string title
 
   // Using mean, compute standard deviation
   double std = 0;
-  for (size_t i = 0; i < times.size(); i++) {
+  for (size_t i = 0; i < times.size(); i++)
+  {
     std += std::pow(times.at(i) - mean, 2);
   }
   std = std::sqrt(std / (times.size() - 1));
 
   // Print!
-  if (stats.empty()) {
+  if (stats.empty())
+  {
     PRINT_INFO("%s: %.3f +- %.3fms\n", title.c_str(), mean, std);
-  } else {
+  }
+  else
+  {
     double mean2 = 0.0;
-    for (size_t i = 0; i < stats.size(); i++) {
+    for (size_t i = 0; i < stats.size(); i++)
+    {
       assert(!std::isnan(stats.at(i)));
       mean2 += stats.at(i);
     }
@@ -71,8 +80,8 @@ void print_stats(std::string title, std::vector<double> times, std::string title
 }
 
 // Main function
-int main(int argc, char **argv) {
-
+int main(int argc, char** argv)
+{
   // Verbosity
   std::string verbosity = "INFO";
   ov_core::Printer::setPrintLevel(verbosity);
@@ -96,7 +105,8 @@ int main(int argc, char **argv) {
 
   // OPENCV: RANDOM BIG IMAGE
   times_ms.clear();
-  for (int i = 0; i < num_trials; i++) {
+  for (int i = 0; i < num_trials; i++)
+  {
     auto rT1 = boost::posix_time::microsec_clock::local_time();
     cv::randu(img3, cv::Scalar(0, 0, 0), cv::Scalar(255, 255, 255));
     auto rT2 = boost::posix_time::microsec_clock::local_time();
@@ -106,7 +116,8 @@ int main(int argc, char **argv) {
 
   // OPENCV: HISTOGRAM EQUALIZATION
   times_ms.clear();
-  for (int i = 0; i < num_trials; i++) {
+  for (int i = 0; i < num_trials; i++)
+  {
     cv::randu(img1, cv::Scalar(0), cv::Scalar(255));
     auto rT1 = boost::posix_time::microsec_clock::local_time();
     cv::equalizeHist(img1, img1);
@@ -117,7 +128,8 @@ int main(int argc, char **argv) {
 
   // OPENCV: BUILD OPTICAL FLOW PYRAMID
   times_ms.clear();
-  for (int i = 0; i < num_trials; i++) {
+  for (int i = 0; i < num_trials; i++)
+  {
     cv::randu(img1, cv::Scalar(0), cv::Scalar(255));
     auto rT1 = boost::posix_time::microsec_clock::local_time();
     std::vector<cv::Mat> imgpyr;
@@ -130,7 +142,8 @@ int main(int argc, char **argv) {
   // OPENCV: FAST FEATURE EXTRACTION
   times_ms.clear();
   extra_stats.clear();
-  for (int i = 0; i < num_trials; i++) {
+  for (int i = 0; i < num_trials; i++)
+  {
     cv::randu(img1, cv::Scalar(0), cv::Scalar(255));
     auto rT1 = boost::posix_time::microsec_clock::local_time();
     std::vector<cv::KeyPoint> pts_new;
@@ -144,23 +157,26 @@ int main(int argc, char **argv) {
   // OPENCV: KLT OPTICAL FLOW
   times_ms.clear();
   extra_stats.clear();
-  for (int i = 0; i < num_trials; i++) {
+  for (int i = 0; i < num_trials; i++)
+  {
     std::vector<cv::Mat> imgpyr1, imgpyr2;
     cv::buildOpticalFlowPyramid(img1, imgpyr1, win_size, pyr_levels);
     std::vector<cv::KeyPoint> pts0_tmp;
     cv::FAST(img1, pts0_tmp, fast_threshold, true);
-    std::sort(pts0_tmp.begin(), pts0_tmp.end(), [](cv::KeyPoint first, cv::KeyPoint second) { return first.response > second.response; });
+    std::sort(pts0_tmp.begin(), pts0_tmp.end(),
+              [](cv::KeyPoint first, cv::KeyPoint second) { return first.response > second.response; });
     std::vector<cv::Point2f> pts0;
     for (size_t j = 0; j < pts0_tmp.size() && (int)j < max_features; j++)
       pts0.push_back(pts0_tmp.at(j).pt);
-    cv::randu(img1, cv::Scalar(0), cv::Scalar(255)); // second image
+    cv::randu(img1, cv::Scalar(0), cv::Scalar(255));  // second image
     cv::buildOpticalFlowPyramid(img1, imgpyr2, win_size, pyr_levels);
     auto rT1 = boost::posix_time::microsec_clock::local_time();
     std::vector<uchar> mask_klt;
     std::vector<float> error;
     std::vector<cv::Point2f> pts1, pts1_good;
     cv::calcOpticalFlowPyrLK(imgpyr1, imgpyr2, pts0, pts1, mask_klt, error, win_size, pyr_levels, term_crit);
-    for (size_t j = 0; j < mask_klt.size(); j++) {
+    for (size_t j = 0; j < mask_klt.size(); j++)
+    {
       if (mask_klt.at(j))
         pts1_good.push_back(pts1.at(j));
     }
@@ -176,7 +192,8 @@ int main(int argc, char **argv) {
 
   // EIGEN3(double): RANDOM BIG MATRIX
   times_ms.clear();
-  for (int i = 0; i < num_trials; i++) {
+  for (int i = 0; i < num_trials; i++)
+  {
     auto rT1 = boost::posix_time::microsec_clock::local_time();
     Eigen::MatrixXd mat1 = Eigen::MatrixXd::Random(big_matrix_eigen1, big_matrix_eigen1);
     Eigen::MatrixXd mat2 = Eigen::MatrixXd::Random(big_matrix_eigen1, big_matrix_eigen1);
@@ -187,7 +204,8 @@ int main(int argc, char **argv) {
 
   // EIGEN3(double): MATRIX MULTIPLY
   times_ms.clear();
-  for (int i = 0; i < num_trials; i++) {
+  for (int i = 0; i < num_trials; i++)
+  {
     Eigen::MatrixXd mat1 = Eigen::MatrixXd::Random(big_matrix_eigen1, big_matrix_eigen1);
     Eigen::MatrixXd mat2 = Eigen::MatrixXd::Random(big_matrix_eigen1, big_matrix_eigen1);
     auto rT1 = boost::posix_time::microsec_clock::local_time();
@@ -199,7 +217,8 @@ int main(int argc, char **argv) {
 
   // EIGEN3(double): MATRIX INVERSION
   times_ms.clear();
-  for (int i = 0; i < num_trials; i++) {
+  for (int i = 0; i < num_trials; i++)
+  {
     Eigen::MatrixXd mat1 = Eigen::MatrixXd::Random(big_matrix_eigen1, big_matrix_eigen1);
     auto rT1 = boost::posix_time::microsec_clock::local_time();
     mat1 = mat1.inverse();
@@ -210,7 +229,8 @@ int main(int argc, char **argv) {
 
   // EIGEN3(double): HOUSEHOLDER QR FULL
   times_ms.clear();
-  for (int i = 0; i < num_trials; i++) {
+  for (int i = 0; i < num_trials; i++)
+  {
     Eigen::MatrixXd mat1 = Eigen::MatrixXd::Random(big_matrix_eigen2, big_matrix_eigen1);
     auto rT1 = boost::posix_time::microsec_clock::local_time();
     Eigen::MatrixXd QR = mat1.householderQr().matrixQR();
@@ -221,7 +241,8 @@ int main(int argc, char **argv) {
 
   // EIGEN3(double): HOUSEHOLDER QR PIV
   times_ms.clear();
-  for (int i = 0; i < num_trials; i++) {
+  for (int i = 0; i < num_trials; i++)
+  {
     Eigen::MatrixXd mat1 = Eigen::MatrixXd::Random(big_matrix_eigen2, big_matrix_eigen1);
     auto rT1 = boost::posix_time::microsec_clock::local_time();
     Eigen::MatrixXd R = mat1.colPivHouseholderQr().matrixR();
@@ -232,12 +253,14 @@ int main(int argc, char **argv) {
 
   // EIGEN3(double): HOUSEHOLDER QR CUSTOM
   times_ms.clear();
-  for (int i = 0; i < num_trials; i++) {
+  for (int i = 0; i < num_trials; i++)
+  {
     Eigen::MatrixXd mat1 = Eigen::MatrixXd::Random(big_matrix_eigen2, big_matrix_eigen1);
     Eigen::VectorXd tempV1 = Eigen::VectorXd::Zero(big_matrix_eigen2 * big_matrix_eigen1, 1);
     Eigen::VectorXd tempV2;
     auto rT1 = boost::posix_time::microsec_clock::local_time();
-    for (int k = 0; k < mat1.cols(); k++) {
+    for (int k = 0; k < mat1.cols(); k++)
+    {
       int rows_left = mat1.rows() - k;
       double beta, tau;
       mat1.col(k).segment(k, rows_left).makeHouseholder(tempV2, tau, beta);
@@ -254,7 +277,8 @@ int main(int argc, char **argv) {
 
   // EIGEN3(float): RANDOM BIG MATRIX
   times_ms.clear();
-  for (int i = 0; i < num_trials; i++) {
+  for (int i = 0; i < num_trials; i++)
+  {
     auto rT1 = boost::posix_time::microsec_clock::local_time();
     Eigen::MatrixXf mat1 = Eigen::MatrixXf::Random(big_matrix_eigen1, big_matrix_eigen1);
     Eigen::MatrixXf mat2 = Eigen::MatrixXf::Random(big_matrix_eigen1, big_matrix_eigen1);
@@ -265,7 +289,8 @@ int main(int argc, char **argv) {
 
   // EIGEN3(float): MATRIX MULTIPLY
   times_ms.clear();
-  for (int i = 0; i < num_trials; i++) {
+  for (int i = 0; i < num_trials; i++)
+  {
     Eigen::MatrixXf mat1 = Eigen::MatrixXf::Random(big_matrix_eigen1, big_matrix_eigen1);
     Eigen::MatrixXf mat2 = Eigen::MatrixXf::Random(big_matrix_eigen1, big_matrix_eigen1);
     auto rT1 = boost::posix_time::microsec_clock::local_time();
@@ -277,7 +302,8 @@ int main(int argc, char **argv) {
 
   // EIGEN3(float): MATRIX INVERSION
   times_ms.clear();
-  for (int i = 0; i < num_trials; i++) {
+  for (int i = 0; i < num_trials; i++)
+  {
     Eigen::MatrixXf mat1 = Eigen::MatrixXf::Random(big_matrix_eigen1, big_matrix_eigen1);
     auto rT1 = boost::posix_time::microsec_clock::local_time();
     mat1 = mat1.inverse();
@@ -289,7 +315,8 @@ int main(int argc, char **argv) {
   // EIGEN3(float): HOUSEHOLDER QR FULL
   times_ms.clear();
   Eigen::MatrixXf mat1 = Eigen::MatrixXf::Random(big_matrix_eigen2, big_matrix_eigen1);
-  for (int i = 0; i < num_trials; i++) {
+  for (int i = 0; i < num_trials; i++)
+  {
     auto rT1 = boost::posix_time::microsec_clock::local_time();
     Eigen::MatrixXf Q = mat1.householderQr().householderQ();
     Eigen::MatrixXf R = Q.transpose() * mat1;
@@ -300,7 +327,8 @@ int main(int argc, char **argv) {
 
   // EIGEN3(float): HOUSEHOLDER QR PIV
   times_ms.clear();
-  for (int i = 0; i < num_trials; i++) {
+  for (int i = 0; i < num_trials; i++)
+  {
     Eigen::MatrixXf mat1 = Eigen::MatrixXf::Random(big_matrix_eigen2, big_matrix_eigen1);
     auto rT1 = boost::posix_time::microsec_clock::local_time();
     Eigen::MatrixXf R = mat1.colPivHouseholderQr().matrixR().triangularView<Eigen::Upper>();
@@ -311,12 +339,14 @@ int main(int argc, char **argv) {
 
   // EIGEN3(float): HOUSEHOLDER QR CUSTOM
   times_ms.clear();
-  for (int i = 0; i < num_trials; i++) {
+  for (int i = 0; i < num_trials; i++)
+  {
     Eigen::MatrixXf mat1 = Eigen::MatrixXf::Random(big_matrix_eigen2, big_matrix_eigen1);
     Eigen::VectorXf tempV1 = Eigen::VectorXf::Zero(big_matrix_eigen2 * big_matrix_eigen1, 1);
     Eigen::VectorXf tempV2;
     auto rT1 = boost::posix_time::microsec_clock::local_time();
-    for (int k = 0; k < mat1.cols(); k++) {
+    for (int k = 0; k < mat1.cols(); k++)
+    {
       int rows_left = mat1.rows() - k;
       float beta, tau;
       mat1.col(k).segment(k, rows_left).makeHouseholder(tempV2, tau, beta);

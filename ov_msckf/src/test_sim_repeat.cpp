@@ -40,17 +40,21 @@
 using namespace ov_msckf;
 
 // Define the function to be called when ctrl-c (SIGINT) is sent to process
-void signal_callback_handler(int signum) { std::exit(signum); }
+void signal_callback_handler(int signum)
+{
+  std::exit(signum);
+}
 
 // Main function
-int main(int argc, char **argv) {
-
+int main(int argc, char** argv)
+{
   // Register failure handler
   signal(SIGINT, signal_callback_handler);
 
   // Ensure we have a path, if the user passes it then we should use it
   std::string config_path = "unset_path_to_config.yaml";
-  if (argc > 1) {
+  if (argc > 1)
+  {
     config_path = argv[1];
   }
 
@@ -89,13 +93,14 @@ int main(int argc, char **argv) {
   std::vector<std::vector<std::vector<std::pair<size_t, Eigen::VectorXf>>>> vec_feats;
 
   // Continue to simulate until we have processed all the measurements
-  while (sim1.ok()) {
-
+  while (sim1.ok())
+  {
     // IMU: get the next simulated IMU measurement if we have it
     double time_imu;
     Eigen::Vector3d wm, am;
     bool hasimu = sim1.get_next_imu(time_imu, wm, am);
-    if (hasimu) {
+    if (hasimu)
+    {
       vec_imutime.push_back(time_imu);
       vec_am.push_back(am);
       vec_wm.push_back(wm);
@@ -106,7 +111,8 @@ int main(int argc, char **argv) {
     std::vector<int> camids;
     std::vector<std::vector<std::pair<size_t, Eigen::VectorXf>>> feats;
     bool hascam = sim1.get_next_cam(time_cam, camids, feats);
-    if (hascam) {
+    if (hascam)
+    {
       vec_camtime.push_back(time_cam);
       vec_feats.push_back(feats);
     }
@@ -124,13 +130,14 @@ int main(int argc, char **argv) {
   size_t ct_cam = 0;
 
   // Continue to simulate until we have processed all the measurements
-  while (sim2.ok()) {
-
+  while (sim2.ok())
+  {
     // IMU: get the next simulated IMU measurement if we have it
     double time_imu;
     Eigen::Vector3d wm, am;
     bool hasimu = sim2.get_next_imu(time_imu, wm, am);
-    if (hasimu) {
+    if (hasimu)
+    {
       assert(time_imu == vec_imutime.at(ct_imu));
       assert(wm(0) == vec_wm.at(ct_imu)(0));
       assert(wm(1) == vec_wm.at(ct_imu)(1));
@@ -146,10 +153,13 @@ int main(int argc, char **argv) {
     std::vector<int> camids;
     std::vector<std::vector<std::pair<size_t, Eigen::VectorXf>>> feats;
     bool hascam = sim2.get_next_cam(time_cam, camids, feats);
-    if (hascam) {
+    if (hascam)
+    {
       assert(time_cam == vec_camtime.at(ct_cam));
-      for (size_t camid = 0; camid < feats.size(); camid++) {
-        for (size_t i = 0; i < feats.at(camid).size(); i++) {
+      for (size_t camid = 0; camid < feats.size(); camid++)
+      {
+        for (size_t i = 0; i < feats.at(camid).size(); i++)
+        {
           assert(feats.at(camid).at(i).first == vec_feats.at(ct_cam).at(camid).at(i).first);
           assert(feats.at(camid).at(i).second(0) == vec_feats.at(ct_cam).at(camid).at(i).second(0));
           assert(feats.at(camid).at(i).second(1) == vec_feats.at(ct_cam).at(camid).at(i).second(1));

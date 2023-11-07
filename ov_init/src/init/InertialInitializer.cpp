@@ -35,9 +35,10 @@ using namespace ov_core;
 using namespace ov_type;
 using namespace ov_init;
 
-InertialInitializer::InertialInitializer(InertialInitializerOptions &params_, std::shared_ptr<ov_core::FeatureDatabase> db)
-    : params(params_), _db(db) {
-
+InertialInitializer::InertialInitializer(InertialInitializerOptions& params_,
+                                         std::shared_ptr<ov_core::FeatureDatabase> db)
+  : params(params_), _db(db)
+{
   // Vector of our IMU data
   imu_data = std::make_shared<std::vector<ov_core::ImuData>>();
 
@@ -46,8 +47,8 @@ InertialInitializer::InertialInitializer(InertialInitializerOptions &params_, st
   init_dynamic = std::make_shared<DynamicInitializer>(params, _db, imu_data);
 }
 
-void InertialInitializer::feed_imu(const ov_core::ImuData &message, double oldest_time) {
-
+void InertialInitializer::feed_imu(const ov_core::ImuData& message, double oldest_time)
+{
   // Append it to our vector
   imu_data->emplace_back(message);
 
@@ -58,32 +59,42 @@ void InertialInitializer::feed_imu(const ov_core::ImuData &message, double oldes
 
   // Loop through and delete imu messages that are older than our requested time
   // std::cout << "INIT: imu_data.size() " << imu_data->size() << std::endl;
-  if (oldest_time != -1) {
+  if (oldest_time != -1)
+  {
     auto it0 = imu_data->begin();
-    while (it0 != imu_data->end()) {
-      if (message.timestamp < oldest_time) {
+    while (it0 != imu_data->end())
+    {
+      if (message.timestamp < oldest_time)
+      {
         it0 = imu_data->erase(it0);
-      } else {
+      }
+      else
+      {
         it0++;
       }
     }
   }
 }
 
-bool InertialInitializer::initialize(double &timestamp, Eigen::MatrixXd &covariance, std::vector<std::shared_ptr<ov_type::Type>> &order,
-                                     std::shared_ptr<ov_type::IMU> t_imu, bool wait_for_jerk) {
-
+bool InertialInitializer::initialize(double& timestamp, Eigen::MatrixXd& covariance,
+                                     std::vector<std::shared_ptr<ov_type::Type>>& order,
+                                     std::shared_ptr<ov_type::IMU> t_imu, bool wait_for_jerk)
+{
   // Get the newest and oldest timestamps we will try to initialize between!
   double newest_cam_time = -1;
-  for (auto const &feat : _db->get_internal_data()) {
-    for (auto const &camtimepair : feat.second->timestamps) {
-      for (auto const &time : camtimepair.second) {
+  for (auto const& feat : _db->get_internal_data())
+  {
+    for (auto const& camtimepair : feat.second->timestamps)
+    {
+      for (auto const& time : camtimepair.second)
+      {
         newest_cam_time = std::max(newest_cam_time, time);
       }
     }
   }
   double oldest_time = newest_cam_time - params.init_window_time - 0.10;
-  if (newest_cam_time < 0 || oldest_time < 0) {
+  if (newest_cam_time < 0 || oldest_time < 0)
+  {
     return false;
   }
 
@@ -91,7 +102,8 @@ bool InertialInitializer::initialize(double &timestamp, Eigen::MatrixXd &covaria
   // Then we will try to use all features that are in the feature database!
   _db->cleanup_measurements(oldest_time);
   auto it_imu = imu_data->begin();
-  while (it_imu != imu_data->end() && it_imu->timestamp < oldest_time + params.calib_camimu_dt) {
+  while (it_imu != imu_data->end() && it_imu->timestamp < oldest_time + params.calib_camimu_dt)
+  {
     it_imu = imu_data->erase(it_imu);
   }
 
@@ -99,8 +111,8 @@ bool InertialInitializer::initialize(double &timestamp, Eigen::MatrixXd &covaria
   // If disparity is zero or negative we will always use the static initializer
   bool disparity_detected_moving_1to0 = false;
   bool disparity_detected_moving_2to1 = false;
-  if (params.init_max_disparity > 0) {
-
+  if (params.init_max_disparity > 0)
+  {
     // Get the disparity statistics from this image to the previous
     // Only compute the disparity for the oldest half of the initialization period
     double newest_time_allowed = newest_cam_time - 0.5 * params.init_window_time;
@@ -113,13 +125,16 @@ bool InertialInitializer::initialize(double &timestamp, Eigen::MatrixXd &covaria
 
     // Return if we can't compute the disparity
     int feat_thresh = 15;
-    if (num_features0 < feat_thresh || num_features1 < feat_thresh) {
-      PRINT_WARNING(YELLOW "[init]: not enough feats to compute disp: %d,%d < %d\n" RESET, num_features0, num_features1, feat_thresh);
+    if (num_features0 < feat_thresh || num_features1 < feat_thresh)
+    {
+      PRINT_WARNING(YELLOW "[init]: not enough feats to compute disp: %d,%d < %d\n" RESET, num_features0, num_features1,
+                    feat_thresh);
       return false;
     }
 
     // Check if it passed our check!
-    PRINT_INFO(YELLOW "[init]: disparity is %.3f,%.3f (%.2f thresh)\n" RESET, avg_disp0, avg_disp1, params.init_max_disparity);
+    PRINT_INFO(YELLOW "[init]: disparity is %.3f,%.3f (%.2f thresh)\n" RESET, avg_disp0, avg_disp1,
+               params.init_max_disparity);
     disparity_detected_moving_1to0 = (avg_disp0 > params.init_max_disparity);
     disparity_detected_moving_2to1 = (avg_disp1 > params.init_max_disparity);
   }
@@ -129,10 +144,13 @@ bool InertialInitializer::initialize(double &timestamp, Eigen::MatrixXd &covaria
   // CASE2: if both disparities are below the threshold, then the platform has been stationary during both periods
   bool has_jerk = (!disparity_detected_moving_1to0 && disparity_detected_moving_2to1);
   bool is_still = (!disparity_detected_moving_1to0 && !disparity_detected_moving_2to1);
-  if (((has_jerk && wait_for_jerk) || (is_still && !wait_for_jerk)) && params.init_imu_thresh > 0.0) {
+  if (((has_jerk && wait_for_jerk) || (is_still && !wait_for_jerk)) && params.init_imu_thresh > 0.0)
+  {
     PRINT_DEBUG(GREEN "[init]: USING STATIC INITIALIZER METHOD!\n" RESET);
     return init_static->initialize(timestamp, covariance, order, t_imu, wait_for_jerk);
-  } else if (params.init_dyn_use) {
+  }
+  else if (params.init_dyn_use)
+  {
     PRINT_DEBUG(GREEN "[init]: USING DYNAMIC INITIALIZER METHOD!\n" RESET);
     std::map<double, std::shared_ptr<ov_type::PoseJPL>> _clones_IMU;
     std::unordered_map<size_t, std::shared_ptr<ov_type::Landmark>> _features_SLAM;

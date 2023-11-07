@@ -24,8 +24,8 @@
 
 #include <ceres/ceres.h>
 
-namespace ov_init {
-
+namespace ov_init
+{
 /**
  * @brief Factor for generic state priors for specific types.
  *
@@ -69,7 +69,8 @@ namespace ov_init {
  * @f]
  *
  */
-class Factor_GenericPrior : public ceres::CostFunction {
+class Factor_GenericPrior : public ceres::CostFunction
+{
 public:
   /// State estimates at the time of marginalization to linearize the problem
   Eigen::MatrixXd x_lin;
@@ -86,17 +87,19 @@ public:
   /**
    * @brief Default constructor
    */
-  Factor_GenericPrior(const Eigen::MatrixXd &x_lin_, const std::vector<std::string> &x_type_, const Eigen::MatrixXd &prior_Info,
-                      const Eigen::MatrixXd &prior_grad);
+  Factor_GenericPrior(const Eigen::MatrixXd& x_lin_, const std::vector<std::string>& x_type_,
+                      const Eigen::MatrixXd& prior_Info, const Eigen::MatrixXd& prior_grad);
 
-  virtual ~Factor_GenericPrior() {}
+  virtual ~Factor_GenericPrior()
+  {
+  }
 
   /**
    * @brief Error residual and Jacobian calculation
    */
-  bool Evaluate(double const *const *parameters, double *residuals, double **jacobians) const override;
+  bool Evaluate(double const* const* parameters, double* residuals, double** jacobians) const override;
 };
 
-} // namespace ov_init
+}  // namespace ov_init
 
-#endif // OV_INIT_CERES_GENERICPRIOR_H
+#endif  // OV_INIT_CERES_GENERICPRIOR_H

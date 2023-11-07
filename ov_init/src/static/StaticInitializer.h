@@ -24,17 +24,19 @@
 
 #include "init/InertialInitializerOptions.h"
 
-namespace ov_core {
+namespace ov_core
+{
 class FeatureDatabase;
 struct ImuData;
-} // namespace ov_core
-namespace ov_type {
+}  // namespace ov_core
+namespace ov_type
+{
 class Type;
 class IMU;
-} // namespace ov_type
+}  // namespace ov_type
 
-namespace ov_init {
-
+namespace ov_init
+{
 /**
  * @brief Initializer for a static visual-inertial system.
  *
@@ -47,8 +49,8 @@ namespace ov_init {
  * 5. Return a roll and pitch aligned with gravity and biases.
  *
  */
-class StaticInitializer {
-
+class StaticInitializer
+{
 public:
   /**
    * @brief Default constructor
@@ -56,20 +58,24 @@ public:
    * @param db Feature tracker database with all features in it
    * @param imu_data_ Shared pointer to our IMU vector of historical information
    */
-  explicit StaticInitializer(InertialInitializerOptions &params_, std::shared_ptr<ov_core::FeatureDatabase> db,
+  explicit StaticInitializer(InertialInitializerOptions& params_, std::shared_ptr<ov_core::FeatureDatabase> db,
                              std::shared_ptr<std::vector<ov_core::ImuData>> imu_data_)
-      : params(params_), _db(db), imu_data(imu_data_) {}
+    : params(params_), _db(db), imu_data(imu_data_)
+  {
+  }
 
   /**
    * @brief Try to get the initialized system using just the imu
    *
    * This will check if we have had a large enough jump in our acceleration.
    * If we have then we will use the period of time before this jump to initialize the state.
-   * This assumes that our imu is sitting still and is not moving (so this would fail if we are experiencing constant acceleration).
+   * This assumes that our imu is sitting still and is not moving (so this would fail if we are experiencing constant
+   * acceleration).
    *
-   * In the case that we do not wait for a jump (i.e. `wait_for_jerk` is false), then the system will try to initialize as soon as possible.
-   * This is only recommended if you have zero velocity update enabled to handle the stationary cases.
-   * To initialize in this case, we need to have the average angular variance be below the set threshold (i.e. we need to be stationary).
+   * In the case that we do not wait for a jump (i.e. `wait_for_jerk` is false), then the system will try to initialize
+   * as soon as possible. This is only recommended if you have zero velocity update enabled to handle the stationary
+   * cases. To initialize in this case, we need to have the average angular variance be below the set threshold (i.e. we
+   * need to be stationary).
    *
    * @param[out] timestamp Timestamp we have initialized the state at
    * @param[out] covariance Calculated covariance of the returned state
@@ -78,7 +84,7 @@ public:
    * @param wait_for_jerk If true we will wait for a "jerk"
    * @return True if we have successfully initialized our system
    */
-  bool initialize(double &timestamp, Eigen::MatrixXd &covariance, std::vector<std::shared_ptr<ov_type::Type>> &order,
+  bool initialize(double& timestamp, Eigen::MatrixXd& covariance, std::vector<std::shared_ptr<ov_type::Type>>& order,
                   std::shared_ptr<ov_type::IMU> t_imu, bool wait_for_jerk = true);
 
 private:
@@ -92,6 +98,6 @@ private:
   std::shared_ptr<std::vector<ov_core::ImuData>> imu_data;
 };
 
-} // namespace ov_init
+}  // namespace ov_init
 
-#endif // OV_INIT_STATICINITIALIZER_H
+#endif  // OV_INIT_STATICINITIALIZER_H

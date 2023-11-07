@@ -31,13 +31,13 @@
 #include "utils/quat_ops.h"
 
 ros::Publisher pub_path;
-void align_and_publish(const nav_msgs::Path::ConstPtr &msg);
+void align_and_publish(const nav_msgs::Path::ConstPtr& msg);
 std::vector<double> times_gt;
 std::vector<Eigen::Matrix<double, 7, 1>> poses_gt;
 std::string alignment_type;
 
-int main(int argc, char **argv) {
-
+int main(int argc, char** argv)
+{
   // Create ros node
   ros::init(argc, argv, "live_align_trajectory");
   ros::NodeHandle nh("~");
@@ -51,7 +51,8 @@ int main(int argc, char **argv) {
   nh.param<std::string>("alignment_type", alignment_type, "posyaw");
 
   // If we don't have it, or it is empty then error
-  if (!nh.hasParam("path_gt")) {
+  if (!nh.hasParam("path_gt"))
+  {
     ROS_ERROR("[LOAD]: Please provide a groundtruth file path!!!");
     std::exit(EXIT_FAILURE);
   }
@@ -60,10 +61,13 @@ int main(int argc, char **argv) {
   std::string path_to_gt;
   nh.param<std::string>("path_gt", path_to_gt, "");
   boost::filesystem::path infolder(path_to_gt);
-  if (infolder.extension() == ".csv") {
+  if (infolder.extension() == ".csv")
+  {
     std::vector<Eigen::Matrix3d> cov_ori_temp, cov_pos_temp;
     ov_eval::Loader::load_data_csv(path_to_gt, times_gt, poses_gt, cov_ori_temp, cov_pos_temp);
-  } else {
+  }
+  else
+  {
     std::vector<Eigen::Matrix3d> cov_ori_temp, cov_pos_temp;
     ov_eval::Loader::load_data(path_to_gt, times_gt, poses_gt, cov_ori_temp, cov_pos_temp);
   }
@@ -78,17 +82,18 @@ int main(int argc, char **argv) {
   ros::spin();
 }
 
-void align_and_publish(const nav_msgs::Path::ConstPtr &msg) {
-
+void align_and_publish(const nav_msgs::Path::ConstPtr& msg)
+{
   // Convert the message into correct vector format
   // tx ty tz qx qy qz qw
   std::vector<double> times_temp;
   std::vector<Eigen::Matrix<double, 7, 1>> poses_temp;
-  for (auto const &pose : msg->poses) {
+  for (auto const& pose : msg->poses)
+  {
     times_temp.push_back(pose.header.stamp.toSec());
     Eigen::Matrix<double, 7, 1> pose_tmp;
-    pose_tmp << pose.pose.position.x, pose.pose.position.y, pose.pose.position.z, pose.pose.orientation.x, pose.pose.orientation.y,
-        pose.pose.orientation.z, pose.pose.orientation.w;
+    pose_tmp << pose.pose.position.x, pose.pose.position.y, pose.pose.position.z, pose.pose.orientation.x,
+        pose.pose.orientation.y, pose.pose.orientation.z, pose.pose.orientation.w;
     poses_temp.push_back(pose_tmp);
   }
 
@@ -98,7 +103,8 @@ void align_and_publish(const nav_msgs::Path::ConstPtr &msg) {
   ov_eval::AlignUtils::perform_association(0, 0.02, times_temp, gt_times_temp, poses_temp, gt_poses_temp);
 
   // Return failure if we didn't have any common timestamps
-  if (poses_temp.size() < 3) {
+  if (poses_temp.size() < 3)
+  {
     PRINT_ERROR(RED "[TRAJ]: unable to get enough common timestamps between trajectories.\n" RESET);
     PRINT_ERROR(RED "[TRAJ]: does the estimated trajectory publish the rosbag timestamps??\n" RESET);
     return;
@@ -108,10 +114,11 @@ void align_and_publish(const nav_msgs::Path::ConstPtr &msg) {
   Eigen::Matrix3d R_ESTtoGT;
   Eigen::Vector3d t_ESTinGT;
   double s_ESTtoGT;
-  ov_eval::AlignTrajectory::align_trajectory(poses_temp, gt_poses_temp, R_ESTtoGT, t_ESTinGT, s_ESTtoGT, alignment_type);
+  ov_eval::AlignTrajectory::align_trajectory(poses_temp, gt_poses_temp, R_ESTtoGT, t_ESTinGT, s_ESTtoGT,
+                                             alignment_type);
   Eigen::Vector4d q_ESTtoGT = ov_core::rot_2_quat(R_ESTtoGT);
-  PRINT_DEBUG("[TRAJ]: q_ESTtoGT = %.3f, %.3f, %.3f, %.3f | p_ESTinGT = %.3f, %.3f, %.3f | s = %.2f\n", q_ESTtoGT(0), q_ESTtoGT(1),
-              q_ESTtoGT(2), q_ESTtoGT(3), t_ESTinGT(0), t_ESTinGT(1), t_ESTinGT(2), s_ESTtoGT);
+  PRINT_DEBUG("[TRAJ]: q_ESTtoGT = %.3f, %.3f, %.3f, %.3f | p_ESTinGT = %.3f, %.3f, %.3f | s = %.2f\n", q_ESTtoGT(0),
+              q_ESTtoGT(1), q_ESTtoGT(2), q_ESTtoGT(3), t_ESTinGT(0), t_ESTinGT(1), t_ESTinGT(2), s_ESTtoGT);
 
   // Finally lets calculate the aligned trajectories
   // TODO: maybe in the future we could live publish trajectory errors...
@@ -119,8 +126,8 @@ void align_and_publish(const nav_msgs::Path::ConstPtr &msg) {
   // NOTE: https://github.com/ros-visualization/rviz/issues/1107
   nav_msgs::Path arr_groundtruth;
   arr_groundtruth.header = msg->header;
-  for (size_t i = 0; i < gt_times_temp.size(); i += std::floor(gt_times_temp.size() / 16384.0) + 1) {
-
+  for (size_t i = 0; i < gt_times_temp.size(); i += std::floor(gt_times_temp.size() / 16384.0) + 1)
+  {
     // Convert into the correct frame
     double timestamp = gt_times_temp.at(i);
     Eigen::Matrix<double, 7, 1> pose_inGT = gt_poses_temp.at(i);

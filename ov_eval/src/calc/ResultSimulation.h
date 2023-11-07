@@ -46,18 +46,18 @@
 
 #endif
 
-namespace ov_eval {
-
+namespace ov_eval
+{
 /**
  * @brief A single simulation run (the full state not just pose).
  *
- * This should match the recording logic that is in the ov_msckf::RosVisualizer in which we write both estimate, their deviation, and
- * groundtruth to three files. We enforce that these files first contain the current IMU state, then time offset, number of cameras, then
- * the camera calibration states. If we are not performing calibration these should all be written to file, just their deviation should be
- * zero as they are 100% certain.
+ * This should match the recording logic that is in the ov_msckf::RosVisualizer in which we write both estimate, their
+ * deviation, and groundtruth to three files. We enforce that these files first contain the current IMU state, then time
+ * offset, number of cameras, then the camera calibration states. If we are not performing calibration these should all
+ * be written to file, just their deviation should be zero as they are 100% certain.
  */
-class ResultSimulation {
-
+class ResultSimulation
+{
 public:
   /**
    * @brief Default constructor that will load our data from file
@@ -110,40 +110,46 @@ protected:
    * @param color_err MATLAB color string for error line (blue, red, etc.)
    * @param color_std MATLAB color string for deviation (blue, red, etc.)
    */
-  void plot_3errors(ov_eval::Statistics sx, ov_eval::Statistics sy, ov_eval::Statistics sz, std::string color_err, std::string color_std) {
-
+  void plot_3errors(ov_eval::Statistics sx, ov_eval::Statistics sy, ov_eval::Statistics sz, std::string color_err,
+                    std::string color_std)
+  {
     // Zero our time arrays
     double starttime1 = (sx.timestamps.empty()) ? 0 : sx.timestamps.at(0);
     double endtime1 = (sx.timestamps.empty()) ? 0 : sx.timestamps.at(sx.timestamps.size() - 1);
-    for (size_t i = 0; i < sx.timestamps.size(); i++) {
+    for (size_t i = 0; i < sx.timestamps.size(); i++)
+    {
       sx.timestamps.at(i) -= starttime1;
     }
     double starttime2 = (sy.timestamps.empty()) ? 0 : sy.timestamps.at(0);
     double endtime2 = (sy.timestamps.empty()) ? 0 : sy.timestamps.at(sy.timestamps.size() - 1);
-    for (size_t i = 0; i < sy.timestamps.size(); i++) {
+    for (size_t i = 0; i < sy.timestamps.size(); i++)
+    {
       sy.timestamps.at(i) -= starttime2;
     }
     double starttime3 = (sz.timestamps.empty()) ? 0 : sz.timestamps.at(0);
     double endtime3 = (sz.timestamps.empty()) ? 0 : sz.timestamps.at(sz.timestamps.size() - 1);
-    for (size_t i = 0; i < sz.timestamps.size(); i++) {
+    for (size_t i = 0; i < sz.timestamps.size(); i++)
+    {
       sz.timestamps.at(i) -= starttime3;
     }
 
     // Parameters that define the line styles
     std::map<std::string, std::string> params_value, params_bound;
     // params_value.insert({"label","error"});
-    params_value.insert({"linestyle", "-"});
-    params_value.insert({"color", color_err});
+    params_value.insert({ "linestyle", "-" });
+    params_value.insert({ "color", color_err });
     // params_bound.insert({"label","3 sigma bound"});
-    params_bound.insert({"linestyle", "--"});
-    params_bound.insert({"color", color_std});
+    params_bound.insert({ "linestyle", "--" });
+    params_bound.insert({ "color", color_std });
 
     // Plot our error value
     matplotlibcpp::subplot(3, 1, 1);
     matplotlibcpp::plot(sx.timestamps, sx.values, params_value);
-    if (!sx.values_bound.empty()) {
+    if (!sx.values_bound.empty())
+    {
       matplotlibcpp::plot(sx.timestamps, sx.values_bound, params_bound);
-      for (size_t i = 0; i < sx.timestamps.size(); i++) {
+      for (size_t i = 0; i < sx.timestamps.size(); i++)
+      {
         sx.values_bound.at(i) *= -1;
       }
       matplotlibcpp::plot(sx.timestamps, sx.values_bound, params_bound);
@@ -153,9 +159,11 @@ protected:
     // Plot our error value
     matplotlibcpp::subplot(3, 1, 2);
     matplotlibcpp::plot(sy.timestamps, sy.values, params_value);
-    if (!sy.values_bound.empty()) {
+    if (!sy.values_bound.empty())
+    {
       matplotlibcpp::plot(sy.timestamps, sy.values_bound, params_bound);
-      for (size_t i = 0; i < sy.timestamps.size(); i++) {
+      for (size_t i = 0; i < sy.timestamps.size(); i++)
+      {
         sy.values_bound.at(i) *= -1;
       }
       matplotlibcpp::plot(sy.timestamps, sy.values_bound, params_bound);
@@ -165,9 +173,11 @@ protected:
     // Plot our error value
     matplotlibcpp::subplot(3, 1, 3);
     matplotlibcpp::plot(sz.timestamps, sz.values, params_value);
-    if (!sz.values_bound.empty()) {
+    if (!sz.values_bound.empty())
+    {
       matplotlibcpp::plot(sz.timestamps, sz.values_bound, params_bound);
-      for (size_t i = 0; i < sz.timestamps.size(); i++) {
+      for (size_t i = 0; i < sz.timestamps.size(); i++)
+      {
         sz.values_bound.at(i) *= -1;
       }
       matplotlibcpp::plot(sz.timestamps, sz.values_bound, params_bound);
@@ -184,46 +194,52 @@ protected:
    * @param color_err MATLAB color string for error line (blue, red, etc.)
    * @param color_std MATLAB color string for deviation (blue, red, etc.)
    */
-  void plot_4errors(ov_eval::Statistics sx, ov_eval::Statistics sy, ov_eval::Statistics sz, ov_eval::Statistics sk, std::string color_err,
-                    std::string color_std) {
-
+  void plot_4errors(ov_eval::Statistics sx, ov_eval::Statistics sy, ov_eval::Statistics sz, ov_eval::Statistics sk,
+                    std::string color_err, std::string color_std)
+  {
     // Zero our time arrays
     double starttime1 = (sx.timestamps.empty()) ? 0 : sx.timestamps.at(0);
     double endtime1 = (sx.timestamps.empty()) ? 0 : sx.timestamps.at(sx.timestamps.size() - 1);
-    for (size_t i = 0; i < sx.timestamps.size(); i++) {
+    for (size_t i = 0; i < sx.timestamps.size(); i++)
+    {
       sx.timestamps.at(i) -= starttime1;
     }
     double starttime2 = (sy.timestamps.empty()) ? 0 : sy.timestamps.at(0);
     double endtime2 = (sy.timestamps.empty()) ? 0 : sy.timestamps.at(sy.timestamps.size() - 1);
-    for (size_t i = 0; i < sy.timestamps.size(); i++) {
+    for (size_t i = 0; i < sy.timestamps.size(); i++)
+    {
       sy.timestamps.at(i) -= starttime2;
     }
     double starttime3 = (sz.timestamps.empty()) ? 0 : sz.timestamps.at(0);
     double endtime3 = (sz.timestamps.empty()) ? 0 : sz.timestamps.at(sz.timestamps.size() - 1);
-    for (size_t i = 0; i < sz.timestamps.size(); i++) {
+    for (size_t i = 0; i < sz.timestamps.size(); i++)
+    {
       sz.timestamps.at(i) -= starttime3;
     }
     double starttime4 = (sk.timestamps.empty()) ? 0 : sk.timestamps.at(0);
     double endtime4 = (sk.timestamps.empty()) ? 0 : sk.timestamps.at(sk.timestamps.size() - 1);
-    for (size_t i = 0; i < sk.timestamps.size(); i++) {
+    for (size_t i = 0; i < sk.timestamps.size(); i++)
+    {
       sk.timestamps.at(i) -= starttime4;
     }
 
     // Parameters that define the line styles
     std::map<std::string, std::string> params_value, params_bound;
     // params_value.insert({"label","error"});
-    params_value.insert({"linestyle", "-"});
-    params_value.insert({"color", color_err});
+    params_value.insert({ "linestyle", "-" });
+    params_value.insert({ "color", color_err });
     // params_bound.insert({"label","3 sigma bound"});
-    params_bound.insert({"linestyle", "--"});
-    params_bound.insert({"color", color_std});
+    params_bound.insert({ "linestyle", "--" });
+    params_bound.insert({ "color", color_std });
 
     // Plot our error value
     matplotlibcpp::subplot(4, 1, 1);
     matplotlibcpp::plot(sx.timestamps, sx.values, params_value);
-    if (!sx.values_bound.empty()) {
+    if (!sx.values_bound.empty())
+    {
       matplotlibcpp::plot(sx.timestamps, sx.values_bound, params_bound);
-      for (size_t i = 0; i < sx.timestamps.size(); i++) {
+      for (size_t i = 0; i < sx.timestamps.size(); i++)
+      {
         sx.values_bound.at(i) *= -1;
       }
       matplotlibcpp::plot(sx.timestamps, sx.values_bound, params_bound);
@@ -233,9 +249,11 @@ protected:
     // Plot our error value
     matplotlibcpp::subplot(4, 1, 2);
     matplotlibcpp::plot(sy.timestamps, sy.values, params_value);
-    if (!sy.values_bound.empty()) {
+    if (!sy.values_bound.empty())
+    {
       matplotlibcpp::plot(sy.timestamps, sy.values_bound, params_bound);
-      for (size_t i = 0; i < sy.timestamps.size(); i++) {
+      for (size_t i = 0; i < sy.timestamps.size(); i++)
+      {
         sy.values_bound.at(i) *= -1;
       }
       matplotlibcpp::plot(sy.timestamps, sy.values_bound, params_bound);
@@ -245,9 +263,11 @@ protected:
     // Plot our error value
     matplotlibcpp::subplot(4, 1, 3);
     matplotlibcpp::plot(sz.timestamps, sz.values, params_value);
-    if (!sz.values_bound.empty()) {
+    if (!sz.values_bound.empty())
+    {
       matplotlibcpp::plot(sz.timestamps, sz.values_bound, params_bound);
-      for (size_t i = 0; i < sz.timestamps.size(); i++) {
+      for (size_t i = 0; i < sz.timestamps.size(); i++)
+      {
         sz.values_bound.at(i) *= -1;
       }
       matplotlibcpp::plot(sz.timestamps, sz.values_bound, params_bound);
@@ -257,9 +277,11 @@ protected:
     // Plot our error value
     matplotlibcpp::subplot(4, 1, 4);
     matplotlibcpp::plot(sk.timestamps, sk.values, params_value);
-    if (!sk.values_bound.empty()) {
+    if (!sk.values_bound.empty())
+    {
       matplotlibcpp::plot(sk.timestamps, sk.values_bound, params_bound);
-      for (size_t i = 0; i < sk.timestamps.size(); i++) {
+      for (size_t i = 0; i < sk.timestamps.size(); i++)
+      {
         sk.values_bound.at(i) *= -1;
       }
       matplotlibcpp::plot(sk.timestamps, sk.values_bound, params_bound);
@@ -270,6 +292,6 @@ protected:
 #endif
 };
 
-} // namespace ov_eval
+}  // namespace ov_eval
 
-#endif // OV_EVAL_SIMULATION_H
+#endif  // OV_EVAL_SIMULATION_H

@@ -30,8 +30,8 @@
 
 #include <Eigen/Dense>
 
-namespace ov_core {
-
+namespace ov_core
+{
 /**
  * @brief Model 2 of continuous preintegration.
  *
@@ -46,8 +46,8 @@ namespace ov_core {
  * 2. call feed_IMU() will all IMU measurements you want to precompound over
  * 3. access public varibles, to get means, Jacobians, and measurement covariance
  */
-class CpiV2 : public CpiBase {
-
+class CpiV2 : public CpiBase
+{
 private:
   // Extended covariance used to handle the sampling model
   Eigen::Matrix<double, 21, 21> P_big = Eigen::Matrix<double, 21, 21>::Zero();
@@ -77,9 +77,13 @@ public:
    * @param imu_avg_ if we want to average the imu measurements (IJRR paper did not do this)
    */
   CpiV2(double sigma_w, double sigma_wb, double sigma_a, double sigma_ab, bool imu_avg_ = false)
-      : CpiBase(sigma_w, sigma_wb, sigma_a, sigma_ab, imu_avg_) {}
+    : CpiBase(sigma_w, sigma_wb, sigma_a, sigma_ab, imu_avg_)
+  {
+  }
 
-  virtual ~CpiV2() {}
+  virtual ~CpiV2()
+  {
+  }
 
   /**
    * @brief Our precompound function for Model 2
@@ -99,6 +103,6 @@ public:
                 Eigen::Matrix<double, 3, 1> a_m_1 = Eigen::Matrix<double, 3, 1>::Zero());
 };
 
-} // namespace ov_core
+}  // namespace ov_core
 
 #endif /* CPI_V2_H */

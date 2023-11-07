@@ -28,13 +28,13 @@
 
 #include <climits>
 
-namespace ov_msckf {
-
+namespace ov_msckf
+{
 /**
  * @brief Struct which stores all our filter options
  */
-struct StateOptions {
-
+struct StateOptions
+{
   /// Bool to determine whether or not to do first estimate Jacobians
   bool do_fej = true;
 
@@ -72,17 +72,22 @@ struct StateOptions {
   int num_cameras = 1;
 
   /// What representation our features are in (msckf features)
-  ov_type::LandmarkRepresentation::Representation feat_rep_msckf = ov_type::LandmarkRepresentation::Representation::GLOBAL_3D;
+  ov_type::LandmarkRepresentation::Representation feat_rep_msckf =
+      ov_type::LandmarkRepresentation::Representation::GLOBAL_3D;
 
   /// What representation our features are in (slam features)
-  ov_type::LandmarkRepresentation::Representation feat_rep_slam = ov_type::LandmarkRepresentation::Representation::GLOBAL_3D;
+  ov_type::LandmarkRepresentation::Representation feat_rep_slam =
+      ov_type::LandmarkRepresentation::Representation::GLOBAL_3D;
 
   /// What representation our features are in (aruco tag features)
-  ov_type::LandmarkRepresentation::Representation feat_rep_aruco = ov_type::LandmarkRepresentation::Representation::GLOBAL_3D;
+  ov_type::LandmarkRepresentation::Representation feat_rep_aruco =
+      ov_type::LandmarkRepresentation::Representation::GLOBAL_3D;
 
   /// Nice print function of what parameters we have loaded
-  void print(const std::shared_ptr<ov_core::YamlParser> &parser = nullptr) {
-    if (parser != nullptr) {
+  void print(const std::shared_ptr<ov_core::YamlParser>& parser = nullptr)
+  {
+    if (parser != nullptr)
+    {
       parser->parse_config("use_fej", do_fej);
       parser->parse_config("use_imuavg", imu_avg);
       parser->parse_config("use_rk4int", use_rk4_integration);
@@ -123,6 +128,6 @@ struct StateOptions {
   }
 };
 
-} // namespace ov_msckf
+}  // namespace ov_msckf
 
-#endif // OV_MSCKF_STATE_OPTIONS_H
+#endif  // OV_MSCKF_STATE_OPTIONS_H

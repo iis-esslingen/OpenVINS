@@ -46,7 +46,7 @@
 using namespace ov_core;
 
 // Our feature extractor
-TrackBase *extractor;
+TrackBase* extractor;
 
 // FPS counter, and other statistics
 // https://gamedev.stackexchange.com/a/83174
@@ -65,11 +65,12 @@ int max_cameras = 2;
 void handle_stereo(double time0, double time1, cv::Mat img0, cv::Mat img1);
 
 // Main function
-int main(int argc, char **argv) {
-
+int main(int argc, char** argv)
+{
   // Ensure we have a path, if the user passes it then we should use it
   std::string config_path = "unset_path.txt";
-  if (argc > 1) {
+  if (argc > 1)
+  {
     config_path = argv[1];
   }
 
@@ -140,13 +141,20 @@ int main(int argc, char **argv) {
   ov_core::TrackBase::HistogramMethod method;
   std::string histogram_method_str = "HISTOGRAM";
   parser->parse_config("histogram_method", histogram_method_str, false);
-  if (histogram_method_str == "NONE") {
+  if (histogram_method_str == "NONE")
+  {
     method = ov_core::TrackBase::NONE;
-  } else if (histogram_method_str == "HISTOGRAM") {
+  }
+  else if (histogram_method_str == "HISTOGRAM")
+  {
     method = ov_core::TrackBase::HISTOGRAM;
-  } else if (histogram_method_str == "CLAHE") {
+  }
+  else if (histogram_method_str == "CLAHE")
+  {
     method = ov_core::TrackBase::CLAHE;
-  } else {
+  }
+  else
+  {
     printf(RED "invalid feature histogram specified:\n" RESET);
     printf(RED "\t- NONE\n" RESET);
     printf(RED "\t- HISTOGRAM\n" RESET);
@@ -167,19 +175,20 @@ int main(int argc, char **argv) {
 
   // Fake camera info (we don't need this, as we are not using the normalized coordinates for anything)
   std::unordered_map<size_t, std::shared_ptr<CamBase>> cameras;
-  for (int i = 0; i < 2; i++) {
+  for (int i = 0; i < 2; i++)
+  {
     Eigen::Matrix<double, 8, 1> cam0_calib;
     cam0_calib << 1, 1, 0, 0, 0, 0, 0, 0;
     std::shared_ptr<CamBase> camera_calib = std::make_shared<CamRadtan>(100, 100);
     camera_calib->set_value(cam0_calib);
-    cameras.insert({i, camera_calib});
+    cameras.insert({ i, camera_calib });
   }
 
   // Lets make a feature extractor
-  extractor = new TrackKLT(cameras, num_pts, num_aruco, use_stereo, method, fast_threshold, grid_x, grid_y, min_px_dist);
-  // extractor = new TrackDescriptor(cameras, num_pts, num_aruco, use_stereo, method, fast_threshold, grid_x, grid_y, min_px_dist,
-  // knn_ratio);
-  // extractor = new TrackAruco(cameras, num_aruco, use_stereo, method, do_downsizing);
+  extractor =
+      new TrackKLT(cameras, num_pts, num_aruco, use_stereo, method, fast_threshold, grid_x, grid_y, min_px_dist);
+  // extractor = new TrackDescriptor(cameras, num_pts, num_aruco, use_stereo, method, fast_threshold, grid_x, grid_y,
+  // min_px_dist, knn_ratio); extractor = new TrackAruco(cameras, num_aruco, use_stereo, method, do_downsizing);
 
   //===================================================================================
   //===================================================================================
@@ -205,7 +214,8 @@ int main(int argc, char **argv) {
   view.addQuery(bag, time_init, time_finish);
 
   // Check to make sure we have data to play
-  if (view.size() == 0) {
+  if (view.size() == 0)
+  {
     PRINT_ERROR(RED "No messages to play on specified topics. Exiting.\n" RESET);
     ros::shutdown();
     return EXIT_FAILURE;
@@ -222,20 +232,24 @@ int main(int argc, char **argv) {
   double time1 = time_init.toSec();
 
   // Step through the rosbag
-  for (const rosbag::MessageInstance &m : view) {
-
+  for (const rosbag::MessageInstance& m : view)
+  {
     // If ros is wants us to stop, break out
     if (!ros::ok())
       break;
 
     // Handle LEFT camera
     sensor_msgs::Image::ConstPtr s0 = m.instantiate<sensor_msgs::Image>();
-    if (s0 != nullptr && m.getTopic() == topic_camera0) {
+    if (s0 != nullptr && m.getTopic() == topic_camera0)
+    {
       // Get the image
       cv_bridge::CvImageConstPtr cv_ptr;
-      try {
+      try
+      {
         cv_ptr = cv_bridge::toCvShare(s0, sensor_msgs::image_encodings::MONO8);
-      } catch (cv_bridge::Exception &e) {
+      }
+      catch (cv_bridge::Exception& e)
+      {
         PRINT_ERROR(RED "cv_bridge exception: %s\n" RESET, e.what());
         continue;
       }
@@ -248,12 +262,16 @@ int main(int argc, char **argv) {
 
     //  Handle RIGHT camera
     sensor_msgs::Image::ConstPtr s1 = m.instantiate<sensor_msgs::Image>();
-    if (s1 != nullptr && m.getTopic() == topic_camera1) {
+    if (s1 != nullptr && m.getTopic() == topic_camera1)
+    {
       // Get the image
       cv_bridge::CvImageConstPtr cv_ptr;
-      try {
+      try
+      {
         cv_ptr = cv_bridge::toCvShare(s1, sensor_msgs::image_encodings::MONO8);
-      } catch (cv_bridge::Exception &e) {
+      }
+      catch (cv_bridge::Exception& e)
+      {
         PRINT_ERROR(RED "cv_bridge exception: %s\n" RESET, e.what());
         continue;
       }
@@ -265,7 +283,8 @@ int main(int argc, char **argv) {
     }
 
     // If we have both left and right, then process
-    if (has_left && has_right) {
+    if (has_left && has_right)
+    {
       // process
       handle_stereo(time0, time1, img0, img1);
       // reset bools
@@ -281,14 +300,15 @@ int main(int argc, char **argv) {
 /**
  * This function will process the new stereo pair with the extractor!
  */
-void handle_stereo(double time0, double time1, cv::Mat img0, cv::Mat img1) {
-
+void handle_stereo(double time0, double time1, cv::Mat img0, cv::Mat img1)
+{
   // Animate our dynamic mask moving
   // Very simple ball bounding around the screen example
   cv::Mat mask = cv::Mat::zeros(cv::Size(img0.cols, img0.rows), CV_8UC1);
   static cv::Point2f ball_center;
   static cv::Point2f ball_velocity;
-  if (ball_velocity.x == 0 || ball_velocity.y == 0) {
+  if (ball_velocity.x == 0 || ball_velocity.y == 0)
+  {
     ball_center.x = (float)img0.cols / 2.0f;
     ball_center.y = (float)img0.rows / 2.0f;
     ball_velocity.x = 2.5;
@@ -307,7 +327,8 @@ void handle_stereo(double time0, double time1, cv::Mat img0, cv::Mat img1) {
   message.sensor_ids.push_back(0);
   message.images.push_back(img0);
   message.masks.push_back(mask);
-  if (max_cameras == 2) {
+  if (max_cameras == 2)
+  {
     message.sensor_ids.push_back(1);
     message.images.push_back(img1);
     message.masks.push_back(mask);
@@ -330,10 +351,12 @@ void handle_stereo(double time0, double time1, cv::Mat img0, cv::Mat img1) {
   num_lostfeats += feats_lost.size();
 
   // Mark theses feature pointers as deleted
-  for (size_t i = 0; i < feats_lost.size(); i++) {
+  for (size_t i = 0; i < feats_lost.size(); i++)
+  {
     // Total number of measurements
     int total_meas = 0;
-    for (auto const &pair : feats_lost[i]->timestamps) {
+    for (auto const& pair : feats_lost[i]->timestamps)
+    {
       total_meas += (int)pair.second.size();
     }
     // Update stats
@@ -345,14 +368,16 @@ void handle_stereo(double time0, double time1, cv::Mat img0, cv::Mat img1) {
   clonetimes.push_back(time0);
 
   // Marginalized features if we have reached 5 frame tracks
-  if ((int)clonetimes.size() >= clone_states) {
+  if ((int)clonetimes.size() >= clone_states)
+  {
     // Remove features that have reached their max track length
     double margtime = clonetimes.at(0);
     clonetimes.pop_front();
     std::vector<std::shared_ptr<Feature>> feats_marg = database->features_containing(margtime);
     num_margfeats += feats_marg.size();
     // Delete theses feature pointers
-    for (size_t i = 0; i < feats_marg.size(); i++) {
+    for (size_t i = 0; i < feats_marg.size(); i++)
+    {
       feats_marg[i]->to_delete = true;
     }
   }
@@ -364,14 +389,16 @@ void handle_stereo(double time0, double time1, cv::Mat img0, cv::Mat img1) {
   // We want the FPS to be as high as possible
   ros::Time time_curr = ros::Time::now();
   // if (time_curr.toSec()-time_start.toSec() > 2) {
-  if (frames > 60) {
+  if (frames > 60)
+  {
     // Calculate the FPS
     double fps = (double)frames / (time_curr.toSec() - time_start.toSec());
     double lpf = (double)num_lostfeats / frames;
     double fpf = (double)featslengths / num_lostfeats;
     double mpf = (double)num_margfeats / frames;
     // DEBUG PRINT OUT
-    PRINT_DEBUG("fps = %.2f | lost_feats/frame = %.2f | track_length/lost_feat = %.2f | marg_tracks/frame = %.2f\n", fps, lpf, fpf, mpf);
+    PRINT_DEBUG("fps = %.2f | lost_feats/frame = %.2f | track_length/lost_feat = %.2f | marg_tracks/frame = %.2f\n",
+                fps, lpf, fpf, mpf);
     // Reset variables
     frames = 0;
     time_start = time_curr;

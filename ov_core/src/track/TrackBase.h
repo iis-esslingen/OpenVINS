@@ -37,8 +37,8 @@
 #include "utils/print.h"
 #include "utils/sensor_data.h"
 
-namespace ov_core {
-
+namespace ov_core
+{
 class Feature;
 class CamBase;
 class FeatureDatabase;
@@ -57,25 +57,32 @@ class FeatureDatabase;
  *
  * @par A Note on Multi-Threading Support
  * There is some support for asynchronous multi-threaded feature tracking of independent cameras.
- * The key assumption during implementation is that the user will not try to track on the same camera in parallel, and instead call on
- * different cameras. For example, if I have two cameras, I can either sequentially call the feed function, or I spin each of these into
- * separate threads and wait for their return. The @ref currid is atomic to allow for multiple threads to access it without issue and ensure
- * that all features have unique id values. We also have mutex for access for the calibration and previous images and tracks (used during
- * visualization). It should be noted that if a thread calls visualization, it might hang or the feed thread might, due to acquiring the
- * mutex for that specific camera id / feed.
+ * The key assumption during implementation is that the user will not try to track on the same camera in parallel, and
+ * instead call on different cameras. For example, if I have two cameras, I can either sequentially call the feed
+ * function, or I spin each of these into separate threads and wait for their return. The @ref currid is atomic to allow
+ * for multiple threads to access it without issue and ensure that all features have unique id values. We also have
+ * mutex for access for the calibration and previous images and tracks (used during visualization). It should be noted
+ * that if a thread calls visualization, it might hang or the feed thread might, due to acquiring the mutex for that
+ * specific camera id / feed.
  *
  * This base class also handles most of the heavy lifting with the visualization, but the sub-classes can override
  * this and do their own logic if they want (i.e. the TrackAruco has its own logic for visualization).
- * This visualization needs access to the prior images and their tracks, thus must synchronise in the case of multi-threading.
- * This shouldn't impact performance, but high frequency visualization calls can negatively effect the performance.
+ * This visualization needs access to the prior images and their tracks, thus must synchronise in the case of
+ * multi-threading. This shouldn't impact performance, but high frequency visualization calls can negatively effect the
+ * performance.
  */
-class TrackBase {
-
+class TrackBase
+{
 public:
   /**
    * @brief Desired pre-processing image method.
    */
-  enum HistogramMethod { NONE, HISTOGRAM, CLAHE };
+  enum HistogramMethod
+  {
+    NONE,
+    HISTOGRAM,
+    CLAHE
+  };
 
   /**
    * @brief Public constructor with configuration variables
@@ -88,13 +95,15 @@ public:
   TrackBase(std::unordered_map<size_t, std::shared_ptr<CamBase>> cameras, int numfeats, int numaruco, bool stereo,
             HistogramMethod histmethod);
 
-  virtual ~TrackBase() {}
+  virtual ~TrackBase()
+  {
+  }
 
   /**
    * @brief Process a new image
    * @param message Contains our timestamp, images, and camera ids
    */
-  virtual void feed_new_camera(const CameraData &message) = 0;
+  virtual void feed_new_camera(const CameraData& message) = 0;
 
   /**
    * @brief Shows features extracted in the last image
@@ -103,7 +112,8 @@ public:
    * @param r2,g2,b2 second color to draw in
    * @param overlay Text overlay to replace to normal "cam0" in the top left of screen
    */
-  virtual void display_active(cv::Mat &img_out, int r1, int g1, int b1, int r2, int g2, int b2, std::string overlay = "");
+  virtual void display_active(cv::Mat& img_out, int r1, int g1, int b1, int r2, int g2, int b2,
+                              std::string overlay = "");
 
   /**
    * @brief Shows a "trail" for each feature (i.e. its history)
@@ -113,14 +123,17 @@ public:
    * @param highlighted unique ids which we wish to highlight (e.g. slam feats)
    * @param overlay Text overlay to replace to normal "cam0" in the top left of screen
    */
-  virtual void display_history(cv::Mat &img_out, int r1, int g1, int b1, int r2, int g2, int b2, std::vector<size_t> highlighted = {},
-                               std::string overlay = "");
+  virtual void display_history(cv::Mat& img_out, int r1, int g1, int b1, int r2, int g2, int b2,
+                               std::vector<size_t> highlighted = {}, std::string overlay = "");
 
   /**
    * @brief Get the feature database with all the track information
    * @return FeatureDatabase pointer that one can query for features
    */
-  std::shared_ptr<FeatureDatabase> get_feature_database() { return database; }
+  std::shared_ptr<FeatureDatabase> get_feature_database()
+  {
+    return database;
+  }
 
   /**
    * @brief Changes the ID of an actively tracked feature to another one.
@@ -134,22 +147,30 @@ public:
   void change_feat_id(size_t id_old, size_t id_new);
 
   /// Getter method for active features in the last frame (observations per camera)
-  std::unordered_map<size_t, std::vector<cv::KeyPoint>> get_last_obs() {
+  std::unordered_map<size_t, std::vector<cv::KeyPoint>> get_last_obs()
+  {
     std::lock_guard<std::mutex> lckv(mtx_last_vars);
     return pts_last;
   }
 
   /// Getter method for active features in the last frame (ids per camera)
-  std::unordered_map<size_t, std::vector<size_t>> get_last_ids() {
+  std::unordered_map<size_t, std::vector<size_t>> get_last_ids()
+  {
     std::lock_guard<std::mutex> lckv(mtx_last_vars);
     return ids_last;
   }
 
   /// Getter method for number of active features
-  int get_num_features() { return num_features; }
+  int get_num_features()
+  {
+    return num_features;
+  }
 
   /// Setter method for number of active features
-  void set_num_features(int _num_features) { num_features = _num_features; }
+  void set_num_features(int _num_features)
+  {
+    num_features = _num_features;
+  }
 
 protected:
   /// Camera object which has all calibration in it
@@ -195,6 +216,6 @@ protected:
   boost::posix_time::ptime rT1, rT2, rT3, rT4, rT5, rT6, rT7;
 };
 
-} // namespace ov_core
+}  // namespace ov_core
 
 #endif /* OV_CORE_TRACK_BASE_H */

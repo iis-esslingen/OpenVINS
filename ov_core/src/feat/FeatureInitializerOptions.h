@@ -25,13 +25,13 @@
 #include "utils/opencv_yaml_parse.h"
 #include "utils/print.h"
 
-namespace ov_core {
-
+namespace ov_core
+{
 /**
  * @brief Struct which stores all our feature initializer options
  */
-struct FeatureInitializerOptions {
-
+struct FeatureInitializerOptions
+{
   /// If we should perform 1d triangulation instead of 3d
   bool triangulate_1d = false;
 
@@ -69,8 +69,10 @@ struct FeatureInitializerOptions {
   double max_cond_number = 10000;
 
   /// Nice print function of what parameters we have loaded
-  void print(const std::shared_ptr<ov_core::YamlParser> &parser = nullptr) {
-    if (parser != nullptr) {
+  void print(const std::shared_ptr<ov_core::YamlParser>& parser = nullptr)
+  {
+    if (parser != nullptr)
+    {
       parser->parse_config("fi_triangulate_1d", triangulate_1d, false);
       parser->parse_config("fi_refine_features", refine_features, false);
       parser->parse_config("fi_max_runs", max_runs, false);
@@ -99,6 +101,6 @@ struct FeatureInitializerOptions {
   }
 };
 
-} // namespace ov_core
+}  // namespace ov_core
 
-#endif // OV_CORE_INITIALIZEROPTIONS_H
+#endif  // OV_CORE_INITIALIZEROPTIONS_H

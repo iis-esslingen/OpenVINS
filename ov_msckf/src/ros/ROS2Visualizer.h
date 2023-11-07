@@ -55,13 +55,14 @@
 #include <boost/filesystem.hpp>
 #include <cv_bridge/cv_bridge.h>
 
-namespace ov_core {
+namespace ov_core
+{
 class YamlParser;
 struct CameraData;
-} // namespace ov_core
+}  // namespace ov_core
 
-namespace ov_msckf {
-
+namespace ov_msckf
+{
 class VioManager;
 class Simulator;
 
@@ -75,8 +76,8 @@ class Simulator;
  * - Our different features (SLAM, MSCKF, ARUCO)
  * - Groundtruth trajectory if we have it
  */
-class ROS2Visualizer {
-
+class ROS2Visualizer
+{
 public:
   /**
    * @brief Default constructor
@@ -84,7 +85,8 @@ public:
    * @param app Core estimator manager
    * @param sim Simulator if we are simulating
    */
-  ROS2Visualizer(std::shared_ptr<rclcpp::Node> node, std::shared_ptr<VioManager> app, std::shared_ptr<Simulator> sim = nullptr);
+  ROS2Visualizer(std::shared_ptr<rclcpp::Node> node, std::shared_ptr<VioManager> app,
+                 std::shared_ptr<Simulator> sim = nullptr);
 
   /**
    * @brief Will setup ROS subscribers and callbacks
@@ -116,8 +118,8 @@ public:
   void callback_monocular(const sensor_msgs::msg::Image::SharedPtr msg0, int cam_id0);
 
   /// Callback for synchronized stereo camera information
-  void callback_stereo(const sensor_msgs::msg::Image::ConstSharedPtr msg0, const sensor_msgs::msg::Image::ConstSharedPtr msg1, int cam_id0,
-                       int cam_id1);
+  void callback_stereo(const sensor_msgs::msg::Image::ConstSharedPtr msg0,
+                       const sensor_msgs::msg::Image::ConstSharedPtr msg1, int cam_id0, int cam_id1);
 
 protected:
   /// Publish the current state
@@ -149,7 +151,8 @@ protected:
   rclcpp::Publisher<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr pub_poseimu;
   rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr pub_odomimu;
   rclcpp::Publisher<nav_msgs::msg::Path>::SharedPtr pub_pathimu;
-  rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr pub_points_msckf, pub_points_slam, pub_points_aruco, pub_points_sim;
+  rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr pub_points_msckf, pub_points_slam, pub_points_aruco,
+      pub_points_sim;
   rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr pub_loop_pose, pub_loop_extrinsic;
   rclcpp::Publisher<sensor_msgs::msg::PointCloud>::SharedPtr pub_loop_point;
   rclcpp::Publisher<sensor_msgs::msg::CameraInfo>::SharedPtr pub_loop_intrinsics;
@@ -208,6 +211,6 @@ protected:
   std::ofstream of_state_est, of_state_std, of_state_gt;
 };
 
-} // namespace ov_msckf
+}  // namespace ov_msckf
 
-#endif // OV_MSCKF_ROS2VISUALIZER_H
+#endif  // OV_MSCKF_ROS2VISUALIZER_H

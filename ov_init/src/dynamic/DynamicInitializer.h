@@ -24,20 +24,22 @@
 
 #include "init/InertialInitializerOptions.h"
 
-namespace ov_core {
+namespace ov_core
+{
 class FeatureDatabase;
 struct ImuData;
-} // namespace ov_core
-namespace ov_type {
+}  // namespace ov_core
+namespace ov_type
+{
 class Type;
 class IMU;
 class PoseJPL;
 class Landmark;
 class Vec;
-} // namespace ov_type
+}  // namespace ov_type
 
-namespace ov_init {
-
+namespace ov_init
+{
 /**
  * @brief Initializer for a dynamic visual-inertial system.
  *
@@ -48,7 +50,8 @@ namespace ov_init {
  * 2. Construct linear system with features to recover velocity (solve with |g| constraint)
  * 3. Perform a large MLE with all calibration and recover the covariance.
  *
- * Method is based on this work (see this [tech report](https://pgeneva.com/downloads/reports/tr_init.pdf) for a high level walk through):
+ * Method is based on this work (see this [tech report](https://pgeneva.com/downloads/reports/tr_init.pdf) for a high
+ * level walk through):
  *
  * > Dong-Si, Tue-Cuong, and Anastasios I. Mourikis.
  * > "Estimator initialization in vision-aided inertial navigation with unknown camera-IMU calibration."
@@ -59,7 +62,8 @@ namespace ov_init {
  * - https://pgeneva.com/downloads/reports/tr_init.pdf
  *
  */
-class DynamicInitializer {
+class DynamicInitializer
+{
 public:
   /**
    * @brief Default constructor
@@ -67,9 +71,11 @@ public:
    * @param db Feature tracker database with all features in it
    * @param imu_data_ Shared pointer to our IMU vector of historical information
    */
-  explicit DynamicInitializer(const InertialInitializerOptions &params_, std::shared_ptr<ov_core::FeatureDatabase> db,
+  explicit DynamicInitializer(const InertialInitializerOptions& params_, std::shared_ptr<ov_core::FeatureDatabase> db,
                               std::shared_ptr<std::vector<ov_core::ImuData>> imu_data_)
-      : params(params_), _db(db), imu_data(imu_data_) {}
+    : params(params_), _db(db), imu_data(imu_data_)
+  {
+  }
 
   /**
    * @brief Try to get the initialized system
@@ -82,9 +88,9 @@ public:
    * @param _features_SLAM Our current set of SLAM features (3d positions)
    * @return True if we have successfully initialized our system
    */
-  bool initialize(double &timestamp, Eigen::MatrixXd &covariance, std::vector<std::shared_ptr<ov_type::Type>> &order,
-                  std::shared_ptr<ov_type::IMU> &_imu, std::map<double, std::shared_ptr<ov_type::PoseJPL>> &_clones_IMU,
-                  std::unordered_map<size_t, std::shared_ptr<ov_type::Landmark>> &_features_SLAM);
+  bool initialize(double& timestamp, Eigen::MatrixXd& covariance, std::vector<std::shared_ptr<ov_type::Type>>& order,
+                  std::shared_ptr<ov_type::IMU>& _imu, std::map<double, std::shared_ptr<ov_type::PoseJPL>>& _clones_IMU,
+                  std::unordered_map<size_t, std::shared_ptr<ov_type::Landmark>>& _features_SLAM);
 
 private:
   /// Initialization parameters
@@ -97,6 +103,6 @@ private:
   std::shared_ptr<std::vector<ov_core::ImuData>> imu_data;
 };
 
-} // namespace ov_init
+}  // namespace ov_init
 
-#endif // OV_INIT_DYNAMICINITIALIZER_H
+#endif  // OV_INIT_DYNAMICINITIALIZER_H

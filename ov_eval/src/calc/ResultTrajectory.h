@@ -40,8 +40,8 @@
 #include "utils/print.h"
 #include "utils/quat_ops.h"
 
-namespace ov_eval {
-
+namespace ov_eval
+{
 /**
  * @brief A single run for a given dataset.
  *
@@ -53,11 +53,12 @@ namespace ov_eval {
  * - Normalized estimation error squared
  * - Error and bound at each timestep
  *
- * Please see the @ref evaluation page for details and Zhang and Scaramuzza [A Tutorial on Quantitative Trajectory Evaluation for
- * Visual(-Inertial) Odometry](http://rpg.ifi.uzh.ch/docs/IROS18_Zhang.pdf) paper for implementation specific details.
+ * Please see the @ref evaluation page for details and Zhang and Scaramuzza [A Tutorial on Quantitative Trajectory
+ * Evaluation for Visual(-Inertial) Odometry](http://rpg.ifi.uzh.ch/docs/IROS18_Zhang.pdf) paper for implementation
+ * specific details.
  */
-class ResultTrajectory {
-
+class ResultTrajectory
+{
 public:
   /**
    * @brief Default constructor that will load, intersect, and align our trajectories.
@@ -79,7 +80,7 @@ public:
    * @param error_ori Error values for the orientation
    * @param error_pos Error values for the position
    */
-  void calculate_ate(Statistics &error_ori, Statistics &error_pos);
+  void calculate_ate(Statistics& error_ori, Statistics& error_pos);
 
   /**
    * @brief Computes the Absolute Trajectory Error (ATE) for this trajectory in the 2d x-y plane.
@@ -94,7 +95,7 @@ public:
    * @param error_ori Error values for the orientation (yaw error)
    * @param error_pos Error values for the position (xy error)
    */
-  void calculate_ate_2d(Statistics &error_ori, Statistics &error_pos);
+  void calculate_ate_2d(Statistics& error_ori, Statistics& error_pos);
 
   /**
    * @brief Computes the Relative Pose Error (RPE) for this trajectory
@@ -104,13 +105,14 @@ public:
    * These are then returned as a map for each segment length.
    * \f{align*}{
    * \tilde{\mathbf{x}}_{r} &= \mathbf{x}_{k} \boxminus \mathbf{x}_{k+d_i} \\
-   * e_{rpe,d_i} &= \frac{1}{D_i} \sum_{k=1}^{D_i} ||\tilde{\mathbf{x}}_{r} \boxminus \hat{\tilde{\mathbf{x}}}_{r}||^2_{2}
-   * \f}
+   * e_{rpe,d_i} &= \frac{1}{D_i} \sum_{k=1}^{D_i} ||\tilde{\mathbf{x}}_{r} \boxminus
+   * \hat{\tilde{\mathbf{x}}}_{r}||^2_{2} \f}
    *
    * @param segment_lengths What segment lengths we want to calculate for
    * @param error_rpe Map of segment lengths => errors for that length (orientation and position)
    */
-  void calculate_rpe(const std::vector<double> &segment_lengths, std::map<double, std::pair<Statistics, Statistics>> &error_rpe);
+  void calculate_rpe(const std::vector<double>& segment_lengths,
+                     std::map<double, std::pair<Statistics, Statistics>>& error_rpe);
 
   /**
    * @brief Computes the Normalized Estimation Error Squared (NEES) for this trajectory.
@@ -118,13 +120,14 @@ public:
    * If we have a covariance in addition to our pose estimate we can compute the NEES values.
    * At each timestep we compute this for both orientation and position.
    * \f{align*}{
-   * e_{nees,k} &= \frac{1}{N} \sum_{i=1}^{N} (\mathbf{x}_{k,i} \boxminus \hat{\mathbf{x}}_{k,i})^\top \mathbf{P}^{-1}_{k,i}
+   * e_{nees,k} &= \frac{1}{N} \sum_{i=1}^{N} (\mathbf{x}_{k,i} \boxminus \hat{\mathbf{x}}_{k,i})^\top
+   * \mathbf{P}^{-1}_{k,i}
    * (\mathbf{x}_{k,i} \boxminus \hat{\mathbf{x}}_{k,i}) \f}
    *
    * @param nees_ori NEES values for the orientation
    * @param nees_pos NEES values for the position
    */
-  void calculate_nees(Statistics &nees_ori, Statistics &nees_pos);
+  void calculate_nees(Statistics& nees_ori, Statistics& nees_pos);
 
   /**
    * @brief Computes the error at each timestamp for this trajectory.
@@ -145,8 +148,8 @@ public:
    * @param pitch Orientation pitch error and bound if we have it in our file
    * @param yaw Orientation yaw error and bound if we have it in our file
    */
-  void calculate_error(Statistics &posx, Statistics &posy, Statistics &posz, Statistics &orix, Statistics &oriy, Statistics &oriz,
-                       Statistics &roll, Statistics &pitch, Statistics &yaw);
+  void calculate_error(Statistics& posx, Statistics& posy, Statistics& posz, Statistics& orix, Statistics& oriy,
+                       Statistics& oriz, Statistics& roll, Statistics& pitch, Statistics& yaw);
 
 protected:
   // Trajectory data (loaded from file and timestamp intersected)
@@ -166,21 +169,24 @@ protected:
    * @param max_dist_diff Maximum error between current trajectory length and the desired
    * @return End indices for each subtrajectory
    */
-  std::vector<int> compute_comparison_indices_length(std::vector<double> &distances, double distance, double max_dist_diff) {
-
+  std::vector<int> compute_comparison_indices_length(std::vector<double>& distances, double distance,
+                                                     double max_dist_diff)
+  {
     // Vector of end ids for our pose indexes
     std::vector<int> comparisons;
 
     // Loop through each pose in our trajectory (i.e. our distance vector generated from the trajectory).
-    for (size_t idx = 0; idx < distances.size(); idx++) {
-
+    for (size_t idx = 0; idx < distances.size(); idx++)
+    {
       // Loop through and find the pose that minimized the difference between
       // The desired trajectory distance and our current trajectory distance
       double distance_startpose = distances.at(idx);
       int best_idx = -1;
       double best_error = max_dist_diff;
-      for (size_t i = idx; i < distances.size(); i++) {
-        if (std::abs(distances.at(i) - (distance_startpose + distance)) < best_error) {
+      for (size_t i = idx; i < distances.size(); i++)
+      {
+        if (std::abs(distances.at(i) - (distance_startpose + distance)) < best_error)
+        {
           best_idx = i;
           best_error = std::abs(distances.at(i) - (distance_startpose + distance));
         }
@@ -189,7 +195,8 @@ protected:
       // If we have an end id that reached this trajectory distance then add it!
       // Else this isn't a valid segment, thus we shouldn't add it (we will try again at the next pose)
       // NOTE: just because we searched through all poses and didn't find a close one doesn't mean we have ended
-      // NOTE: this could happen if there is a gap in the groundtruth poses and we just couldn't find a pose with low error
+      // NOTE: this could happen if there is a gap in the groundtruth poses and we just couldn't find a pose with low
+      // error
       comparisons.push_back(best_idx);
     }
 
@@ -198,6 +205,6 @@ protected:
   }
 };
 
-} // namespace ov_eval
+}  // namespace ov_eval
 
-#endif // OV_EVAL_TRAJECTORY_H
+#endif  // OV_EVAL_TRAJECTORY_H

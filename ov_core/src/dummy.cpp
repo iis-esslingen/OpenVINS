@@ -24,9 +24,9 @@
  * @brief Core algorithms for OpenVINS
  *
  * This has the core algorithms that all projects within the OpenVINS ecosystem leverage.
- * The purpose is to allow for the reuse of code that could be shared between different localization systems (i.e. msckf-based, batch-based,
- * etc.). These algorithms are the foundation which is necessary before we can even write an estimator that can perform localization. The
- * key components of the ov_core codebase are the following:
+ * The purpose is to allow for the reuse of code that could be shared between different localization systems (i.e.
+ * msckf-based, batch-based, etc.). These algorithms are the foundation which is necessary before we can even write an
+ * estimator that can perform localization. The key components of the ov_core codebase are the following:
  *
  * - 3d feature initialization (see @ref ov_core::FeatureInitializer)
  * - SE(3) b-spline (see @ref ov_core::BsplineSE3)
@@ -41,7 +41,9 @@
  * If you are looking for the different types please take a look at the ov_type namespace for the ones we have.
  *
  */
-namespace ov_core {}
+namespace ov_core
+{
+}
 
 /**
  * @namespace ov_type
@@ -70,4 +72,6 @@ namespace ov_core {}
  *
  *
  */
-namespace ov_type {}
+namespace ov_type
+{
+}

@@ -27,20 +27,22 @@
 #include "utils/colors.h"
 #include "utils/print.h"
 
-namespace ov_type {
-
+namespace ov_type
+{
 /**
  * @brief Type that implements a persistent SLAM feature.
  *
  * We store the feature ID that should match the IDs in the trackers.
- * Additionally if this is an anchored representation we store what clone timestamp this is anchored from and what camera.
- * If this features should be marginalized its flag can be set and during cleanup it will be removed.
+ * Additionally if this is an anchored representation we store what clone timestamp this is anchored from and what
+ * camera. If this features should be marginalized its flag can be set and during cleanup it will be removed.
  */
-class Landmark : public Vec {
-
+class Landmark : public Vec
+{
 public:
   /// Default constructor (feature is a Vec of size 3 or Vec of size 1)
-  Landmark(int dim) : Vec(dim) {}
+  Landmark(int dim) : Vec(dim)
+  {
+  }
 
   /// Feature ID of this landmark (corresponds to frontend id)
   size_t _featid;
@@ -77,12 +79,14 @@ public:
    * We want to selectively update the FEJ value if we are using an anchored representation.
    * @param dx Additive error state correction
    */
-  void update(const Eigen::VectorXd &dx) override {
+  void update(const Eigen::VectorXd& dx) override
+  {
     // Update estimate
     assert(dx.rows() == _size);
     set_value(_value + dx);
     // Ensure we are not near zero in the z-direction
-    // if (LandmarkRepresentation::is_relative_representation(_feat_representation) && _value(_value.rows() - 1) < 1e-8) {
+    // if (LandmarkRepresentation::is_relative_representation(_feat_representation) && _value(_value.rows() - 1) < 1e-8)
+    // {
     //  PRINT_DEBUG(YELLOW "WARNING DEPTH %.8f BECAME CLOSE TO ZERO IN UPDATE!!!\n" RESET, _value(_value.rows() - 1));
     //  should_marg = true;
     // }
@@ -102,6 +106,6 @@ public:
    */
   void set_from_xyz(Eigen::Matrix<double, 3, 1> p_FinG, bool isfej);
 };
-} // namespace ov_type
+}  // namespace ov_type
 
-#endif // OV_TYPE_TYPE_LANDMARK_H
+#endif  // OV_TYPE_TYPE_LANDMARK_H

@@ -28,16 +28,16 @@
 
 #include <Eigen/Eigen>
 
-namespace ov_eval {
-
+namespace ov_eval
+{
 /**
  * @brief Statistics object for a given set scalar time series values.
  *
  * Ensure that you call the calculate() function to update the values before using them.
  * This will compute all the final results from the values in @ref values vector.
  */
-struct Statistics {
-
+struct Statistics
+{
 public:
   /// Root mean squared for the given values
   double rmse = 0.0;
@@ -70,8 +70,8 @@ public:
   std::vector<double> values_bound;
 
   /// Will calculate all values from our vectors of information
-  void calculate() {
-
+  void calculate()
+  {
     // Sort the data for easy finding of values
     std::vector<double> values_sorted = values;
     std::sort(values_sorted.begin(), values_sorted.end());
@@ -87,19 +87,27 @@ public:
     // Compute median
     // ODD:  grab middle from the sorted vector
     // EVEN: average the middle two numbers
-    if (values_sorted.size() == 1) {
+    if (values_sorted.size() == 1)
+    {
       median = values_sorted.at(values_sorted.size() - 1);
-    } else if (values_sorted.size() % 2 == 1) {
+    }
+    else if (values_sorted.size() % 2 == 1)
+    {
       median = values_sorted.at(values_sorted.size() / 2);
-    } else if (values_sorted.size() > 1) {
+    }
+    else if (values_sorted.size() > 1)
+    {
       median = 0.5 * (values_sorted.at(values_sorted.size() / 2 - 1) + values_sorted.at(values_sorted.size() / 2));
-    } else {
+    }
+    else
+    {
       median = 0.0;
     }
 
     // Compute mean and rmse
     mean = 0;
-    for (size_t i = 0; i < values_sorted.size(); i++) {
+    for (size_t i = 0; i < values_sorted.size(); i++)
+    {
       assert(!std::isnan(values_sorted.at(i)));
       mean += values_sorted.at(i);
       rmse += values_sorted.at(i) * values_sorted.at(i);
@@ -109,7 +117,8 @@ public:
 
     // Using mean, compute standard deviation
     std = 0;
-    for (size_t i = 0; i < values_sorted.size(); i++) {
+    for (size_t i = 0; i < values_sorted.size(); i++)
+    {
       std += std::pow(values_sorted.at(i) - mean, 2);
     }
     std = std::sqrt(std / (values_sorted.size() - 1));
@@ -121,13 +130,14 @@ public:
   }
 
   /// Will clear any old values
-  void clear() {
+  void clear()
+  {
     timestamps.clear();
     values.clear();
     values_bound.clear();
   }
 };
 
-} // namespace ov_eval
+}  // namespace ov_eval
 
-#endif // OV_EVAL_STATISTICS_H
+#endif  // OV_EVAL_STATISTICS_H

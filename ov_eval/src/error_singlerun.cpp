@@ -35,23 +35,25 @@
 #include "plot/matplotlibcpp.h"
 
 // Will plot three error values in three sub-plots in our current figure
-void plot_3errors(ov_eval::Statistics sx, ov_eval::Statistics sy, ov_eval::Statistics sz) {
-
+void plot_3errors(ov_eval::Statistics sx, ov_eval::Statistics sy, ov_eval::Statistics sz)
+{
   // Parameters that define the line styles
   std::map<std::string, std::string> params_value, params_bound;
-  params_value.insert({"label", "error"});
-  params_value.insert({"linestyle", "-"});
-  params_value.insert({"color", "blue"});
-  params_bound.insert({"label", "3 sigma bound"});
-  params_bound.insert({"linestyle", "--"});
-  params_bound.insert({"color", "red"});
+  params_value.insert({ "label", "error" });
+  params_value.insert({ "linestyle", "-" });
+  params_value.insert({ "color", "blue" });
+  params_bound.insert({ "label", "3 sigma bound" });
+  params_bound.insert({ "linestyle", "--" });
+  params_bound.insert({ "color", "red" });
 
   // Plot our error value
   matplotlibcpp::subplot(3, 1, 1);
   matplotlibcpp::plot(sx.timestamps, sx.values, params_value);
-  if (!sx.values_bound.empty()) {
+  if (!sx.values_bound.empty())
+  {
     matplotlibcpp::plot(sx.timestamps, sx.values_bound, params_bound);
-    for (size_t i = 0; i < sx.timestamps.size(); i++) {
+    for (size_t i = 0; i < sx.timestamps.size(); i++)
+    {
       sx.values_bound.at(i) *= -1;
     }
     matplotlibcpp::plot(sx.timestamps, sx.values_bound, "r--");
@@ -60,9 +62,11 @@ void plot_3errors(ov_eval::Statistics sx, ov_eval::Statistics sy, ov_eval::Stati
   // Plot our error value
   matplotlibcpp::subplot(3, 1, 2);
   matplotlibcpp::plot(sy.timestamps, sy.values, params_value);
-  if (!sy.values_bound.empty()) {
+  if (!sy.values_bound.empty())
+  {
     matplotlibcpp::plot(sy.timestamps, sy.values_bound, params_bound);
-    for (size_t i = 0; i < sy.timestamps.size(); i++) {
+    for (size_t i = 0; i < sy.timestamps.size(); i++)
+    {
       sy.values_bound.at(i) *= -1;
     }
     matplotlibcpp::plot(sy.timestamps, sy.values_bound, "r--");
@@ -71,9 +75,11 @@ void plot_3errors(ov_eval::Statistics sx, ov_eval::Statistics sy, ov_eval::Stati
   // Plot our error value
   matplotlibcpp::subplot(3, 1, 3);
   matplotlibcpp::plot(sz.timestamps, sz.values, params_value);
-  if (!sz.values_bound.empty()) {
+  if (!sz.values_bound.empty())
+  {
     matplotlibcpp::plot(sz.timestamps, sz.values_bound, params_bound);
-    for (size_t i = 0; i < sz.timestamps.size(); i++) {
+    for (size_t i = 0; i < sz.timestamps.size(); i++)
+    {
       sz.values_bound.at(i) *= -1;
     }
     matplotlibcpp::plot(sz.timestamps, sz.values_bound, "r--");
@@ -82,13 +88,14 @@ void plot_3errors(ov_eval::Statistics sx, ov_eval::Statistics sy, ov_eval::Stati
 
 #endif
 
-int main(int argc, char **argv) {
-
+int main(int argc, char** argv)
+{
   // Verbosity setting
   ov_core::Printer::setPrintLevel("INFO");
 
   // Ensure we have a path
-  if (argc < 4) {
+  if (argc < 4)
+  {
     PRINT_ERROR(RED "ERROR: Please specify a align mode, groudtruth, and algorithm run file\n" RESET);
     PRINT_ERROR(RED "ERROR: ./error_singlerun <align_mode> <file_gt.txt> <file_est.txt>\n" RESET);
     PRINT_ERROR(RED "ERROR: rosrun ov_eval error_singlerun <align_mode> <file_gt.txt> <file_est.txt>\n" RESET);
@@ -103,7 +110,8 @@ int main(int argc, char **argv) {
   ov_eval::Loader::load_data(argv[2], times, poses, cov_ori, cov_pos);
   // Print its length and stats
   double length = ov_eval::Loader::get_total_length(poses);
-  PRINT_DEBUG("[COMP]: %d poses in %s => length of %.2f meters\n", (int)times.size(), path_gt.stem().string().c_str(), length);
+  PRINT_DEBUG("[COMP]: %d poses in %s => length of %.2f meters\n", (int)times.size(), path_gt.stem().string().c_str(),
+              length);
 
   // Create our trajectory object
   ov_eval::ResultTrajectory traj(argv[3], argv[2], argv[1]);
@@ -131,7 +139,7 @@ int main(int argc, char **argv) {
   //===========================================================
 
   // Calculate
-  std::vector<double> segments = {8.0, 16.0, 24.0, 32.0, 40.0};
+  std::vector<double> segments = { 8.0, 16.0, 24.0, 32.0, 40.0 };
   std::map<double, std::pair<ov_eval::Statistics, ov_eval::Statistics>> error_rpe;
   traj.calculate_rpe(segments, error_rpe);
 
@@ -139,18 +147,20 @@ int main(int argc, char **argv) {
   PRINT_INFO("======================================\n");
   PRINT_INFO("Relative Pose Error\n");
   PRINT_INFO("======================================\n");
-  for (const auto &seg : error_rpe) {
+  for (const auto& seg : error_rpe)
+  {
     PRINT_INFO("seg %d - median_ori = %.3f | median_pos = %.3f (%d samples)\n", (int)seg.first, seg.second.first.median,
                seg.second.second.median, (int)seg.second.second.values.size());
-    // PRINT_DEBUG("seg %d - std_ori  = %.3f | std_pos  = %.3f\n",(int)seg.first,seg.second.first.std,seg.second.second.std);
+    // PRINT_DEBUG("seg %d - std_ori  = %.3f | std_pos  =
+    // %.3f\n",(int)seg.first,seg.second.first.std,seg.second.second.std);
   }
 
 #ifdef HAVE_PYTHONLIBS
 
   // Parameters
   std::map<std::string, std::string> params_rpe;
-  params_rpe.insert({"notch", "true"});
-  params_rpe.insert({"sym", ""});
+  params_rpe.insert({ "notch", "true" });
+  params_rpe.insert({ "sym", "" });
 
   // Plot this figure
   matplotlibcpp::figure_size(800, 600);
@@ -160,7 +170,8 @@ int main(int argc, char **argv) {
   double width = 0.50;
   std::vector<double> xticks;
   std::vector<std::string> labels;
-  for (const auto &seg : error_rpe) {
+  for (const auto& seg : error_rpe)
+  {
     xticks.push_back(ct);
     labels.push_back(std::to_string((int)seg.first));
     matplotlibcpp::boxplot(seg.second.first.values, ct++, width, "blue", "-", params_rpe);
@@ -179,7 +190,8 @@ int main(int argc, char **argv) {
 
   // Plot each RPE next to each other
   ct = 1;
-  for (const auto &seg : error_rpe) {
+  for (const auto& seg : error_rpe)
+  {
     matplotlibcpp::boxplot(seg.second.second.values, ct++, width, "blue", "-", params_rpe);
   }
 
@@ -213,11 +225,13 @@ int main(int argc, char **argv) {
 
 #ifdef HAVE_PYTHONLIBS
 
-  if (!nees_ori.values.empty() && !nees_pos.values.empty()) {
+  if (!nees_ori.values.empty() && !nees_pos.values.empty())
+  {
     // Zero our time arrays
     double starttime1 = (nees_ori.timestamps.empty()) ? 0 : nees_ori.timestamps.at(0);
     double endtime1 = (nees_ori.timestamps.empty()) ? 0 : nees_ori.timestamps.at(nees_ori.timestamps.size() - 1);
-    for (size_t i = 0; i < nees_ori.timestamps.size(); i++) {
+    for (size_t i = 0; i < nees_ori.timestamps.size(); i++)
+    {
       nees_ori.timestamps.at(i) -= starttime1;
       nees_pos.timestamps.at(i) -= starttime1;
     }
@@ -227,12 +241,12 @@ int main(int argc, char **argv) {
 
     // Parameters that define the line styles
     std::map<std::string, std::string> params_neesp, params_neeso;
-    params_neesp.insert({"label", "nees position"});
-    params_neesp.insert({"linestyle", "-"});
-    params_neesp.insert({"color", "blue"});
-    params_neeso.insert({"label", "nees orientation"});
-    params_neeso.insert({"linestyle", "-"});
-    params_neeso.insert({"color", "blue"});
+    params_neesp.insert({ "label", "nees position" });
+    params_neesp.insert({ "linestyle", "-" });
+    params_neesp.insert({ "color", "blue" });
+    params_neeso.insert({ "label", "nees orientation" });
+    params_neeso.insert({ "linestyle", "-" });
+    params_neeso.insert({ "color", "blue" });
 
     // Update the title and axis labels
     matplotlibcpp::subplot(2, 1, 1);
@@ -266,7 +280,8 @@ int main(int argc, char **argv) {
   // Zero our time arrays
   double starttime2 = (posx.timestamps.empty()) ? 0 : posx.timestamps.at(0);
   double endtime2 = (posx.timestamps.empty()) ? 0 : posx.timestamps.at(posx.timestamps.size() - 1);
-  for (size_t i = 0; i < posx.timestamps.size(); i++) {
+  for (size_t i = 0; i < posx.timestamps.size(); i++)
+  {
     posx.timestamps.at(i) -= starttime2;
     posy.timestamps.at(i) -= starttime2;
     posz.timestamps.at(i) -= starttime2;

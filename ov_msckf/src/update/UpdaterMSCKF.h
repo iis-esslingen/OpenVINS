@@ -29,24 +29,25 @@
 
 #include "UpdaterOptions.h"
 
-namespace ov_core {
+namespace ov_core
+{
 class Feature;
 class FeatureInitializer;
-} // namespace ov_core
+}  // namespace ov_core
 
-namespace ov_msckf {
-
+namespace ov_msckf
+{
 class State;
 
 /**
  * @brief Will compute the system for our sparse features and update the filter.
  *
- * This class is responsible for computing the entire linear system for all features that are going to be used in an update.
- * This follows the original MSCKF, where we first triangulate features, we then nullspace project the feature Jacobian.
- * After this we compress all the measurements to have an efficient update and update the state.
+ * This class is responsible for computing the entire linear system for all features that are going to be used in an
+ * update. This follows the original MSCKF, where we first triangulate features, we then nullspace project the feature
+ * Jacobian. After this we compress all the measurements to have an efficient update and update the state.
  */
-class UpdaterMSCKF {
-
+class UpdaterMSCKF
+{
 public:
   /**
    * @brief Default constructor for our MSCKF updater
@@ -57,7 +58,7 @@ public:
    * @param options Updater options (include measurement noise value)
    * @param feat_init_options Feature initializer options
    */
-  UpdaterMSCKF(UpdaterOptions &options, ov_core::FeatureInitializerOptions &feat_init_options);
+  UpdaterMSCKF(UpdaterOptions& options, ov_core::FeatureInitializerOptions& feat_init_options);
 
   /**
    * @brief Given tracked features, this will try to use them to update the state.
@@ -65,7 +66,7 @@ public:
    * @param state State of the filter
    * @param feature_vec Features that can be used for update
    */
-  void update(std::shared_ptr<State> state, std::vector<std::shared_ptr<ov_core::Feature>> &feature_vec);
+  void update(std::shared_ptr<State> state, std::vector<std::shared_ptr<ov_core::Feature>>& feature_vec);
 
 protected:
   /// Options used during update
@@ -78,6 +79,6 @@ protected:
   std::map<int, double> chi_squared_table;
 };
 
-} // namespace ov_msckf
+}  // namespace ov_msckf
 
-#endif // OV_MSCKF_UPDATER_MSCKF_H
+#endif  // OV_MSCKF_UPDATER_MSCKF_H

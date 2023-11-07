@@ -23,8 +23,8 @@
 
 using namespace ov_eval;
 
-ResultTrajectory::ResultTrajectory(std::string path_est, std::string path_gt, std::string alignment_method) {
-
+ResultTrajectory::ResultTrajectory(std::string path_est, std::string path_gt, std::string alignment_method)
+{
   // Load from file
   Loader::load_data(path_est, est_times, est_poses, est_covori, est_covpos);
   Loader::load_data(path_gt, gt_times, gt_poses, gt_covori, gt_covpos);
@@ -36,10 +36,12 @@ ResultTrajectory::ResultTrajectory(std::string path_est, std::string path_gt, st
   // PRINT_DEBUG("[TRAJ]: loaded %d poses from %s\n",(int)gt_times.size(),base_filename2.c_str());
 
   // Intersect timestamps
-  AlignUtils::perform_association(0, 0.02, est_times, gt_times, est_poses, gt_poses, est_covori, est_covpos, gt_covori, gt_covpos);
+  AlignUtils::perform_association(0, 0.02, est_times, gt_times, est_poses, gt_poses, est_covori, est_covpos, gt_covori,
+                                  gt_covpos);
 
   // Return failure if we didn't have any common timestamps
-  if (est_poses.size() < 3) {
+  if (est_poses.size() < 3)
+  {
     PRINT_ERROR(RED "[TRAJ]: unable to get enough common timestamps between trajectories.\n" RESET);
     PRINT_ERROR(RED "[TRAJ]: does the estimated trajectory publish the rosbag timestamps??\n" RESET);
     std::exit(EXIT_FAILURE);
@@ -55,13 +57,14 @@ ResultTrajectory::ResultTrajectory(std::string path_est, std::string path_gt, st
   // Debug print to the user
   Eigen::Vector4d q_ESTtoGT = ov_core::rot_2_quat(R_ESTtoGT);
   Eigen::Vector4d q_GTtoEST = ov_core::rot_2_quat(R_GTtoEST);
-  PRINT_DEBUG("[TRAJ]: q_ESTtoGT = %.3f, %.3f, %.3f, %.3f | p_ESTinGT = %.3f, %.3f, %.3f | s = %.2f\n", q_ESTtoGT(0), q_ESTtoGT(1),
-              q_ESTtoGT(2), q_ESTtoGT(3), t_ESTinGT(0), t_ESTinGT(1), t_ESTinGT(2), s_ESTtoGT);
+  PRINT_DEBUG("[TRAJ]: q_ESTtoGT = %.3f, %.3f, %.3f, %.3f | p_ESTinGT = %.3f, %.3f, %.3f | s = %.2f\n", q_ESTtoGT(0),
+              q_ESTtoGT(1), q_ESTtoGT(2), q_ESTtoGT(3), t_ESTinGT(0), t_ESTinGT(1), t_ESTinGT(2), s_ESTtoGT);
   // PRINT_DEBUG("[TRAJ]: q_GTtoEST = %.3f, %.3f, %.3f, %.3f | p_GTinEST = %.3f, %.3f, %.3f | s =
   // %.2f\n",q_GTtoEST(0),q_GTtoEST(1),q_GTtoEST(2),q_GTtoEST(3),t_GTinEST(0),t_GTinEST(1),t_GTinEST(2),s_GTtoEST);
 
   // Finally lets calculate the aligned trajectories
-  for (size_t i = 0; i < gt_times.size(); i++) {
+  for (size_t i = 0; i < gt_times.size(); i++)
+  {
     Eigen::Matrix<double, 7, 1> pose_ESTinGT, pose_GTinEST;
     pose_ESTinGT.block(0, 0, 3, 1) = s_ESTtoGT * R_ESTtoGT * est_poses.at(i).block(0, 0, 3, 1) + t_ESTinGT;
     pose_ESTinGT.block(3, 0, 4, 1) = ov_core::quat_multiply(est_poses.at(i).block(3, 0, 4, 1), ov_core::Inv(q_ESTtoGT));
@@ -72,15 +75,15 @@ ResultTrajectory::ResultTrajectory(std::string path_est, std::string path_gt, st
   }
 }
 
-void ResultTrajectory::calculate_ate(Statistics &error_ori, Statistics &error_pos) {
-
+void ResultTrajectory::calculate_ate(Statistics& error_ori, Statistics& error_pos)
+{
   // Clear any old data
   error_ori.clear();
   error_pos.clear();
 
   // Calculate the position and orientation error at every timestep
-  for (size_t i = 0; i < est_poses_aignedtoGT.size(); i++) {
-
+  for (size_t i = 0; i < est_poses_aignedtoGT.size(); i++)
+  {
     // Calculate orientation error
     Eigen::Matrix3d e_R = ov_core::quat_2_Rot(est_poses_aignedtoGT.at(i).block(3, 0, 4, 1)).transpose() *
                           ov_core::quat_2_Rot(gt_poses.at(i).block(3, 0, 4, 1));
@@ -101,15 +104,15 @@ void ResultTrajectory::calculate_ate(Statistics &error_ori, Statistics &error_po
   error_pos.calculate();
 }
 
-void ResultTrajectory::calculate_ate_2d(Statistics &error_ori, Statistics &error_pos) {
-
+void ResultTrajectory::calculate_ate_2d(Statistics& error_ori, Statistics& error_pos)
+{
   // Clear any old data
   error_ori.clear();
   error_pos.clear();
 
   // Calculate the position and orientation error at every timestep
-  for (size_t i = 0; i < est_poses_aignedtoGT.size(); i++) {
-
+  for (size_t i = 0; i < est_poses_aignedtoGT.size(); i++)
+  {
     // Calculate orientation error
     Eigen::Matrix3d e_R = ov_core::quat_2_Rot(est_poses_aignedtoGT.at(i).block(3, 0, 4, 1)).transpose() *
                           ov_core::quat_2_Rot(gt_poses.at(i).block(3, 0, 4, 1));
@@ -130,14 +133,15 @@ void ResultTrajectory::calculate_ate_2d(Statistics &error_ori, Statistics &error
   error_pos.calculate();
 }
 
-void ResultTrajectory::calculate_rpe(const std::vector<double> &segment_lengths,
-                                     std::map<double, std::pair<Statistics, Statistics>> &error_rpe) {
-
+void ResultTrajectory::calculate_rpe(const std::vector<double>& segment_lengths,
+                                     std::map<double, std::pair<Statistics, Statistics>>& error_rpe)
+{
   // Distance at each point along the trajectory
   double average_pos_difference = 0;
   std::vector<double> accum_distances(gt_poses.size());
   accum_distances[0] = 0;
-  for (size_t i = 1; i < gt_poses.size(); i++) {
+  for (size_t i = 1; i < gt_poses.size(); i++)
+  {
     double pos_diff = (gt_poses[i].block(0, 0, 3, 1) - gt_poses[i - 1].block(0, 0, 3, 1)).norm();
     accum_distances[i] = accum_distances[i - 1] + pos_diff;
     average_pos_difference += pos_diff;
@@ -146,30 +150,33 @@ void ResultTrajectory::calculate_rpe(const std::vector<double> &segment_lengths,
 
   // Warn if large pos difference
   double max_dist_diff = 0.5;
-  if (average_pos_difference > max_dist_diff) {
-    PRINT_WARNING(YELLOW "[COMP]: average groundtruth position difference %.2f > %.2f is too large\n" RESET, average_pos_difference,
-                  max_dist_diff);
+  if (average_pos_difference > max_dist_diff)
+  {
+    PRINT_WARNING(YELLOW "[COMP]: average groundtruth position difference %.2f > %.2f is too large\n" RESET,
+                  average_pos_difference, max_dist_diff);
     PRINT_WARNING(YELLOW "[COMP]: this will prevent the RPE from finding valid trajectory segments!!!\n" RESET);
     PRINT_WARNING(YELLOW
-                  "[COMP]: the recommendation is to use a higher frequency groundtruth, or relax this trajectory segment logic...\n" RESET);
+                  "[COMP]: the recommendation is to use a higher frequency groundtruth, or relax this trajectory "
+                  "segment logic...\n" RESET);
   }
 
   // Loop through each segment length
-  for (const double &distance : segment_lengths) {
-
+  for (const double& distance : segment_lengths)
+  {
     // Our stats for this length
     Statistics error_ori, error_pos;
 
     // Get end of subtrajectories for each possible starting point
     // NOTE: is there a better way to select which end pos is a valid segments that are of the correct lenght?
-    // NOTE: right now this allows for longer segments to have bigger error in their start-end distance vs the desired segment length
-    // std::vector<int> comparisons = compute_comparison_indices_length(accum_distances, distance, 0.1*distance);
+    // NOTE: right now this allows for longer segments to have bigger error in their start-end distance vs the desired
+    // segment length std::vector<int> comparisons = compute_comparison_indices_length(accum_distances, distance,
+    // 0.1*distance);
     std::vector<int> comparisons = compute_comparison_indices_length(accum_distances, distance, max_dist_diff);
     assert(comparisons.size() == gt_poses.size());
 
     // Loop through each relative comparison
-    for (size_t id_start = 0; id_start < comparisons.size(); id_start++) {
-
+    for (size_t id_start = 0; id_start < comparisons.size(); id_start++)
+    {
       // Get the end id (skip if we couldn't find an end)
       int id_end = comparisons[id_start];
       if (id_end == -1)
@@ -230,16 +237,19 @@ void ResultTrajectory::calculate_rpe(const std::vector<double> &segment_lengths,
     // Update stat information
     error_ori.calculate();
     error_pos.calculate();
-    error_rpe.insert({distance, {error_ori, error_pos}});
+    error_rpe.insert({ distance, { error_ori, error_pos } });
   }
 }
 
-void ResultTrajectory::calculate_nees(Statistics &nees_ori, Statistics &nees_pos) {
-
+void ResultTrajectory::calculate_nees(Statistics& nees_ori, Statistics& nees_pos)
+{
   // Check that we have our covariance matrices to normalize with
-  if (est_times.size() != est_covori.size() || est_times.size() != est_covpos.size() || gt_times.size() != gt_covori.size() ||
-      gt_times.size() != gt_covpos.size()) {
-    PRINT_WARNING(YELLOW "[TRAJ]: Normalized Estimation Error Squared called but trajectory does not have any covariances...\n" RESET);
+  if (est_times.size() != est_covori.size() || est_times.size() != est_covpos.size() ||
+      gt_times.size() != gt_covori.size() || gt_times.size() != gt_covpos.size())
+  {
+    PRINT_WARNING(YELLOW
+                  "[TRAJ]: Normalized Estimation Error Squared called but trajectory does not have any "
+                  "covariances...\n" RESET);
     PRINT_WARNING(YELLOW "[TRAJ]: Did you record using a Odometry or PoseWithCovarianceStamped????\n" RESET);
     return;
   }
@@ -249,14 +259,15 @@ void ResultTrajectory::calculate_nees(Statistics &nees_ori, Statistics &nees_pos
   nees_pos.clear();
 
   // Calculate the position and orientation error at every timestep
-  for (size_t i = 0; i < est_poses.size(); i++) {
-
+  for (size_t i = 0; i < est_poses.size(); i++)
+  {
     // Calculate orientation error
     // NOTE: we define our error as e_R = -Log(R*Rhat^T)
     Eigen::Matrix3d e_R = ov_core::quat_2_Rot(gt_poses_aignedtoEST.at(i).block(3, 0, 4, 1)) *
                           ov_core::quat_2_Rot(est_poses.at(i).block(3, 0, 4, 1)).transpose();
     Eigen::Vector3d errori = -ov_core::log_so3(e_R);
-    // Eigen::Vector4d e_q = Math::quat_multiply(gt_poses_aignedtoEST.at(i).block(3,0,4,1),Math::Inv(est_poses.at(i).block(3,0,4,1)));
+    // Eigen::Vector4d e_q =
+    // Math::quat_multiply(gt_poses_aignedtoEST.at(i).block(3,0,4,1),Math::Inv(est_poses.at(i).block(3,0,4,1)));
     // Eigen::Vector3d errori = 2*e_q.block(0,0,3,1);
     double ori_nees = errori.transpose() * est_covori.at(i).inverse() * errori;
 
@@ -265,7 +276,8 @@ void ResultTrajectory::calculate_nees(Statistics &nees_ori, Statistics &nees_pos
     double pos_nees = errpos.transpose() * est_covpos.at(i).inverse() * errpos;
 
     // Skip if nan error value
-    if (std::isnan(ori_nees) || std::isnan(pos_nees)) {
+    if (std::isnan(ori_nees) || std::isnan(pos_nees))
+    {
       PRINT_WARNING(YELLOW "[TRAJ]: nees calculation had nan number (covariance is wrong?) skipping...\n" RESET);
       continue;
     }
@@ -282,9 +294,10 @@ void ResultTrajectory::calculate_nees(Statistics &nees_ori, Statistics &nees_pos
   nees_pos.calculate();
 }
 
-void ResultTrajectory::calculate_error(Statistics &posx, Statistics &posy, Statistics &posz, Statistics &orix, Statistics &oriy,
-                                       Statistics &oriz, Statistics &roll, Statistics &pitch, Statistics &yaw) {
-
+void ResultTrajectory::calculate_error(Statistics& posx, Statistics& posy, Statistics& posz, Statistics& orix,
+                                       Statistics& oriy, Statistics& oriz, Statistics& roll, Statistics& pitch,
+                                       Statistics& yaw)
+{
   // Clear any old data
   posx.clear();
   posy.clear();
@@ -297,15 +310,16 @@ void ResultTrajectory::calculate_error(Statistics &posx, Statistics &posy, Stati
   yaw.clear();
 
   // Calculate the position and orientation error at every timestep
-  for (size_t i = 0; i < est_poses.size(); i++) {
-
+  for (size_t i = 0; i < est_poses.size(); i++)
+  {
     // Calculate local orientation error, then propagate its covariance into the global frame of reference
-    Eigen::Vector4d e_q =
-        ov_core::quat_multiply(gt_poses_aignedtoEST.at(i).block(3, 0, 4, 1), ov_core::Inv(est_poses.at(i).block(3, 0, 4, 1)));
+    Eigen::Vector4d e_q = ov_core::quat_multiply(gt_poses_aignedtoEST.at(i).block(3, 0, 4, 1),
+                                                 ov_core::Inv(est_poses.at(i).block(3, 0, 4, 1)));
     Eigen::Vector3d errori_local = 2 * e_q.block(0, 0, 3, 1);
     Eigen::Vector3d errori_global = ov_core::quat_2_Rot(est_poses.at(i).block(3, 0, 4, 1)).transpose() * errori_local;
     Eigen::Matrix3d cov_global;
-    if (est_times.size() == est_covori.size()) {
+    if (est_times.size() == est_covori.size())
+    {
       cov_global = ov_core::quat_2_Rot(est_poses.at(i).block(3, 0, 4, 1)).transpose() * est_covori.at(i) *
                    ov_core::quat_2_Rot(est_poses.at(i).block(3, 0, 4, 1));
     }
@@ -314,13 +328,17 @@ void ResultTrajectory::calculate_error(Statistics &posx, Statistics &posy, Stati
     // NOTE: our rot2rpy is in the form R_input = R_z(yaw)*R_y(pitch)*R_x(roll)
     // NOTE: this error is in the "global" frame since we do rot2rpy on R_ItoG rotation
     Eigen::Vector3d ypr_est_ItoG = ov_core::rot2rpy(ov_core::quat_2_Rot(est_poses.at(i).block(3, 0, 4, 1)).transpose());
-    Eigen::Vector3d ypr_gt_ItoG = ov_core::rot2rpy(ov_core::quat_2_Rot(gt_poses_aignedtoEST.at(i).block(3, 0, 4, 1)).transpose());
+    Eigen::Vector3d ypr_gt_ItoG =
+        ov_core::rot2rpy(ov_core::quat_2_Rot(gt_poses_aignedtoEST.at(i).block(3, 0, 4, 1)).transpose());
     Eigen::Vector3d errori_rpy = ypr_gt_ItoG - ypr_est_ItoG;
-    for (size_t idx = 0; idx < 3; idx++) {
-      while (errori_rpy(idx) < -M_PI) {
+    for (size_t idx = 0; idx < 3; idx++)
+    {
+      while (errori_rpy(idx) < -M_PI)
+      {
         errori_rpy(idx) += 2 * M_PI;
       }
-      while (errori_rpy(idx) > M_PI) {
+      while (errori_rpy(idx) > M_PI)
+      {
         errori_rpy(idx) -= 2 * M_PI;
       }
     }
@@ -331,9 +349,11 @@ void ResultTrajectory::calculate_error(Statistics &posx, Statistics &posy, Stati
     // NOTE: example can be found here http://mars.cs.umn.edu/tr/reports/Trawny05c.pdf
     Eigen::Matrix<double, 3, 3> H_xyz2rpy = Eigen::Matrix<double, 3, 3>::Identity();
     H_xyz2rpy.block(0, 1, 3, 1) = ov_core::rot_x(-ypr_est_ItoG(0)) * H_xyz2rpy.block(0, 1, 3, 1);
-    H_xyz2rpy.block(0, 2, 3, 1) = ov_core::rot_x(-ypr_est_ItoG(0)) * ov_core::rot_y(-ypr_est_ItoG(1)) * H_xyz2rpy.block(0, 2, 3, 1);
+    H_xyz2rpy.block(0, 2, 3, 1) =
+        ov_core::rot_x(-ypr_est_ItoG(0)) * ov_core::rot_y(-ypr_est_ItoG(1)) * H_xyz2rpy.block(0, 2, 3, 1);
     Eigen::Matrix3d cov_rpy;
-    if (est_times.size() == est_covori.size()) {
+    if (est_times.size() == est_covori.size())
+    {
       cov_rpy = H_xyz2rpy.inverse() * est_covori.at(i) * H_xyz2rpy.inverse().transpose();
     }
 
@@ -347,7 +367,8 @@ void ResultTrajectory::calculate_error(Statistics &posx, Statistics &posy, Stati
     posy.values.push_back(errpos(1));
     posz.timestamps.push_back(est_times.at(i));
     posz.values.push_back(errpos(2));
-    if (est_times.size() == est_covpos.size()) {
+    if (est_times.size() == est_covpos.size())
+    {
       posx.values_bound.push_back(3 * std::sqrt(est_covpos.at(i)(0, 0)));
       posy.values_bound.push_back(3 * std::sqrt(est_covpos.at(i)(1, 1)));
       posz.values_bound.push_back(3 * std::sqrt(est_covpos.at(i)(2, 2)));
@@ -360,7 +381,8 @@ void ResultTrajectory::calculate_error(Statistics &posx, Statistics &posy, Stati
     oriy.values.push_back(180.0 / M_PI * errori_global(1));
     oriz.timestamps.push_back(est_times.at(i));
     oriz.values.push_back(180.0 / M_PI * errori_global(2));
-    if (est_times.size() == est_covori.size()) {
+    if (est_times.size() == est_covori.size())
+    {
       orix.values_bound.push_back(3 * 180.0 / M_PI * std::sqrt(cov_global(0, 0)));
       oriy.values_bound.push_back(3 * 180.0 / M_PI * std::sqrt(cov_global(1, 1)));
       oriz.values_bound.push_back(3 * 180.0 / M_PI * std::sqrt(cov_global(2, 2)));
@@ -373,7 +395,8 @@ void ResultTrajectory::calculate_error(Statistics &posx, Statistics &posy, Stati
     pitch.values.push_back(180.0 / M_PI * errori_rpy(1));
     yaw.timestamps.push_back(est_times.at(i));
     yaw.values.push_back(180.0 / M_PI * errori_rpy(2));
-    if (est_times.size() == est_covori.size()) {
+    if (est_times.size() == est_covori.size())
+    {
       roll.values_bound.push_back(3 * 180.0 / M_PI * std::sqrt(cov_rpy(0, 0)));
       pitch.values_bound.push_back(3 * 180.0 / M_PI * std::sqrt(cov_rpy(1, 1)));
       yaw.values_bound.push_back(3 * 180.0 / M_PI * std::sqrt(cov_rpy(2, 2)));

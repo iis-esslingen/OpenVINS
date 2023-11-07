@@ -37,8 +37,8 @@
 #include "utils/print.h"
 #include "utils/quat_ops.h"
 
-namespace ov_init {
-
+namespace ov_init
+{
 /**
  * @brief Struct which stores all options needed for state estimation.
  *
@@ -46,13 +46,14 @@ namespace ov_init {
  * If you are going to add a parameter here you will need to add it to the parsers.
  * You will also need to add it to the print statement at the bottom of each.
  */
-struct InertialInitializerOptions {
-
+struct InertialInitializerOptions
+{
   /**
    * @brief This function will load the non-simulation parameters of the system and print.
    * @param parser If not null, this parser will be used to load our parameters
    */
-  void print_and_load(const std::shared_ptr<ov_core::YamlParser> &parser = nullptr) {
+  void print_and_load(const std::shared_ptr<ov_core::YamlParser>& parser = nullptr)
+  {
     print_and_load_initializer(parser);
     print_and_load_noise(parser);
     print_and_load_state(parser);
@@ -121,9 +122,11 @@ struct InertialInitializerOptions {
    *
    * @param parser If not null, this parser will be used to load our parameters
    */
-  void print_and_load_initializer(const std::shared_ptr<ov_core::YamlParser> &parser = nullptr) {
+  void print_and_load_initializer(const std::shared_ptr<ov_core::YamlParser>& parser = nullptr)
+  {
     PRINT_DEBUG("INITIALIZATION SETTINGS:\n");
-    if (parser != nullptr) {
+    if (parser != nullptr)
+    {
       parser->parse_config("init_window_time", init_window_time);
       parser->parse_config("init_imu_thresh", init_imu_thresh);
       parser->parse_config("init_max_disparity", init_max_disparity);
@@ -140,8 +143,8 @@ struct InertialInitializerOptions {
       parser->parse_config("init_dyn_inflation_bg", init_dyn_inflation_bias_gyro);
       parser->parse_config("init_dyn_inflation_ba", init_dyn_inflation_bias_accel);
       parser->parse_config("init_dyn_min_rec_cond", init_dyn_min_rec_cond);
-      std::vector<double> bias_g = {0, 0, 0};
-      std::vector<double> bias_a = {0, 0, 0};
+      std::vector<double> bias_g = { 0, 0, 0 };
+      std::vector<double> bias_a = { 0, 0, 0 };
       parser->parse_config("init_dyn_bias_g", bias_g);
       parser->parse_config("init_dyn_bias_a", bias_a);
       init_dyn_bias_g << bias_g.at(0), bias_g.at(1), bias_g.at(2);
@@ -151,18 +154,21 @@ struct InertialInitializerOptions {
     PRINT_DEBUG("  - init_imu_thresh: %.2f\n", init_imu_thresh);
     PRINT_DEBUG("  - init_max_disparity: %.2f\n", init_max_disparity);
     PRINT_DEBUG("  - init_max_features: %.2f\n", init_max_features);
-    if (init_max_features < 15) {
+    if (init_max_features < 15)
+    {
       PRINT_ERROR(RED "number of requested feature tracks to init not enough!!\n" RESET);
       PRINT_ERROR(RED "  init_max_features = %d\n" RESET, init_max_features);
       std::exit(EXIT_FAILURE);
     }
-    if (init_imu_thresh <= 0.0 && !init_dyn_use) {
+    if (init_imu_thresh <= 0.0 && !init_dyn_use)
+    {
       PRINT_ERROR(RED "need to have an IMU threshold for static initialization!\n" RESET);
       PRINT_ERROR(RED "  init_imu_thresh = %.3f\n" RESET, init_imu_thresh);
       PRINT_ERROR(RED "  init_dyn_use = %d\n" RESET, init_dyn_use);
       std::exit(EXIT_FAILURE);
     }
-    if (init_max_disparity <= 0.0 && !init_dyn_use) {
+    if (init_max_disparity <= 0.0 && !init_dyn_use)
+    {
       PRINT_ERROR(RED "need to have an DISPARITY threshold for static initialization!\n" RESET);
       PRINT_ERROR(RED "  init_max_disparity = %.3f\n" RESET, init_max_disparity);
       PRINT_ERROR(RED "  init_dyn_use = %d\n" RESET, init_dyn_use);
@@ -180,7 +186,8 @@ struct InertialInitializerOptions {
     PRINT_DEBUG("  - init_dyn_inflation_bg: %.2e\n", init_dyn_inflation_bias_gyro);
     PRINT_DEBUG("  - init_dyn_inflation_ba: %.2e\n", init_dyn_inflation_bias_accel);
     PRINT_DEBUG("  - init_dyn_min_rec_cond: %.2e\n", init_dyn_min_rec_cond);
-    if (init_dyn_num_pose < 4) {
+    if (init_dyn_num_pose < 4)
+    {
       PRINT_ERROR(RED "number of requested frames to init not enough!!\n" RESET);
       PRINT_ERROR(RED "  init_dyn_num_pose = %d (4 min)\n" RESET, init_dyn_num_pose);
       std::exit(EXIT_FAILURE);
@@ -212,9 +219,11 @@ struct InertialInitializerOptions {
    *
    * @param parser If not null, this parser will be used to load our parameters
    */
-  void print_and_load_noise(const std::shared_ptr<ov_core::YamlParser> &parser = nullptr) {
+  void print_and_load_noise(const std::shared_ptr<ov_core::YamlParser>& parser = nullptr)
+  {
     PRINT_DEBUG("NOISE PARAMETERS:\n");
-    if (parser != nullptr) {
+    if (parser != nullptr)
+    {
       parser->parse_external("relative_config_imu", "imu0", "gyroscope_noise_density", sigma_w);
       parser->parse_external("relative_config_imu", "imu0", "gyroscope_random_walk", sigma_wb);
       parser->parse_external("relative_config_imu", "imu0", "accelerometer_noise_density", sigma_a);
@@ -236,7 +245,8 @@ struct InertialInitializerOptions {
   /// Number of distinct cameras that we will observe features in
   int num_cameras = 1;
 
-  /// If we should process two cameras are being stereo or binocular. If binocular, we do monocular feature tracking on each image.
+  /// If we should process two cameras are being stereo or binocular. If binocular, we do monocular feature tracking on
+  /// each image.
   bool use_stereo = true;
 
   /// Will half the resolution all tracking image (aruco will be 1/4 instead of halved if dowsize_aruoc also enabled)
@@ -257,18 +267,22 @@ struct InertialInitializerOptions {
    *
    * @param parser If not null, this parser will be used to load our parameters
    */
-  void print_and_load_state(const std::shared_ptr<ov_core::YamlParser> &parser = nullptr) {
-    if (parser != nullptr) {
+  void print_and_load_state(const std::shared_ptr<ov_core::YamlParser>& parser = nullptr)
+  {
+    if (parser != nullptr)
+    {
       parser->parse_config("gravity_mag", gravity_mag);
-      parser->parse_config("max_cameras", num_cameras); // might be redundant
+      parser->parse_config("max_cameras", num_cameras);  // might be redundant
       parser->parse_config("use_stereo", use_stereo);
       parser->parse_config("downsample_cameras", downsample_cameras);
-      for (int i = 0; i < num_cameras; i++) {
-
+      for (int i = 0; i < num_cameras; i++)
+      {
         // Time offset (use the first one)
         // TODO: support multiple time offsets between cameras
-        if (i == 0) {
-          parser->parse_external("relative_config_imucam", "cam" + std::to_string(i), "timeshift_cam_imu", calib_camimu_dt, false);
+        if (i == 0)
+        {
+          parser->parse_external("relative_config_imucam", "cam" + std::to_string(i), "timeshift_cam_imu",
+                                 calib_camimu_dt, false);
         }
 
         // Distortion model
@@ -276,20 +290,20 @@ struct InertialInitializerOptions {
         parser->parse_external("relative_config_imucam", "cam" + std::to_string(i), "distortion_model", dist_model);
 
         // Distortion parameters
-        std::vector<double> cam_calib1 = {1, 1, 0, 0};
-        std::vector<double> cam_calib2 = {0, 0, 0, 0};
+        std::vector<double> cam_calib1 = { 1, 1, 0, 0 };
+        std::vector<double> cam_calib2 = { 0, 0, 0, 0 };
         parser->parse_external("relative_config_imucam", "cam" + std::to_string(i), "intrinsics", cam_calib1);
         parser->parse_external("relative_config_imucam", "cam" + std::to_string(i), "distortion_coeffs", cam_calib2);
         Eigen::VectorXd cam_calib = Eigen::VectorXd::Zero(8);
-        cam_calib << cam_calib1.at(0), cam_calib1.at(1), cam_calib1.at(2), cam_calib1.at(3), cam_calib2.at(0), cam_calib2.at(1),
-            cam_calib2.at(2), cam_calib2.at(3);
+        cam_calib << cam_calib1.at(0), cam_calib1.at(1), cam_calib1.at(2), cam_calib1.at(3), cam_calib2.at(0),
+            cam_calib2.at(1), cam_calib2.at(2), cam_calib2.at(3);
         cam_calib(0) /= (downsample_cameras) ? 2.0 : 1.0;
         cam_calib(1) /= (downsample_cameras) ? 2.0 : 1.0;
         cam_calib(2) /= (downsample_cameras) ? 2.0 : 1.0;
         cam_calib(3) /= (downsample_cameras) ? 2.0 : 1.0;
 
         // FOV / resolution
-        std::vector<int> matrix_wh = {1, 1};
+        std::vector<int> matrix_wh = { 1, 1 };
         parser->parse_external("relative_config_imucam", "cam" + std::to_string(i), "resolution", matrix_wh);
         matrix_wh.at(0) /= (downsample_cameras) ? 2.0 : 1.0;
         matrix_wh.at(1) /= (downsample_cameras) ? 2.0 : 1.0;
@@ -304,14 +318,17 @@ struct InertialInitializerOptions {
         cam_eigen.block(4, 0, 3, 1) = -T_CtoI.block(0, 0, 3, 3).transpose() * T_CtoI.block(0, 3, 3, 1);
 
         // Create intrinsics model
-        if (dist_model == "equidistant") {
-          camera_intrinsics.insert({i, std::make_shared<ov_core::CamEqui>(matrix_wh.at(0), matrix_wh.at(1))});
-          camera_intrinsics.at(i)->set_value(cam_calib);
-        } else {
-          camera_intrinsics.insert({i, std::make_shared<ov_core::CamRadtan>(matrix_wh.at(0), matrix_wh.at(1))});
+        if (dist_model == "equidistant")
+        {
+          camera_intrinsics.insert({ i, std::make_shared<ov_core::CamEqui>(matrix_wh.at(0), matrix_wh.at(1)) });
           camera_intrinsics.at(i)->set_value(cam_calib);
         }
-        camera_extrinsics.insert({i, cam_eigen});
+        else
+        {
+          camera_intrinsics.insert({ i, std::make_shared<ov_core::CamRadtan>(matrix_wh.at(0), matrix_wh.at(1)) });
+          camera_intrinsics.at(i)->set_value(cam_calib);
+        }
+        camera_extrinsics.insert({ i, cam_eigen });
       }
     }
     PRINT_DEBUG("STATE PARAMETERS:\n");
@@ -320,23 +337,32 @@ struct InertialInitializerOptions {
     PRINT_DEBUG("  - num_cameras: %d\n", num_cameras);
     PRINT_DEBUG("  - use_stereo: %d\n", use_stereo);
     PRINT_DEBUG("  - downsize cameras: %d\n", downsample_cameras);
-    if (num_cameras != (int)camera_intrinsics.size() || num_cameras != (int)camera_extrinsics.size()) {
+    if (num_cameras != (int)camera_intrinsics.size() || num_cameras != (int)camera_extrinsics.size())
+    {
       PRINT_ERROR(RED "[SIM]: camera calib size does not match max cameras...\n" RESET);
-      PRINT_ERROR(RED "[SIM]: got %d but expected %d max cameras (camera_intrinsics)\n" RESET, (int)camera_intrinsics.size(), num_cameras);
-      PRINT_ERROR(RED "[SIM]: got %d but expected %d max cameras (camera_extrinsics)\n" RESET, (int)camera_extrinsics.size(), num_cameras);
+      PRINT_ERROR(RED "[SIM]: got %d but expected %d max cameras (camera_intrinsics)\n" RESET,
+                  (int)camera_intrinsics.size(), num_cameras);
+      PRINT_ERROR(RED "[SIM]: got %d but expected %d max cameras (camera_extrinsics)\n" RESET,
+                  (int)camera_extrinsics.size(), num_cameras);
       std::exit(EXIT_FAILURE);
     }
     PRINT_DEBUG("  - calib_camimu_dt: %.4f\n", calib_camimu_dt);
-    for (int n = 0; n < num_cameras; n++) {
+    for (int n = 0; n < num_cameras; n++)
+    {
       std::stringstream ss;
-      ss << "cam_" << n << "_fisheye:" << (std::dynamic_pointer_cast<ov_core::CamEqui>(camera_intrinsics.at(n)) != nullptr) << std::endl;
-      ss << "cam_" << n << "_wh:" << std::endl << camera_intrinsics.at(n)->w() << " x " << camera_intrinsics.at(n)->h() << std::endl;
+      ss << "cam_" << n
+         << "_fisheye:" << (std::dynamic_pointer_cast<ov_core::CamEqui>(camera_intrinsics.at(n)) != nullptr)
+         << std::endl;
+      ss << "cam_" << n << "_wh:" << std::endl
+         << camera_intrinsics.at(n)->w() << " x " << camera_intrinsics.at(n)->h() << std::endl;
       ss << "cam_" << n << "_intrinsic(0:3):" << std::endl
          << camera_intrinsics.at(n)->get_value().block(0, 0, 4, 1).transpose() << std::endl;
       ss << "cam_" << n << "_intrinsic(4:7):" << std::endl
          << camera_intrinsics.at(n)->get_value().block(4, 0, 4, 1).transpose() << std::endl;
-      ss << "cam_" << n << "_extrinsic(0:3):" << std::endl << camera_extrinsics.at(n).block(0, 0, 4, 1).transpose() << std::endl;
-      ss << "cam_" << n << "_extrinsic(4:6):" << std::endl << camera_extrinsics.at(n).block(4, 0, 3, 1).transpose() << std::endl;
+      ss << "cam_" << n << "_extrinsic(0:3):" << std::endl
+         << camera_extrinsics.at(n).block(0, 0, 4, 1).transpose() << std::endl;
+      ss << "cam_" << n << "_extrinsic(4:6):" << std::endl
+         << camera_extrinsics.at(n).block(4, 0, 3, 1).transpose() << std::endl;
       Eigen::Matrix4d T_CtoI = Eigen::Matrix4d::Identity();
       T_CtoI.block(0, 0, 3, 3) = ov_core::quat_2_Rot(camera_extrinsics.at(n).block(0, 0, 4, 1)).transpose();
       T_CtoI.block(0, 3, 3, 1) = -T_CtoI.block(0, 0, 3, 3) * camera_extrinsics.at(n).block(4, 0, 3, 1);
@@ -350,11 +376,12 @@ struct InertialInitializerOptions {
   /// Seed for initial states (i.e. random feature 3d positions in the generated map)
   int sim_seed_state_init = 0;
 
-  /// Seed for calibration perturbations. Change this to perturb by different random values if perturbations are enabled.
+  /// Seed for calibration perturbations. Change this to perturb by different random values if perturbations are
+  /// enabled.
   int sim_seed_preturb = 0;
 
-  /// Measurement noise seed. This should be incremented for each run in the Monte-Carlo simulation to generate the same true measurements,
-  /// but diffferent noise values.
+  /// Measurement noise seed. This should be incremented for each run in the Monte-Carlo simulation to generate the same
+  /// true measurements, but diffferent noise values.
   int sim_seed_measurements = 0;
 
   /// If we should perturb the calibration that the estimator starts with
@@ -363,8 +390,8 @@ struct InertialInitializerOptions {
   /// Path to the trajectory we will b-spline and simulate on. Should be time(s),pos(xyz),ori(xyzw) format.
   std::string sim_traj_path = "../ov_data/sim/udel_gore.txt";
 
-  /// We will start simulating after we have moved this much along the b-spline. This prevents static starts as we init from groundtruth in
-  /// simulation.
+  /// We will start simulating after we have moved this much along the b-spline. This prevents static starts as we init
+  /// from groundtruth in simulation.
   double sim_distance_threshold = 1.2;
 
   /// Frequency (Hz) that we will simulate our cameras
@@ -385,8 +412,10 @@ struct InertialInitializerOptions {
    *
    * @param parser If not null, this parser will be used to load our parameters
    */
-  void print_and_load_simulation(const std::shared_ptr<ov_core::YamlParser> &parser = nullptr) {
-    if (parser != nullptr) {
+  void print_and_load_simulation(const std::shared_ptr<ov_core::YamlParser>& parser = nullptr)
+  {
+    if (parser != nullptr)
+    {
       parser->parse_config("sim_seed_state_init", sim_seed_state_init);
       parser->parse_config("sim_seed_preturb", sim_seed_preturb);
       parser->parse_config("sim_seed_measurements", sim_seed_measurements);
@@ -412,6 +441,6 @@ struct InertialInitializerOptions {
   }
 };
 
-} // namespace ov_init
+}  // namespace ov_init
 
-#endif // OV_INIT_INERTIALINITIALIZEROPTIONS_H
+#endif  // OV_INIT_INERTIALINITIALIZEROPTIONS_H

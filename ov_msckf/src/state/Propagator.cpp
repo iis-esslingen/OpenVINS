@@ -29,19 +29,26 @@ using namespace ov_core;
 using namespace ov_type;
 using namespace ov_msckf;
 
-void Propagator::propagate_and_clone(std::shared_ptr<State> state, double timestamp) {
-
+void Propagator::propagate_and_clone(std::shared_ptr<State> state, double timestamp)
+{
   // If the difference between the current update time and state is zero
   // We should crash, as this means we would have two clones at the same time!!!!
-  if (state->_timestamp == timestamp) {
-    PRINT_ERROR(RED "Propagator::propagate_and_clone(): Propagation called again at same timestep at last update timestep!!!!\n" RESET);
+  if (state->_timestamp == timestamp)
+  {
+    PRINT_ERROR(RED
+                "Propagator::propagate_and_clone(): Propagation called again at same timestep at last update "
+                "timestep!!!!\n" RESET);
     std::exit(EXIT_FAILURE);
   }
 
   // We should crash if we are trying to propagate backwards
-  if (state->_timestamp > timestamp) {
-    PRINT_ERROR(RED "Propagator::propagate_and_clone(): Propagation called trying to propagate backwards in time!!!!\n" RESET);
-    PRINT_ERROR(RED "Propagator::propagate_and_clone(): desired propagation = %.4f\n" RESET, (timestamp - state->_timestamp));
+  if (state->_timestamp > timestamp)
+  {
+    PRINT_ERROR(RED
+                "Propagator::propagate_and_clone(): Propagation called trying to propagate backwards in "
+                "time!!!!\n" RESET);
+    PRINT_ERROR(RED "Propagator::propagate_and_clone(): desired propagation = %.4f\n" RESET,
+                (timestamp - state->_timestamp));
     std::exit(EXIT_FAILURE);
   }
 
@@ -50,7 +57,8 @@ void Propagator::propagate_and_clone(std::shared_ptr<State> state, double timest
   //===================================================================================
 
   // Set the last time offset value if we have just started the system up
-  if (!have_last_prop_time_offset) {
+  if (!have_last_prop_time_offset)
+  {
     last_prop_time_offset = state->_calib_dt_CAMtoIMU->value()(0);
     have_last_prop_time_offset = true;
   }
@@ -78,9 +86,10 @@ void Propagator::propagate_and_clone(std::shared_ptr<State> state, double timest
 
   // Loop through all IMU messages, and use them to move the state forward in time
   // This uses the zero'th order quat, and then constant acceleration discrete
-  if (prop_data.size() > 1) {
-    for (size_t i = 0; i < prop_data.size() - 1; i++) {
-
+  if (prop_data.size() > 1)
+  {
+    for (size_t i = 0; i < prop_data.size() - 1; i++)
+    {
       // Get the next state Jacobian and noise Jacobian for this IMU reading
       Eigen::Matrix<double, 15, 15> F = Eigen::Matrix<double, 15, 15>::Zero();
       Eigen::Matrix<double, 15, 15> Qdi = Eigen::Matrix<double, 15, 15>::Zero();
@@ -120,13 +129,14 @@ void Propagator::propagate_and_clone(std::shared_ptr<State> state, double timest
   StateHelper::augment_clone(state, last_w);
 }
 
-bool Propagator::fast_state_propagate(std::shared_ptr<State> state, double timestamp, Eigen::Matrix<double, 13, 1> &state_plus,
-                                      Eigen::Matrix<double, 12, 12> &covariance) {
-
+bool Propagator::fast_state_propagate(std::shared_ptr<State> state, double timestamp,
+                                      Eigen::Matrix<double, 13, 1>& state_plus,
+                                      Eigen::Matrix<double, 12, 12>& covariance)
+{
   // First we will store the current calibration / estimates of the state
   double state_time = state->_timestamp;
   Eigen::MatrixXd state_est = state->_imu->value();
-  Eigen::MatrixXd state_covariance = StateHelper::get_marginal_covariance(state, {state->_imu});
+  Eigen::MatrixXd state_covariance = StateHelper::get_marginal_covariance(state, { state->_imu });
   double t_off = state->_calib_dt_CAMtoIMU->value()(0);
 
   // First lets construct an IMU vector of measurements we need
@@ -146,8 +156,8 @@ bool Propagator::fast_state_propagate(std::shared_ptr<State> state, double times
 
   // Loop through all IMU messages, and use them to move the state forward in time
   // This uses the zero'th order quat, and then constant acceleration discrete
-  for (size_t i = 0; i < prop_data.size() - 1; i++) {
-
+  for (size_t i = 0; i < prop_data.size() - 1; i++)
+  {
     // Corrected imu measurements
     double dt = prop_data.at(i + 1).timestamp - prop_data.at(i).timestamp;
     Eigen::Vector3d w_hat = 0.5 * (prop_data.at(i + 1).wm + prop_data.at(i).wm) - bias_g;
@@ -191,7 +201,8 @@ bool Propagator::fast_state_propagate(std::shared_ptr<State> state, double times
 
     // Propagate the mean forward
     state_est.block(0, 0, 4, 1) = rot_2_quat(exp_so3(-w_hat * dt) * R_Gtoi);
-    state_est.block(4, 0, 3, 1) = p_iinG + v_iinG * dt + 0.5 * R_Gtoi.transpose() * a_hat * dt * dt - 0.5 * _gravity * dt * dt;
+    state_est.block(4, 0, 3, 1) =
+        p_iinG + v_iinG * dt + 0.5 * R_Gtoi.transpose() * a_hat * dt * dt - 0.5 * _gravity * dt * dt;
     state_est.block(7, 0, 3, 1) = v_iinG + R_Gtoi.transpose() * a_hat * dt - _gravity * dt;
   }
 
@@ -203,7 +214,8 @@ bool Propagator::fast_state_propagate(std::shared_ptr<State> state, double times
   state_plus.block(0, 0, 4, 1) = q_Gtoi;
   state_plus.block(4, 0, 3, 1) = p_iinG;
   state_plus.block(7, 0, 3, 1) = quat_2_Rot(q_Gtoi) * v_iinG;
-  state_plus.block(10, 0, 3, 1) = 0.5 * (prop_data.at(prop_data.size() - 1).wm + prop_data.at(prop_data.size() - 2).wm) - bias_g;
+  state_plus.block(10, 0, 3, 1) =
+      0.5 * (prop_data.at(prop_data.size() - 1).wm + prop_data.at(prop_data.size() - 2).wm) - bias_g;
 
   // Do a covariance propagation for our velocity
   // TODO: more properly do the covariance of the angular velocity here...
@@ -218,28 +230,32 @@ bool Propagator::fast_state_propagate(std::shared_ptr<State> state, double times
   return true;
 }
 
-std::vector<ov_core::ImuData> Propagator::select_imu_readings(const std::vector<ov_core::ImuData> &imu_data, double time0, double time1,
-                                                              bool warn) {
-
+std::vector<ov_core::ImuData> Propagator::select_imu_readings(const std::vector<ov_core::ImuData>& imu_data,
+                                                              double time0, double time1, bool warn)
+{
   // Our vector imu readings
   std::vector<ov_core::ImuData> prop_data;
 
   // Ensure we have some measurements in the first place!
-  if (imu_data.empty()) {
+  if (imu_data.empty())
+  {
     if (warn)
-      PRINT_WARNING(YELLOW "Propagator::select_imu_readings(): No IMU measurements. IMU-CAMERA are likely messed up!!!\n" RESET);
+      PRINT_WARNING(YELLOW
+                    "Propagator::select_imu_readings(): No IMU measurements. IMU-CAMERA are likely messed "
+                    "up!!!\n" RESET);
     return prop_data;
   }
 
   // Loop through and find all the needed measurements to propagate with
   // Note we split measurements based on the given state time, and the update timestamp
-  for (size_t i = 0; i < imu_data.size() - 1; i++) {
-
+  for (size_t i = 0; i < imu_data.size() - 1; i++)
+  {
     // START OF THE INTEGRATION PERIOD
     // If the next timestamp is greater then our current state time
     // And the current is not greater then it yet...
     // Then we should "split" our current IMU measurement
-    if (imu_data.at(i + 1).timestamp > time0 && imu_data.at(i).timestamp < time0) {
+    if (imu_data.at(i + 1).timestamp > time0 && imu_data.at(i).timestamp < time0)
+    {
       ov_core::ImuData data = Propagator::interpolate_data(imu_data.at(i), imu_data.at(i + 1), time0);
       prop_data.push_back(data);
       // PRINT_DEBUG("propagation #%d = CASE 1 = %.3f => %.3f\n", (int)i, data.timestamp - prop_data.at(0).timestamp,
@@ -250,7 +266,8 @@ std::vector<ov_core::ImuData> Propagator::select_imu_readings(const std::vector<
     // MIDDLE OF INTEGRATION PERIOD
     // If our imu measurement is right in the middle of our propagation period
     // Then we should just append the whole measurement time to our propagation vector
-    if (imu_data.at(i).timestamp >= time0 && imu_data.at(i + 1).timestamp <= time1) {
+    if (imu_data.at(i).timestamp >= time0 && imu_data.at(i + 1).timestamp <= time1)
+    {
       prop_data.push_back(imu_data.at(i));
       // PRINT_DEBUG("propagation #%d = CASE 2 = %.3f\n", (int)i, imu_data.at(i).timestamp - prop_data.at(0).timestamp);
       continue;
@@ -261,73 +278,87 @@ std::vector<ov_core::ImuData> Propagator::select_imu_readings(const std::vector<
     // We should just "split" the NEXT IMU measurement to the update time,
     // NOTE: we add the current time, and then the time at the end of the interval (so we can get a dt)
     // NOTE: we also break out of this loop, as this is the last IMU measurement we need!
-    if (imu_data.at(i + 1).timestamp > time1) {
-      // If we have a very low frequency IMU then, we could have only recorded the first integration (i.e. case 1) and nothing else
-      // In this case, both the current IMU measurement and the next is greater than the desired intepolation, thus we should just cut the
-      // current at the desired time Else, we have hit CASE2 and this IMU measurement is not past the desired propagation time, thus add the
-      // whole IMU reading
-      if (imu_data.at(i).timestamp > time1 && i == 0) {
+    if (imu_data.at(i + 1).timestamp > time1)
+    {
+      // If we have a very low frequency IMU then, we could have only recorded the first integration (i.e. case 1) and
+      // nothing else In this case, both the current IMU measurement and the next is greater than the desired
+      // intepolation, thus we should just cut the current at the desired time Else, we have hit CASE2 and this IMU
+      // measurement is not past the desired propagation time, thus add the whole IMU reading
+      if (imu_data.at(i).timestamp > time1 && i == 0)
+      {
         // This case can happen if we don't have any imu data that has occured before the startup time
         // This means that either we have dropped IMU data, or we have not gotten enough.
         // In this case we can't propgate forward in time, so there is not that much we can do.
         break;
-      } else if (imu_data.at(i).timestamp > time1) {
+      }
+      else if (imu_data.at(i).timestamp > time1)
+      {
         ov_core::ImuData data = interpolate_data(imu_data.at(i - 1), imu_data.at(i), time1);
         prop_data.push_back(data);
         // PRINT_DEBUG("propagation #%d = CASE 3.1 = %.3f => %.3f\n",
         // (int)i,imu_data.at(i).timestamp-prop_data.at(0).timestamp,imu_data.at(i).timestamp-time0);
-      } else {
+      }
+      else
+      {
         prop_data.push_back(imu_data.at(i));
         // PRINT_DEBUG("propagation #%d = CASE 3.2 = %.3f => %.3f\n",
         // (int)i,imu_data.at(i).timestamp-prop_data.at(0).timestamp,imu_data.at(i).timestamp-time0);
       }
       // If the added IMU message doesn't end exactly at the camera time
       // Then we need to add another one that is right at the ending time
-      if (prop_data.at(prop_data.size() - 1).timestamp != time1) {
+      if (prop_data.at(prop_data.size() - 1).timestamp != time1)
+      {
         ov_core::ImuData data = interpolate_data(imu_data.at(i), imu_data.at(i + 1), time1);
         prop_data.push_back(data);
-        // PRINT_DEBUG("propagation #%d = CASE 3.3 = %.3f => %.3f\n", (int)i,data.timestamp-prop_data.at(0).timestamp,data.timestamp-time0);
+        // PRINT_DEBUG("propagation #%d = CASE 3.3 = %.3f => %.3f\n",
+        // (int)i,data.timestamp-prop_data.at(0).timestamp,data.timestamp-time0);
       }
       break;
     }
   }
 
   // Check that we have at least one measurement to propagate with
-  if (prop_data.empty()) {
+  if (prop_data.empty())
+  {
     if (warn)
-      PRINT_WARNING(
-          YELLOW
-          "Propagator::select_imu_readings(): No IMU measurements to propagate with (%d of 2). IMU-CAMERA are likely messed up!!!\n" RESET,
-          (int)prop_data.size());
+      PRINT_WARNING(YELLOW
+                    "Propagator::select_imu_readings(): No IMU measurements to propagate with (%d of 2). IMU-CAMERA "
+                    "are likely messed up!!!\n" RESET,
+                    (int)prop_data.size());
     return prop_data;
   }
 
-  // If we did not reach the whole integration period (i.e., the last inertial measurement we have is smaller then the time we want to
-  // reach) Then we should just "stretch" the last measurement to be the whole period (case 3 in the above loop)
-  // if(time1-imu_data.at(imu_data.size()-1).timestamp > 1e-3) {
-  //    PRINT_DEBUG(YELLOW "Propagator::select_imu_readings(): Missing inertial measurements to propagate with (%.6f sec missing).
-  //    IMU-CAMERA are likely messed up!!!\n" RESET, (time1-imu_data.at(imu_data.size()-1).timestamp)); return prop_data;
+  // If we did not reach the whole integration period (i.e., the last inertial measurement we have is smaller then the
+  // time we want to reach) Then we should just "stretch" the last measurement to be the whole period (case 3 in the
+  // above loop) if(time1-imu_data.at(imu_data.size()-1).timestamp > 1e-3) {
+  //    PRINT_DEBUG(YELLOW "Propagator::select_imu_readings(): Missing inertial measurements to propagate with (%.6f sec
+  //    missing). IMU-CAMERA are likely messed up!!!\n" RESET, (time1-imu_data.at(imu_data.size()-1).timestamp)); return
+  //    prop_data;
   //}
 
   // Loop through and ensure we do not have an zero dt values
   // This would cause the noise covariance to be Infinity
-  for (size_t i = 0; i < prop_data.size() - 1; i++) {
-    if (std::abs(prop_data.at(i + 1).timestamp - prop_data.at(i).timestamp) < 1e-12) {
+  for (size_t i = 0; i < prop_data.size() - 1; i++)
+  {
+    if (std::abs(prop_data.at(i + 1).timestamp - prop_data.at(i).timestamp) < 1e-12)
+    {
       if (warn)
-        PRINT_WARNING(YELLOW "Propagator::select_imu_readings(): Zero DT between IMU reading %d and %d, removing it!\n" RESET, (int)i,
-                      (int)(i + 1));
+        PRINT_WARNING(YELLOW
+                      "Propagator::select_imu_readings(): Zero DT between IMU reading %d and %d, removing it!\n" RESET,
+                      (int)i, (int)(i + 1));
       prop_data.erase(prop_data.begin() + i);
       i--;
     }
   }
 
   // Check that we have at least one measurement to propagate with
-  if (prop_data.size() < 2) {
+  if (prop_data.size() < 2)
+  {
     if (warn)
-      PRINT_WARNING(
-          YELLOW
-          "Propagator::select_imu_readings(): No IMU measurements to propagate with (%d of 2). IMU-CAMERA are likely messed up!!!\n" RESET,
-          (int)prop_data.size());
+      PRINT_WARNING(YELLOW
+                    "Propagator::select_imu_readings(): No IMU measurements to propagate with (%d of 2). IMU-CAMERA "
+                    "are likely messed up!!!\n" RESET,
+                    (int)prop_data.size());
     return prop_data;
   }
 
@@ -335,9 +366,10 @@ std::vector<ov_core::ImuData> Propagator::select_imu_readings(const std::vector<
   return prop_data;
 }
 
-void Propagator::predict_and_compute(std::shared_ptr<State> state, const ov_core::ImuData &data_minus, const ov_core::ImuData &data_plus,
-                                     Eigen::Matrix<double, 15, 15> &F, Eigen::Matrix<double, 15, 15> &Qd) {
-
+void Propagator::predict_and_compute(std::shared_ptr<State> state, const ov_core::ImuData& data_minus,
+                                     const ov_core::ImuData& data_plus, Eigen::Matrix<double, 15, 15>& F,
+                                     Eigen::Matrix<double, 15, 15>& Qd)
+{
   // Set them to zero
   F.setZero();
   Qd.setZero();
@@ -371,8 +403,8 @@ void Propagator::predict_and_compute(std::shared_ptr<State> state, const ov_core
   Eigen::Matrix<double, 15, 12> G = Eigen::Matrix<double, 15, 12>::Zero();
 
   // Now compute Jacobian of new state wrt old state and noise
-  if (state->_options.do_fej) {
-
+  if (state->_options.do_fej)
+  {
     // This is the change in the orientation from the end of the last prop to the current prop
     // This is needed since we need to include the "k-th" updated orientation information
     Eigen::Matrix<double, 3, 3> Rfej = state->_imu->Rot_fej();
@@ -390,8 +422,10 @@ void Propagator::predict_and_compute(std::shared_ptr<State> state, const ov_core
     F.block(v_id, v_id, 3, 3).setIdentity();
     F.block(v_id, ba_id, 3, 3) = -Rfej.transpose() * dt;
     F.block(ba_id, ba_id, 3, 3).setIdentity();
-    F.block(p_id, th_id, 3, 3).noalias() = -skew_x(new_p - p_fej - v_fej * dt + 0.5 * _gravity * dt * dt) * Rfej.transpose();
-    // F.block(p_id, th_id, 3, 3).noalias() = -0.5 * Rfej.transpose() * skew_x(2*Rfej*(new_p-p_fej-v_fej*dt+0.5*_gravity*dt*dt));
+    F.block(p_id, th_id, 3, 3).noalias() =
+        -skew_x(new_p - p_fej - v_fej * dt + 0.5 * _gravity * dt * dt) * Rfej.transpose();
+    // F.block(p_id, th_id, 3, 3).noalias() = -0.5 * Rfej.transpose() *
+    // skew_x(2*Rfej*(new_p-p_fej-v_fej*dt+0.5*_gravity*dt*dt));
     F.block(p_id, v_id, 3, 3) = Eigen::Matrix<double, 3, 3>::Identity() * dt;
     F.block(p_id, ba_id, 3, 3) = -0.5 * Rfej.transpose() * dt * dt;
     F.block(p_id, p_id, 3, 3).setIdentity();
@@ -402,9 +436,9 @@ void Propagator::predict_and_compute(std::shared_ptr<State> state, const ov_core
     G.block(p_id, 3, 3, 3) = -0.5 * Rfej.transpose() * dt * dt;
     G.block(bg_id, 6, 3, 3) = Eigen::Matrix<double, 3, 3>::Identity();
     G.block(ba_id, 9, 3, 3) = Eigen::Matrix<double, 3, 3>::Identity();
-
-  } else {
-
+  }
+  else
+  {
     Eigen::Matrix<double, 3, 3> R_Gtoi = state->_imu->Rot();
 
     F.block(th_id, th_id, 3, 3) = exp_so3(-w_hat * dt);
@@ -448,14 +482,16 @@ void Propagator::predict_and_compute(std::shared_ptr<State> state, const ov_core
   state->_imu->set_fej(imu_x);
 }
 
-void Propagator::predict_mean_discrete(std::shared_ptr<State> state, double dt, const Eigen::Vector3d &w_hat1,
-                                       const Eigen::Vector3d &a_hat1, const Eigen::Vector3d &w_hat2, const Eigen::Vector3d &a_hat2,
-                                       Eigen::Vector4d &new_q, Eigen::Vector3d &new_v, Eigen::Vector3d &new_p) {
-
+void Propagator::predict_mean_discrete(std::shared_ptr<State> state, double dt, const Eigen::Vector3d& w_hat1,
+                                       const Eigen::Vector3d& a_hat1, const Eigen::Vector3d& w_hat2,
+                                       const Eigen::Vector3d& a_hat2, Eigen::Vector4d& new_q, Eigen::Vector3d& new_v,
+                                       Eigen::Vector3d& new_p)
+{
   // If we are averaging the IMU, then do so
   Eigen::Vector3d w_hat = w_hat1;
   Eigen::Vector3d a_hat = a_hat1;
-  if (state->_options.imu_avg) {
+  if (state->_options.imu_avg)
+  {
     w_hat = .5 * (w_hat1 + w_hat2);
     a_hat = .5 * (a_hat1 + a_hat2);
   }
@@ -467,9 +503,12 @@ void Propagator::predict_mean_discrete(std::shared_ptr<State> state, double dt, 
 
   // Orientation: Equation (101) and (103) and of Trawny indirect TR
   Eigen::Matrix<double, 4, 4> bigO;
-  if (w_norm > 1e-20) {
+  if (w_norm > 1e-20)
+  {
     bigO = cos(0.5 * w_norm * dt) * I_4x4 + 1 / w_norm * sin(0.5 * w_norm * dt) * Omega(w_hat);
-  } else {
+  }
+  else
+  {
     bigO = I_4x4 + 0.5 * dt * Omega(w_hat);
   }
   new_q = quatnorm(bigO * state->_imu->quat());
@@ -479,13 +518,15 @@ void Propagator::predict_mean_discrete(std::shared_ptr<State> state, double dt, 
   new_v = state->_imu->vel() + R_Gtoi.transpose() * a_hat * dt - _gravity * dt;
 
   // Position: just velocity times dt, with the acceleration integrated twice
-  new_p = state->_imu->pos() + state->_imu->vel() * dt + 0.5 * R_Gtoi.transpose() * a_hat * dt * dt - 0.5 * _gravity * dt * dt;
+  new_p = state->_imu->pos() + state->_imu->vel() * dt + 0.5 * R_Gtoi.transpose() * a_hat * dt * dt -
+          0.5 * _gravity * dt * dt;
 }
 
-void Propagator::predict_mean_rk4(std::shared_ptr<State> state, double dt, const Eigen::Vector3d &w_hat1, const Eigen::Vector3d &a_hat1,
-                                  const Eigen::Vector3d &w_hat2, const Eigen::Vector3d &a_hat2, Eigen::Vector4d &new_q,
-                                  Eigen::Vector3d &new_v, Eigen::Vector3d &new_p) {
-
+void Propagator::predict_mean_rk4(std::shared_ptr<State> state, double dt, const Eigen::Vector3d& w_hat1,
+                                  const Eigen::Vector3d& a_hat1, const Eigen::Vector3d& w_hat2,
+                                  const Eigen::Vector3d& a_hat2, Eigen::Vector4d& new_q, Eigen::Vector3d& new_v,
+                                  Eigen::Vector3d& new_p)
+{
   // Pre-compute things
   Eigen::Vector3d w_hat = w_hat1;
   Eigen::Vector3d a_hat = a_hat1;
@@ -498,7 +539,7 @@ void Propagator::predict_mean_rk4(std::shared_ptr<State> state, double dt, const
   Eigen::Vector3d v_0 = state->_imu->vel();
 
   // k1 ================
-  Eigen::Vector4d dq_0 = {0, 0, 0, 1};
+  Eigen::Vector4d dq_0 = { 0, 0, 0, 1 };
   Eigen::Vector4d q0_dot = 0.5 * Omega(w_hat) * dq_0;
   Eigen::Vector3d p0_dot = v_0;
   Eigen::Matrix3d R_Gto0 = quat_2_Rot(quat_multiply(dq_0, q_0));
@@ -557,7 +598,8 @@ void Propagator::predict_mean_rk4(std::shared_ptr<State> state, double dt, const
   Eigen::Vector3d k4_v = v3_dot * dt;
 
   // y+dt ================
-  Eigen::Vector4d dq = quatnorm(dq_0 + (1.0 / 6.0) * k1_q + (1.0 / 3.0) * k2_q + (1.0 / 3.0) * k3_q + (1.0 / 6.0) * k4_q);
+  Eigen::Vector4d dq =
+      quatnorm(dq_0 + (1.0 / 6.0) * k1_q + (1.0 / 3.0) * k2_q + (1.0 / 3.0) * k3_q + (1.0 / 6.0) * k4_q);
   new_q = quat_multiply(dq, q_0);
   new_p = p_0 + (1.0 / 6.0) * k1_p + (1.0 / 3.0) * k2_p + (1.0 / 3.0) * k3_p + (1.0 / 6.0) * k4_p;
   new_v = v_0 + (1.0 / 6.0) * k1_v + (1.0 / 3.0) * k2_v + (1.0 / 3.0) * k3_v + (1.0 / 6.0) * k4_v;

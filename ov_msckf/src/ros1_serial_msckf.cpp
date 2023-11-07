@@ -38,11 +38,12 @@ std::shared_ptr<VioManager> sys;
 std::shared_ptr<ROS1Visualizer> viz;
 
 // Main function
-int main(int argc, char **argv) {
-
+int main(int argc, char** argv)
+{
   // Ensure we have a path, if the user passes it then we should use it
   std::string config_path = "unset_path_to_config.yaml";
-  if (argc > 1) {
+  if (argc > 1)
+  {
     config_path = argv[1];
   }
 
@@ -70,7 +71,8 @@ int main(int argc, char **argv) {
   viz = std::make_shared<ROS1Visualizer>(nh, sys);
 
   // Ensure we read in all parameters required
-  if (!parser->successful()) {
+  if (!parser->successful())
+  {
     PRINT_ERROR(RED "[SERIAL]: unable to parse all parameters, please fix\n" RESET);
     std::exit(EXIT_FAILURE);
   }
@@ -87,7 +89,8 @@ int main(int argc, char **argv) {
 
   // Our camera topics
   std::vector<std::string> topic_cameras;
-  for (int i = 0; i < params.state_options.num_cameras; i++) {
+  for (int i = 0; i < params.state_options.num_cameras; i++)
+  {
     std::string cam_topic;
     nh->param<std::string>("topic_camera" + std::to_string(i), cam_topic, "/cam" + std::to_string(i) + "/image_raw");
     parser->parse_external("relative_config_imucam", "cam" + std::to_string(i), "rostopic", cam_topic);
@@ -103,10 +106,12 @@ int main(int argc, char **argv) {
   // Load groundtruth if we have it
   // NOTE: needs to be a csv ASL format file
   std::map<double, Eigen::Matrix<double, 17, 1>> gt_states;
-  if (nh->hasParam("path_gt")) {
+  if (nh->hasParam("path_gt"))
+  {
     std::string path_to_gt;
     nh->param<std::string>("path_gt", path_to_gt, "");
-    if (!path_to_gt.empty()) {
+    if (!path_to_gt.empty())
+    {
       ov_core::DatasetReader::load_gt_file(path_to_gt, gt_states);
       PRINT_DEBUG("[SERIAL]: gt file path is: %s\n", path_to_gt.c_str());
     }
@@ -144,7 +149,8 @@ int main(int argc, char **argv) {
   view.addQuery(bag, time_init, time_finish);
 
   // Check to make sure we have data to play
-  if (view.size() == 0) {
+  if (view.size() == 0)
+  {
     PRINT_ERROR(RED "[SERIAL]: No messages to play on specified topics.  Exiting.\n" RESET);
     ros::shutdown();
     return EXIT_FAILURE;
@@ -157,10 +163,12 @@ int main(int argc, char **argv) {
   // NOTE: see this PR https://github.com/ros/ros_comm/issues/117
   double max_camera_time = -1;
   std::vector<rosbag::MessageInstance> msgs;
-  for (const rosbag::MessageInstance &msg : view) {
+  for (const rosbag::MessageInstance& msg : view)
+  {
     if (!ros::ok())
       break;
-    if (msg.getTopic() == topic_imu) {
+    if (msg.getTopic() == topic_imu)
+    {
       // if (msg.instantiate<sensor_msgs::Imu>() == nullptr) {
       //   PRINT_ERROR(RED "[SERIAL]: IMU topic has unmatched message types!!\n" RESET);
       //   PRINT_ERROR(RED "[SERIAL]: Supports: sensor_msgs::Imu\n" RESET);
@@ -168,8 +176,10 @@ int main(int argc, char **argv) {
       // }
       msgs.push_back(msg);
     }
-    for (int i = 0; i < params.state_options.num_cameras; i++) {
-      if (msg.getTopic() == topic_cameras.at(i)) {
+    for (int i = 0; i < params.state_options.num_cameras; i++)
+    {
+      if (msg.getTopic() == topic_cameras.at(i))
+      {
         // sensor_msgs::CompressedImage::ConstPtr img_c = msg.instantiate<sensor_msgs::CompressedImage>();
         // sensor_msgs::Image::ConstPtr img_i = msg.instantiate<sensor_msgs::Image>();
         // if (img_c == nullptr && img_i == nullptr) {
@@ -190,8 +200,8 @@ int main(int argc, char **argv) {
 
   // Loop through our message array, and lets process them
   std::set<int> used_index;
-  for (int m = 0; m < (int)msgs.size(); m++) {
-
+  for (int m = 0; m < (int)msgs.size(); m++)
+  {
     // End once we reach the last time, or skip if before beginning time (shouldn't happen)
     if (!ros::ok() || msgs.at(m).getTime() > time_finish || msgs.at(m).getTime().toSec() > max_camera_time)
       break;
@@ -199,20 +209,22 @@ int main(int argc, char **argv) {
       continue;
 
     // Skip messages that we have already used
-    if (used_index.find(m) != used_index.end()) {
+    if (used_index.find(m) != used_index.end())
+    {
       used_index.erase(m);
       continue;
     }
 
     // IMU processing
-    if (msgs.at(m).getTopic() == topic_imu) {
+    if (msgs.at(m).getTopic() == topic_imu)
+    {
       // PRINT_DEBUG("processing imu = %.3f sec\n", msgs.at(m).getTime().toSec() - time_init.toSec());
       viz->callback_inertial(msgs.at(m).instantiate<sensor_msgs::Imu>());
     }
 
     // Camera processing
-    for (int cam_id = 0; cam_id < params.state_options.num_cameras; cam_id++) {
-
+    for (int cam_id = 0; cam_id < params.state_options.num_cameras; cam_id++)
+    {
       // Skip if this message is not a camera topic
       if (msgs.at(m).getTopic() != topic_cameras.at(cam_id))
         continue;
@@ -222,34 +234,41 @@ int main(int argc, char **argv) {
       // If we are unable, then this message should just be skipped since it isn't a sync'ed pair!
       std::map<int, int> camid_to_msg_index;
       double meas_time = msgs.at(m).getTime().toSec();
-      for (int cam_idt = 0; cam_idt < params.state_options.num_cameras; cam_idt++) {
-        if (cam_idt == cam_id) {
-          camid_to_msg_index.insert({cam_id, m});
+      for (int cam_idt = 0; cam_idt < params.state_options.num_cameras; cam_idt++)
+      {
+        if (cam_idt == cam_id)
+        {
+          camid_to_msg_index.insert({ cam_id, m });
           continue;
         }
         int cam_idt_idx = -1;
-        for (int mt = m; mt < (int)msgs.size(); mt++) {
+        for (int mt = m; mt < (int)msgs.size(); mt++)
+        {
           if (msgs.at(mt).getTopic() != topic_cameras.at(cam_idt))
             continue;
           if (std::abs(msgs.at(mt).getTime().toSec() - meas_time) < 0.02)
             cam_idt_idx = mt;
           break;
         }
-        if (cam_idt_idx != -1) {
-          camid_to_msg_index.insert({cam_idt, cam_idt_idx});
+        if (cam_idt_idx != -1)
+        {
+          camid_to_msg_index.insert({ cam_idt, cam_idt_idx });
         }
       }
 
       // Skip processing if we were unable to find any messages
-      if ((int)camid_to_msg_index.size() != params.state_options.num_cameras) {
-        PRINT_DEBUG(YELLOW "[SERIAL]: Unable to find stereo pair for message %d at %.2f into bag (will skip!)\n" RESET, m,
-                    meas_time - time_init.toSec());
+      if ((int)camid_to_msg_index.size() != params.state_options.num_cameras)
+      {
+        PRINT_DEBUG(YELLOW "[SERIAL]: Unable to find stereo pair for message %d at %.2f into bag (will skip!)\n" RESET,
+                    m, meas_time - time_init.toSec());
         continue;
       }
 
       // Check if we should initialize using the groundtruth
       Eigen::Matrix<double, 17, 1> imustate;
-      if (!gt_states.empty() && !sys->initialized() && ov_core::DatasetReader::get_gt_state(meas_time, imustate, gt_states)) {
+      if (!gt_states.empty() && !sys->initialized() &&
+          ov_core::DatasetReader::get_gt_state(meas_time, imustate, gt_states))
+      {
         // biases are pretty bad normally, so zero them
         // imustate.block(11,0,6,1).setZero();
         sys->initialize_with_gt(imustate);
@@ -257,15 +276,20 @@ int main(int argc, char **argv) {
 
       // Pass our data into our visualizer callbacks!
       // PRINT_DEBUG("processing cam = %.3f sec\n", msgs.at(m).getTime().toSec() - time_init.toSec());
-      if (params.state_options.num_cameras == 1) {
+      if (params.state_options.num_cameras == 1)
+      {
         viz->callback_monocular(msgs.at(camid_to_msg_index.at(0)).instantiate<sensor_msgs::Image>(), 0);
-      } else if (params.state_options.num_cameras == 2) {
+      }
+      else if (params.state_options.num_cameras == 2)
+      {
         auto msg0 = msgs.at(camid_to_msg_index.at(0));
         auto msg1 = msgs.at(camid_to_msg_index.at(1));
-        used_index.insert(camid_to_msg_index.at(0)); // skip this message
-        used_index.insert(camid_to_msg_index.at(1)); // skip this message
+        used_index.insert(camid_to_msg_index.at(0));  // skip this message
+        used_index.insert(camid_to_msg_index.at(1));  // skip this message
         viz->callback_stereo(msg0.instantiate<sensor_msgs::Image>(), msg1.instantiate<sensor_msgs::Image>(), 0, 1);
-      } else {
+      }
+      else
+      {
         PRINT_ERROR(RED "[SERIAL]: We currently only support 1 or 2 camera serial input....\n" RESET);
         return EXIT_FAILURE;
       }

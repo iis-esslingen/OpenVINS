@@ -50,17 +50,21 @@
 using namespace ov_core;
 
 // Our feature extractor
-TrackBase *extractor;
+TrackBase* extractor;
 
 // Define the function to be called when ctrl-c (SIGINT) is sent to process
-void signal_callback_handler(int signum) { std::exit(signum); }
+void signal_callback_handler(int signum)
+{
+  std::exit(signum);
+}
 
 // Main function
-int main(int argc, char **argv) {
-
+int main(int argc, char** argv)
+{
   // Ensure we have a path, if the user passes it then we should use it
   std::string config_path = "unset_path.txt";
-  if (argc > 1) {
+  if (argc > 1)
+  {
     config_path = argv[1];
   }
 
@@ -108,13 +112,20 @@ int main(int argc, char **argv) {
   ov_core::TrackBase::HistogramMethod method;
   std::string histogram_method_str = "HISTOGRAM";
   parser->parse_config("histogram_method", histogram_method_str, false);
-  if (histogram_method_str == "NONE") {
+  if (histogram_method_str == "NONE")
+  {
     method = ov_core::TrackBase::NONE;
-  } else if (histogram_method_str == "HISTOGRAM") {
+  }
+  else if (histogram_method_str == "HISTOGRAM")
+  {
     method = ov_core::TrackBase::HISTOGRAM;
-  } else if (histogram_method_str == "CLAHE") {
+  }
+  else if (histogram_method_str == "CLAHE")
+  {
     method = ov_core::TrackBase::CLAHE;
-  } else {
+  }
+  else
+  {
     printf(RED "invalid feature histogram specified:\n" RESET);
     printf(RED "\t- NONE\n" RESET);
     printf(RED "\t- HISTOGRAM\n" RESET);
@@ -133,18 +144,20 @@ int main(int argc, char **argv) {
 
   // Fake camera info (we don't need this, as we are not using the normalized coordinates for anything)
   std::unordered_map<size_t, std::shared_ptr<CamBase>> cameras;
-  for (int i = 0; i < 2; i++) {
+  for (int i = 0; i < 2; i++)
+  {
     Eigen::Matrix<double, 8, 1> cam0_calib;
     cam0_calib << 1, 1, 0, 0, 0, 0, 0, 0;
     std::shared_ptr<CamBase> camera_calib = std::make_shared<CamRadtan>(100, 100);
     camera_calib->set_value(cam0_calib);
-    cameras.insert({i, camera_calib});
+    cameras.insert({ i, camera_calib });
   }
 
   // Lets make a feature extractor
-  extractor = new TrackKLT(cameras, num_pts, num_aruco, !use_stereo, method, fast_threshold, grid_x, grid_y, min_px_dist);
-  // extractor = new TrackDescriptor(cameras, num_pts, num_aruco, !use_stereo, method, fast_threshold, grid_x, grid_y, min_px_dist,
-  // knn_ratio); extractor = new TrackAruco(cameras, num_aruco, !use_stereo, method, do_downsizing);
+  extractor =
+      new TrackKLT(cameras, num_pts, num_aruco, !use_stereo, method, fast_threshold, grid_x, grid_y, min_px_dist);
+  // extractor = new TrackDescriptor(cameras, num_pts, num_aruco, !use_stereo, method, fast_threshold, grid_x, grid_y,
+  // min_px_dist, knn_ratio); extractor = new TrackAruco(cameras, num_aruco, !use_stereo, method, do_downsizing);
 
   //===================================================================================
   //===================================================================================
@@ -152,7 +165,8 @@ int main(int argc, char **argv) {
 
   // Open the first webcam (0=laptop cam, 1=usb device)
   cv::VideoCapture cap;
-  if (!cap.open(0)) {
+  if (!cap.open(0))
+  {
     PRINT_ERROR(RED "Unable to open a webcam feed!\n" RESET);
     return EXIT_FAILURE;
   }
@@ -166,9 +180,11 @@ int main(int argc, char **argv) {
   std::deque<double> clonetimes;
   signal(SIGINT, signal_callback_handler);
 #if ROS_AVAILABLE == 1
-  while (ros::ok()) {
+  while (ros::ok())
+  {
 #else
-  while (true) {
+  while (true)
+  {
 #endif
 
     // Get the next frame (and fake advance time forward)
@@ -211,10 +227,12 @@ int main(int argc, char **argv) {
     std::vector<std::shared_ptr<Feature>> feats_lost = database->features_not_containing_newer(current_time);
 
     // Mark theses feature pointers as deleted
-    for (size_t i = 0; i < feats_lost.size(); i++) {
+    for (size_t i = 0; i < feats_lost.size(); i++)
+    {
       // Total number of measurements
       int total_meas = 0;
-      for (auto const &pair : feats_lost[i]->timestamps) {
+      for (auto const& pair : feats_lost[i]->timestamps)
+      {
         total_meas += (int)pair.second.size();
       }
       // Update stats
@@ -225,13 +243,15 @@ int main(int argc, char **argv) {
     clonetimes.push_back(current_time);
 
     // Marginalized features if we have reached 5 frame tracks
-    if ((int)clonetimes.size() >= clone_states) {
+    if ((int)clonetimes.size() >= clone_states)
+    {
       // Remove features that have reached their max track length
       double margtime = clonetimes.at(0);
       clonetimes.pop_front();
       std::vector<std::shared_ptr<Feature>> feats_marg = database->features_containing(margtime);
       // Delete theses feature pointers
-      for (size_t i = 0; i < feats_marg.size(); i++) {
+      for (size_t i = 0; i < feats_marg.size(); i++)
+      {
         feats_marg[i]->to_delete = true;
       }
     }

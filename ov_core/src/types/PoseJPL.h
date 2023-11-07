@@ -26,19 +26,19 @@
 #include "Vec.h"
 #include "utils/quat_ops.h"
 
-namespace ov_type {
-
+namespace ov_type
+{
 /**
  * @brief Derived Type class that implements a 6 d.o.f pose
  *
  * Internally we use a JPLQuat quaternion representation for the orientation and 3D Vec position.
  * Please see JPLQuat for details on its update procedure and its left multiplicative error.
  */
-class PoseJPL : public Type {
-
+class PoseJPL : public Type
+{
 public:
-  PoseJPL() : Type(6) {
-
+  PoseJPL() : Type(6)
+  {
     // Initialize subvariables
     _q = std::shared_ptr<JPLQuat>(new JPLQuat());
     _p = std::shared_ptr<Vec>(new Vec(3));
@@ -51,7 +51,9 @@ public:
     set_fej_internal(pose0);
   }
 
-  ~PoseJPL() {}
+  ~PoseJPL()
+  {
+  }
 
   /**
    * @brief Sets id used to track location of variable in the filter covariance
@@ -60,7 +62,8 @@ public:
    *
    * @param new_id entry in filter covariance corresponding to this variable
    */
-  void set_local_id(int new_id) override {
+  void set_local_id(int new_id) override
+  {
     _id = new_id;
     _q->set_local_id(new_id);
     _p->set_local_id(new_id + ((new_id != -1) ? _q->size() : 0));
@@ -71,8 +74,8 @@ public:
    *
    * @param dx Correction vector (orientation then position)
    */
-  void update(const Eigen::VectorXd &dx) override {
-
+  void update(const Eigen::VectorXd& dx) override
+  {
     assert(dx.rows() == _size);
 
     Eigen::Matrix<double, 7, 1> newX = _value;
@@ -94,53 +97,88 @@ public:
    * @brief Sets the value of the estimate
    * @param new_value New value we should set
    */
-  void set_value(const Eigen::MatrixXd &new_value) override { set_value_internal(new_value); }
+  void set_value(const Eigen::MatrixXd& new_value) override
+  {
+    set_value_internal(new_value);
+  }
 
   /**
    * @brief Sets the value of the first estimate
    * @param new_value New value we should set
    */
-  void set_fej(const Eigen::MatrixXd &new_value) override { set_fej_internal(new_value); }
+  void set_fej(const Eigen::MatrixXd& new_value) override
+  {
+    set_fej_internal(new_value);
+  }
 
-  std::shared_ptr<Type> clone() override {
+  std::shared_ptr<Type> clone() override
+  {
     auto Clone = std::shared_ptr<PoseJPL>(new PoseJPL());
     Clone->set_value(value());
     Clone->set_fej(fej());
     return Clone;
   }
 
-  std::shared_ptr<Type> check_if_subvariable(const std::shared_ptr<Type> check) override {
-    if (check == _q) {
+  std::shared_ptr<Type> check_if_subvariable(const std::shared_ptr<Type> check) override
+  {
+    if (check == _q)
+    {
       return _q;
-    } else if (check == _p) {
+    }
+    else if (check == _p)
+    {
       return _p;
     }
     return nullptr;
   }
 
   /// Rotation access
-  Eigen::Matrix<double, 3, 3> Rot() const { return _q->Rot(); }
+  Eigen::Matrix<double, 3, 3> Rot() const
+  {
+    return _q->Rot();
+  }
 
   /// FEJ Rotation access
-  Eigen::Matrix<double, 3, 3> Rot_fej() const { return _q->Rot_fej(); }
+  Eigen::Matrix<double, 3, 3> Rot_fej() const
+  {
+    return _q->Rot_fej();
+  }
 
   /// Rotation access as quaternion
-  Eigen::Matrix<double, 4, 1> quat() const { return _q->value(); }
+  Eigen::Matrix<double, 4, 1> quat() const
+  {
+    return _q->value();
+  }
 
   /// FEJ Rotation access as quaternion
-  Eigen::Matrix<double, 4, 1> quat_fej() const { return _q->fej(); }
+  Eigen::Matrix<double, 4, 1> quat_fej() const
+  {
+    return _q->fej();
+  }
 
   /// Position access
-  Eigen::Matrix<double, 3, 1> pos() const { return _p->value(); }
+  Eigen::Matrix<double, 3, 1> pos() const
+  {
+    return _p->value();
+  }
 
   // FEJ position access
-  Eigen::Matrix<double, 3, 1> pos_fej() const { return _p->fej(); }
+  Eigen::Matrix<double, 3, 1> pos_fej() const
+  {
+    return _p->fej();
+  }
 
   // Quaternion type access
-  std::shared_ptr<JPLQuat> q() { return _q; }
+  std::shared_ptr<JPLQuat> q()
+  {
+    return _q;
+  }
 
   // Position type access
-  std::shared_ptr<Vec> p() { return _p; }
+  std::shared_ptr<Vec> p()
+  {
+    return _p;
+  }
 
 protected:
   /// Subvariable containing orientation
@@ -153,8 +191,8 @@ protected:
    * @brief Sets the value of the estimate
    * @param new_value New value we should set
    */
-  void set_value_internal(const Eigen::MatrixXd &new_value) {
-
+  void set_value_internal(const Eigen::MatrixXd& new_value)
+  {
     assert(new_value.rows() == 7);
     assert(new_value.cols() == 1);
 
@@ -171,8 +209,8 @@ protected:
    * @brief Sets the value of the first estimate
    * @param new_value New value we should set
    */
-  void set_fej_internal(const Eigen::MatrixXd &new_value) {
-
+  void set_fej_internal(const Eigen::MatrixXd& new_value)
+  {
     assert(new_value.rows() == 7);
     assert(new_value.cols() == 1);
 
@@ -186,6 +224,6 @@ protected:
   }
 };
 
-} // namespace ov_type
+}  // namespace ov_type
 
-#endif // OV_TYPE_TYPE_POSEJPL_H
+#endif  // OV_TYPE_TYPE_POSEJPL_H

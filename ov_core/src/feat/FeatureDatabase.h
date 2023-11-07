@@ -28,8 +28,8 @@
 #include <unordered_map>
 #include <vector>
 
-namespace ov_core {
-
+namespace ov_core
+{
 class Feature;
 
 /**
@@ -37,7 +37,8 @@ class Feature;
  *
  * Each visual tracker has this database in it and it contains all features that we are tracking.
  * The trackers will insert information into this database when they get new measurements from doing tracking.
- * A user would then query this database for features that can be used for update and remove them after they have been processed.
+ * A user would then query this database for features that can be used for update and remove them after they have been
+ * processed.
  *
  *
  * @m_class{m-note m-warning}
@@ -47,22 +48,26 @@ class Feature;
  * Since each feature is a pointer just directly returning and using them is not thread safe.
  * Thus, to be thread safe, use the "remove" flag for each function which will remove it from this feature database.
  * This prevents the trackers from adding new measurements and editing the feature information.
- * For example, if you are asynchronous tracking cameras and you chose to update the state, then remove all features you will use in update.
- * The feature trackers will continue to add features while you update, whose measurements can be used in the next update step!
+ * For example, if you are asynchronous tracking cameras and you chose to update the state, then remove all features you
+ * will use in update. The feature trackers will continue to add features while you update, whose measurements can be
+ * used in the next update step!
  *
  */
-class FeatureDatabase {
-
+class FeatureDatabase
+{
 public:
   /**
    * @brief Default constructor
    */
-  FeatureDatabase() {}
+  FeatureDatabase()
+  {
+  }
 
   /**
    * @brief Get a specified feature
    * @param id What feature we want to get
-   * @param remove Set to true if you want to remove the feature from the database (you will need to handle the freeing of memory)
+   * @param remove Set to true if you want to remove the feature from the database (you will need to handle the freeing
+   * of memory)
    * @return Either a feature object, or null if it is not in the database.
    */
   std::shared_ptr<Feature> get_feature(size_t id, bool remove = false);
@@ -73,7 +78,7 @@ public:
    * @param feat Feature with data in it
    * @return True if the feature was found
    */
-  bool get_feature_clone(size_t id, Feature &feat);
+  bool get_feature_clone(size_t id, Feature& feat);
 
   /**
    * @brief Update a feature object
@@ -97,7 +102,8 @@ public:
    * For example this could be used to get features that have not been successfully tracked into the newest frame.
    * All features returned will not have any measurements occurring at a time greater then the specified.
    */
-  std::vector<std::shared_ptr<Feature>> features_not_containing_newer(double timestamp, bool remove = false, bool skip_deleted = false);
+  std::vector<std::shared_ptr<Feature>> features_not_containing_newer(double timestamp, bool remove = false,
+                                                                      bool skip_deleted = false);
 
   /**
    * @brief Get features that has measurements older then the specified time.
@@ -105,7 +111,8 @@ public:
    * This will collect all features that have measurements occurring before the specified timestamp.
    * For example, we would want to remove all features older then the last clone/state in our sliding window.
    */
-  std::vector<std::shared_ptr<Feature>> features_containing_older(double timestamp, bool remove = false, bool skip_deleted = false);
+  std::vector<std::shared_ptr<Feature>> features_containing_older(double timestamp, bool remove = false,
+                                                                  bool skip_deleted = false);
 
   /**
    * @brief Get features that has measurements at the specified time.
@@ -113,7 +120,8 @@ public:
    * This function will return all features that have the specified time in them.
    * This would be used to get all features that occurred at a specific clone/state.
    */
-  std::vector<std::shared_ptr<Feature>> features_containing(double timestamp, bool remove = false, bool skip_deleted = false);
+  std::vector<std::shared_ptr<Feature>> features_containing(double timestamp, bool remove = false,
+                                                            bool skip_deleted = false);
 
   /**
    * @brief This function will delete all features that have been used up.
@@ -135,7 +143,8 @@ public:
   /**
    * @brief Returns the size of the feature database
    */
-  size_t size() {
+  size_t size()
+  {
     std::lock_guard<std::mutex> lck(mtx);
     return features_idlookup.size();
   }
@@ -143,7 +152,8 @@ public:
   /**
    * @brief Returns the internal data (should not normally be used)
    */
-  std::unordered_map<size_t, std::shared_ptr<Feature>> get_internal_data() {
+  std::unordered_map<size_t, std::shared_ptr<Feature>> get_internal_data()
+  {
     std::lock_guard<std::mutex> lck(mtx);
     return features_idlookup;
   }
@@ -156,7 +166,7 @@ public:
   /**
    * @brief Will update the passed database with this database's latest feature information.
    */
-  void append_new_measurements(const std::shared_ptr<FeatureDatabase> &database);
+  void append_new_measurements(const std::shared_ptr<FeatureDatabase>& database);
 
 protected:
   /// Mutex lock for our map
@@ -166,6 +176,6 @@ protected:
   std::unordered_map<size_t, std::shared_ptr<Feature>> features_idlookup;
 };
 
-} // namespace ov_core
+}  // namespace ov_core
 
 #endif /* OV_CORE_FEATURE_DATABASE_H */

@@ -24,18 +24,19 @@
 
 #include <string>
 
-namespace ov_type {
-
+namespace ov_type
+{
 /**
  * @brief Class has useful feature representation types
  */
-class LandmarkRepresentation {
-
+class LandmarkRepresentation
+{
 public:
   /**
    * @brief What feature representation our state can use
    */
-  enum Representation {
+  enum Representation
+  {
     GLOBAL_3D,
     GLOBAL_FULL_INVERSE_DEPTH,
     ANCHORED_3D,
@@ -51,7 +52,8 @@ public:
    * @param feat_representation  Representation we want to check
    * @return String version of the passed enum
    */
-  static inline std::string as_string(Representation feat_representation) {
+  static inline std::string as_string(Representation feat_representation)
+  {
     if (feat_representation == GLOBAL_3D)
       return "GLOBAL_3D";
     if (feat_representation == GLOBAL_FULL_INVERSE_DEPTH)
@@ -73,7 +75,8 @@ public:
    * @param feat_representation String we want to find the enum of
    * @return Representation, will be "unknown" if we coun't parse it
    */
-  static inline Representation from_string(const std::string &feat_representation) {
+  static inline Representation from_string(const std::string& feat_representation)
+  {
     if (feat_representation == "GLOBAL_3D")
       return GLOBAL_3D;
     if (feat_representation == "GLOBAL_FULL_INVERSE_DEPTH")
@@ -94,8 +97,10 @@ public:
    * @param feat_representation Representation we want to check
    * @return True if it is a relative representation
    */
-  static inline bool is_relative_representation(Representation feat_representation) {
-    return (feat_representation == Representation::ANCHORED_3D || feat_representation == Representation::ANCHORED_FULL_INVERSE_DEPTH ||
+  static inline bool is_relative_representation(Representation feat_representation)
+  {
+    return (feat_representation == Representation::ANCHORED_3D ||
+            feat_representation == Representation::ANCHORED_FULL_INVERSE_DEPTH ||
             feat_representation == Representation::ANCHORED_MSCKF_INVERSE_DEPTH ||
             feat_representation == Representation::ANCHORED_INVERSE_DEPTH_SINGLE);
   }
@@ -108,6 +113,6 @@ private:
   LandmarkRepresentation(){};
 };
 
-} // namespace ov_type
+}  // namespace ov_type
 
-#endif // OV_TYPE_LANDMARKREPRESENTATION_H
+#endif  // OV_TYPE_LANDMARKREPRESENTATION_H

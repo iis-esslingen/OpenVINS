@@ -29,16 +29,18 @@
 
 #include "UpdaterOptions.h"
 
-namespace ov_core {
+namespace ov_core
+{
 class Feature;
 class FeatureInitializer;
-} // namespace ov_core
-namespace ov_type {
+}  // namespace ov_core
+namespace ov_type
+{
 class Landmark;
-} // namespace ov_type
+}  // namespace ov_type
 
-namespace ov_msckf {
-
+namespace ov_msckf
+{
 class State;
 
 /**
@@ -47,8 +49,8 @@ class State;
  * This class is responsible for performing delayed feature initialization, SLAM update, and
  * SLAM anchor change for anchored feature representations.
  */
-class UpdaterSLAM {
-
+class UpdaterSLAM
+{
 public:
   /**
    * @brief Default constructor for our SLAM updater
@@ -60,21 +62,22 @@ public:
    * @param options_aruco Updater options (include measurement noise value) for ARUCO features
    * @param feat_init_options Feature initializer options
    */
-  UpdaterSLAM(UpdaterOptions &options_slam, UpdaterOptions &options_aruco, ov_core::FeatureInitializerOptions &feat_init_options);
+  UpdaterSLAM(UpdaterOptions& options_slam, UpdaterOptions& options_aruco,
+              ov_core::FeatureInitializerOptions& feat_init_options);
 
   /**
    * @brief Given tracked SLAM features, this will try to use them to update the state.
    * @param state State of the filter
    * @param feature_vec Features that can be used for update
    */
-  void update(std::shared_ptr<State> state, std::vector<std::shared_ptr<ov_core::Feature>> &feature_vec);
+  void update(std::shared_ptr<State> state, std::vector<std::shared_ptr<ov_core::Feature>>& feature_vec);
 
   /**
    * @brief Given max track features, this will try to use them to initialize them in the state.
    * @param state State of the filter
    * @param feature_vec Features that can be used for update
    */
-  void delayed_init(std::shared_ptr<State> state, std::vector<std::shared_ptr<ov_core::Feature>> &feature_vec);
+  void delayed_init(std::shared_ptr<State> state, std::vector<std::shared_ptr<ov_core::Feature>>& feature_vec);
 
   /**
    * @brief Will change SLAM feature anchors if it will be marginalized
@@ -94,8 +97,8 @@ protected:
    * @param new_anchor_timestamp Clone timestamp we want to move to
    * @param new_cam_id Which camera frame we want to move to
    */
-  void perform_anchor_change(std::shared_ptr<State> state, std::shared_ptr<ov_type::Landmark> landmark, double new_anchor_timestamp,
-                             size_t new_cam_id);
+  void perform_anchor_change(std::shared_ptr<State> state, std::shared_ptr<ov_type::Landmark> landmark,
+                             double new_anchor_timestamp, size_t new_cam_id);
 
   /// Options used during update for slam features
   UpdaterOptions _options_slam;
@@ -110,6 +113,6 @@ protected:
   std::map<int, double> chi_squared_table;
 };
 
-} // namespace ov_msckf
+}  // namespace ov_msckf
 
-#endif // OV_MSCKF_UPDATER_SLAM_H
+#endif  // OV_MSCKF_UPDATER_SLAM_H

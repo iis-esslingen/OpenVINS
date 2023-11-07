@@ -27,8 +27,8 @@
 #include <unordered_map>
 #include <vector>
 
-namespace ov_core {
-
+namespace ov_core
+{
 /**
  * @brief Sparse feature class used to collect measurements
  *
@@ -36,8 +36,8 @@ namespace ov_core {
  * Each feature has a unique ID assigned to it, and should have a set of feature tracks alongside it.
  * See the FeatureDatabase class for details on how we load information into this, and how we delete features.
  */
-class Feature {
-
+class Feature
+{
 public:
   /// Unique ID of this feature
   size_t featid;
@@ -74,7 +74,7 @@ public:
    *
    * @param valid_times Vector of timestamps that our measurements must occur at
    */
-  void clean_old_measurements(const std::vector<double> &valid_times);
+  void clean_old_measurements(const std::vector<double>& valid_times);
 
   /**
    * @brief Remove measurements that occur at the invalid timestamps
@@ -83,7 +83,7 @@ public:
    *
    * @param invalid_times Vector of timestamps that our measurements should not
    */
-  void clean_invalid_measurements(const std::vector<double> &invalid_times);
+  void clean_invalid_measurements(const std::vector<double>& invalid_times);
 
   /**
    * @brief Remove measurements that are older then the specified timestamp.
@@ -95,6 +95,6 @@ public:
   void clean_older_measurements(double timestamp);
 };
 
-} // namespace ov_core
+}  // namespace ov_core
 
 #endif /* OV_CORE_FEATURE_H */

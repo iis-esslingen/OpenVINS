@@ -24,8 +24,8 @@
 
 #include "TrackBase.h"
 
-namespace ov_core {
-
+namespace ov_core
+{
 /**
  * @brief Descriptor-based visual tracking
  *
@@ -34,8 +34,8 @@ namespace ov_core {
  * Right now we use ORB descriptors as we have found it is the fastest when computing descriptors.
  * Tracks are then rejected based on a ratio test and ransac.
  */
-class TrackDescriptor : public TrackBase {
-
+class TrackDescriptor : public TrackBase
+{
 public:
   /**
    * @brief Public constructor with configuration variables
@@ -50,16 +50,23 @@ public:
    * @param minpxdist features need to be at least this number pixels away from each other
    * @param knnratio matching ratio needed (smaller value forces top two descriptors during match to be more different)
    */
-  explicit TrackDescriptor(std::unordered_map<size_t, std::shared_ptr<CamBase>> cameras, int numfeats, int numaruco, bool stereo,
-                           HistogramMethod histmethod, int fast_threshold, int gridx, int gridy, int minpxdist, double knnratio)
-      : TrackBase(cameras, numfeats, numaruco, stereo, histmethod), threshold(fast_threshold), grid_x(gridx), grid_y(gridy),
-        min_px_dist(minpxdist), knn_ratio(knnratio) {}
+  explicit TrackDescriptor(std::unordered_map<size_t, std::shared_ptr<CamBase>> cameras, int numfeats, int numaruco,
+                           bool stereo, HistogramMethod histmethod, int fast_threshold, int gridx, int gridy,
+                           int minpxdist, double knnratio)
+    : TrackBase(cameras, numfeats, numaruco, stereo, histmethod)
+    , threshold(fast_threshold)
+    , grid_x(gridx)
+    , grid_y(gridy)
+    , min_px_dist(minpxdist)
+    , knn_ratio(knnratio)
+  {
+  }
 
   /**
    * @brief Process a new image
    * @param message Contains our timestamp, images, and camera ids
    */
-  void feed_new_camera(const CameraData &message) override;
+  void feed_new_camera(const CameraData& message) override;
 
 protected:
   /**
@@ -67,7 +74,7 @@ protected:
    * @param message Contains our timestamp, images, and camera ids
    * @param msg_id the camera index in message data vector
    */
-  void feed_monocular(const CameraData &message, size_t msg_id);
+  void feed_monocular(const CameraData& message, size_t msg_id);
 
   /**
    * @brief Process new stereo pair of images
@@ -75,7 +82,7 @@ protected:
    * @param msg_id_left first image index in message data vector
    * @param msg_id_right second image index in message data vector
    */
-  void feed_stereo(const CameraData &message, size_t msg_id_left, size_t msg_id_right);
+  void feed_stereo(const CameraData& message, size_t msg_id_left, size_t msg_id_right);
 
   /**
    * @brief Detects new features in the current image
@@ -90,8 +97,8 @@ protected:
    * Our vector of IDs will be later overwritten when we match features temporally to the previous frame's features.
    * See robust_match() for the matching.
    */
-  void perform_detection_monocular(const cv::Mat &img0, const cv::Mat &mask0, std::vector<cv::KeyPoint> &pts0, cv::Mat &desc0,
-                                   std::vector<size_t> &ids0);
+  void perform_detection_monocular(const cv::Mat& img0, const cv::Mat& mask0, std::vector<cv::KeyPoint>& pts0,
+                                   cv::Mat& desc0, std::vector<size_t>& ids0);
 
   /**
    * @brief Detects new features in the current stereo pair
@@ -109,13 +116,14 @@ protected:
    * @param ids1 right vector of all new IDs
    *
    * This does the same logic as the perform_detection_monocular() function, but we also enforce stereo contraints.
-   * We also do STEREO matching from the left to right, and only return good matches that are found in both the left and right.
-   * Our vector of IDs will be later overwritten when we match features temporally to the previous frame's features.
-   * See robust_match() for the matching.
+   * We also do STEREO matching from the left to right, and only return good matches that are found in both the left and
+   * right. Our vector of IDs will be later overwritten when we match features temporally to the previous frame's
+   * features. See robust_match() for the matching.
    */
-  void perform_detection_stereo(const cv::Mat &img0, const cv::Mat &img1, const cv::Mat &mask0, const cv::Mat &mask1,
-                                std::vector<cv::KeyPoint> &pts0, std::vector<cv::KeyPoint> &pts1, cv::Mat &desc0, cv::Mat &desc1,
-                                size_t cam_id0, size_t cam_id1, std::vector<size_t> &ids0, std::vector<size_t> &ids1);
+  void perform_detection_stereo(const cv::Mat& img0, const cv::Mat& img1, const cv::Mat& mask0, const cv::Mat& mask1,
+                                std::vector<cv::KeyPoint>& pts0, std::vector<cv::KeyPoint>& pts1, cv::Mat& desc0,
+                                cv::Mat& desc1, size_t cam_id0, size_t cam_id1, std::vector<size_t>& ids0,
+                                std::vector<size_t>& ids1);
 
   /**
    * @brief Find matches between two keypoint+descriptor sets.
@@ -129,18 +137,19 @@ protected:
    *
    * This will perform a "robust match" between the two sets of points (slow but has great results).
    * First we do a simple KNN match from 1to2 and 2to1, which is followed by a ratio check and symmetry check.
-   * Original code is from the "RobustMatcher" in the opencv examples, and seems to give very good results in the matches.
+   * Original code is from the "RobustMatcher" in the opencv examples, and seems to give very good results in the
+   * matches.
    * https://github.com/opencv/opencv/blob/master/samples/cpp/tutorial_code/calib3d/real_time_pose_estimation/src/RobustMatcher.cpp
    */
-  void robust_match(const std::vector<cv::KeyPoint> &pts0, const std::vector<cv::KeyPoint> &pts1, const cv::Mat &desc0,
-                    const cv::Mat &desc1, size_t id0, size_t id1, std::vector<cv::DMatch> &matches);
+  void robust_match(const std::vector<cv::KeyPoint>& pts0, const std::vector<cv::KeyPoint>& pts1, const cv::Mat& desc0,
+                    const cv::Mat& desc1, size_t id0, size_t id1, std::vector<cv::DMatch>& matches);
 
   // Helper functions for the robust_match function
   // Original code is from the "RobustMatcher" in the opencv examples
   // https://github.com/opencv/opencv/blob/master/samples/cpp/tutorial_code/calib3d/real_time_pose_estimation/src/RobustMatcher.cpp
-  void robust_ratio_test(std::vector<std::vector<cv::DMatch>> &matches);
-  void robust_symmetry_test(std::vector<std::vector<cv::DMatch>> &matches1, std::vector<std::vector<cv::DMatch>> &matches2,
-                            std::vector<cv::DMatch> &good_matches);
+  void robust_ratio_test(std::vector<std::vector<cv::DMatch>>& matches);
+  void robust_symmetry_test(std::vector<std::vector<cv::DMatch>>& matches1,
+                            std::vector<std::vector<cv::DMatch>>& matches2, std::vector<cv::DMatch>& good_matches);
 
   // Timing variables
   boost::posix_time::ptime rT1, rT2, rT3, rT4, rT5, rT6, rT7;
@@ -168,6 +177,6 @@ protected:
   std::unordered_map<size_t, cv::Mat> desc_last;
 };
 
-} // namespace ov_core
+}  // namespace ov_core
 
 #endif /* OV_CORE_TRACK_DESC_H */

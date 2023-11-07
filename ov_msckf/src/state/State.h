@@ -35,8 +35,8 @@
 #include "types/Type.h"
 #include "types/Vec.h"
 
-namespace ov_msckf {
-
+namespace ov_msckf
+{
 /**
  * @brief State of our filter
  *
@@ -45,16 +45,18 @@ namespace ov_msckf {
  * We additionally have more parameters for online estimation of calibration and SLAM features.
  * We also have the covariance of the system, which should be managed using the StateHelper class.
  */
-class State {
-
+class State
+{
 public:
   /**
    * @brief Default Constructor (will initialize variables to defaults)
    * @param options_ Options structure containing filter options
    */
-  State(StateOptions &options_);
+  State(StateOptions& options_);
 
-  ~State() {}
+  ~State()
+  {
+  }
 
   /**
    * @brief Will return the timestep that we will marginalize next.
@@ -62,10 +64,13 @@ public:
    * But if you wanted to do a keyframe system, you could selectively marginalize clones.
    * @return timestep of clone we will marginalize
    */
-  double margtimestep() {
+  double margtimestep()
+  {
     double time = INFINITY;
-    for (const auto &clone_imu : _clones_IMU) {
-      if (clone_imu.first < time) {
+    for (const auto& clone_imu : _clones_IMU)
+    {
+      if (clone_imu.first < time)
+      {
         time = clone_imu.first;
       }
     }
@@ -76,7 +81,10 @@ public:
    * @brief Calculates the current max size of the covariance
    * @return Size of the current covariance matrix
    */
-  int max_covariance_size() { return (int)_Cov.rows(); }
+  int max_covariance_size()
+  {
+    return (int)_Cov.rows();
+  }
 
   /// Current timestamp (should be the last update time!)
   double _timestamp = -1;
@@ -118,6 +126,6 @@ private:
   std::vector<std::shared_ptr<ov_type::Type>> _variables;
 };
 
-} // namespace ov_msckf
+}  // namespace ov_msckf
 
-#endif // OV_MSCKF_STATE_H
+#endif  // OV_MSCKF_STATE_H

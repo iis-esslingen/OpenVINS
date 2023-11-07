@@ -27,8 +27,8 @@
 
 #include <opencv2/opencv.hpp>
 
-namespace ov_core {
-
+namespace ov_core
+{
 /**
  * @brief Base pinhole camera model class
  *
@@ -39,25 +39,29 @@ namespace ov_core {
  *  - @ref ov_core::CamEqui
  *  - @ref ov_core::CamRadtan
  */
-class CamBase {
-
+class CamBase
+{
 public:
   /**
    * @brief Default constructor
    * @param width Width of the camera (raw pixels)
    * @param height Height of the camera (raw pixels)
    */
-  CamBase(int width, int height) : _width(width), _height(height) {}
+  CamBase(int width, int height) : _width(width), _height(height)
+  {
+  }
 
-  virtual ~CamBase() {}
+  virtual ~CamBase()
+  {
+  }
 
   /**
    * @brief This will set and update the camera calibration values.
    * This should be called on startup for each camera and after update!
    * @param calib Camera calibration information (f_x & f_y & c_x & c_y & k_1 & k_2 & k_3 & k_4)
    */
-  virtual void set_value(const Eigen::MatrixXd &calib) {
-
+  virtual void set_value(const Eigen::MatrixXd& calib)
+  {
     // Assert we are of size eight
     assert(calib.rows() == 8);
     camera_values = calib;
@@ -89,14 +93,15 @@ public:
    * @param uv_dist Raw uv coordinate we wish to undistort
    * @return 2d vector of normalized coordinates
    */
-  virtual Eigen::Vector2f undistort_f(const Eigen::Vector2f &uv_dist) = 0;
+  virtual Eigen::Vector2f undistort_f(const Eigen::Vector2f& uv_dist) = 0;
 
   /**
    * @brief Given a raw uv point, this will undistort it based on the camera matrices into normalized camera coords.
    * @param uv_dist Raw uv coordinate we wish to undistort
    * @return 2d vector of normalized coordinates
    */
-  Eigen::Vector2d undistort_d(const Eigen::Vector2d &uv_dist) {
+  Eigen::Vector2d undistort_d(const Eigen::Vector2d& uv_dist)
+  {
     Eigen::Vector2f ept1, ept2;
     ept1 = uv_dist.cast<float>();
     ept2 = undistort_f(ept1);
@@ -108,7 +113,8 @@ public:
    * @param uv_dist Raw uv coordinate we wish to undistort
    * @return 2d vector of normalized coordinates
    */
-  cv::Point2f undistort_cv(const cv::Point2f &uv_dist) {
+  cv::Point2f undistort_cv(const cv::Point2f& uv_dist)
+  {
     Eigen::Vector2f ept1, ept2;
     ept1 << uv_dist.x, uv_dist.y;
     ept2 = undistort_f(ept1);
@@ -123,14 +129,15 @@ public:
    * @param uv_norm Normalized coordinates we wish to distort
    * @return 2d vector of raw uv coordinate
    */
-  virtual Eigen::Vector2f distort_f(const Eigen::Vector2f &uv_norm) = 0;
+  virtual Eigen::Vector2f distort_f(const Eigen::Vector2f& uv_norm) = 0;
 
   /**
    * @brief Given a normalized uv coordinate this will distort it to the raw image plane
    * @param uv_norm Normalized coordinates we wish to distort
    * @return 2d vector of raw uv coordinate
    */
-  Eigen::Vector2d distort_d(const Eigen::Vector2d &uv_norm) {
+  Eigen::Vector2d distort_d(const Eigen::Vector2d& uv_norm)
+  {
     Eigen::Vector2f ept1, ept2;
     ept1 = uv_norm.cast<float>();
     ept2 = distort_f(ept1);
@@ -142,7 +149,8 @@ public:
    * @param uv_norm Normalized coordinates we wish to distort
    * @return 2d vector of raw uv coordinate
    */
-  cv::Point2f distort_cv(const cv::Point2f &uv_norm) {
+  cv::Point2f distort_cv(const cv::Point2f& uv_norm)
+  {
     Eigen::Vector2f ept1, ept2;
     ept1 << uv_norm.x, uv_norm.y;
     ept2 = distort_f(ept1);
@@ -158,22 +166,38 @@ public:
    * @param H_dz_dzn Derivative of measurement z in respect to normalized
    * @param H_dz_dzeta Derivative of measurement z in respect to intrinic parameters
    */
-  virtual void compute_distort_jacobian(const Eigen::Vector2d &uv_norm, Eigen::MatrixXd &H_dz_dzn, Eigen::MatrixXd &H_dz_dzeta) = 0;
+  virtual void compute_distort_jacobian(const Eigen::Vector2d& uv_norm, Eigen::MatrixXd& H_dz_dzn,
+                                        Eigen::MatrixXd& H_dz_dzeta) = 0;
 
   /// Gets the complete intrinsic vector
-  Eigen::MatrixXd get_value() { return camera_values; }
+  Eigen::MatrixXd get_value()
+  {
+    return camera_values;
+  }
 
   /// Gets the camera matrix
-  cv::Matx33d get_K() { return camera_k_OPENCV; }
+  cv::Matx33d get_K()
+  {
+    return camera_k_OPENCV;
+  }
 
   /// Gets the camera distortion
-  cv::Vec4d get_D() { return camera_d_OPENCV; }
+  cv::Vec4d get_D()
+  {
+    return camera_d_OPENCV;
+  }
 
   /// Gets the width of the camera images
-  int w() { return _width; }
+  int w()
+  {
+    return _width;
+  }
 
   /// Gets the height of the camera images
-  int h() { return _height; }
+  int h()
+  {
+    return _height;
+  }
 
 protected:
   // Cannot construct the base camera class, needs a distortion model
@@ -195,6 +219,6 @@ protected:
   int _height;
 };
 
-} // namespace ov_core
+}  // namespace ov_core
 
 #endif /* OV_CORE_CAM_BASE_H */

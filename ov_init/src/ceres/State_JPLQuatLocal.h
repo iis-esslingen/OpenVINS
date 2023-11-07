@@ -24,12 +24,13 @@
 
 #include <ceres/ceres.h>
 
-namespace ov_init {
-
+namespace ov_init
+{
 /**
  * @brief JPL quaternion CERES state parameterization
  */
-class State_JPLQuatLocal : public ceres::LocalParameterization {
+class State_JPLQuatLocal : public ceres::LocalParameterization
+{
 public:
   /**
    * @brief State update function for a JPL quaternion representation.
@@ -41,7 +42,7 @@ public:
    * \bar{q}=norm\Big(\begin{bmatrix} 0.5*\mathbf{\theta_{dx}} \\ 1 \end{bmatrix}\Big) \hat{\bar{q}}
    * @f]
    */
-  bool Plus(const double *x, const double *delta, double *x_plus_delta) const override;
+  bool Plus(const double* x, const double* delta, double* x_plus_delta) const override;
 
   /**
    * @brief Computes the jacobian in respect to the local parameterization
@@ -54,13 +55,19 @@ public:
    * dr/dlocal= [ dr/dlocal, 0] * [I; 0]= dr/dlocal.
    * Therefore we here define dglobal/dlocal= [I; 0]
    */
-  bool ComputeJacobian(const double *x, double *jacobian) const override;
+  bool ComputeJacobian(const double* x, double* jacobian) const override;
 
-  int GlobalSize() const override { return 4; };
+  int GlobalSize() const override
+  {
+    return 4;
+  };
 
-  int LocalSize() const override { return 3; };
+  int LocalSize() const override
+  {
+    return 3;
+  };
 };
 
-} // namespace ov_init
+}  // namespace ov_init
 
-#endif // OV_INIT_CERES_JPLQUATLOCAL_H
+#endif  // OV_INIT_CERES_JPLQUATLOCAL_H

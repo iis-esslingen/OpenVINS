@@ -27,17 +27,19 @@
 
 using namespace ov_core;
 
-bool FeatureInitializer::single_triangulation(std::shared_ptr<Feature> feat,
-                                              std::unordered_map<size_t, std::unordered_map<double, ClonePose>> &clonesCAM) {
-
+bool FeatureInitializer::single_triangulation(
+    std::shared_ptr<Feature> feat, std::unordered_map<size_t, std::unordered_map<double, ClonePose>>& clonesCAM)
+{
   // Total number of measurements
   // Also set the first measurement to be the anchor frame
   int total_meas = 0;
   size_t anchor_most_meas = 0;
   size_t most_meas = 0;
-  for (auto const &pair : feat->timestamps) {
+  for (auto const& pair : feat->timestamps)
+  {
     total_meas += (int)pair.second.size();
-    if (pair.second.size() > most_meas) {
+    if (pair.second.size() > most_meas)
+    {
       anchor_most_meas = pair.first;
       most_meas = pair.second.size();
     }
@@ -51,18 +53,20 @@ bool FeatureInitializer::single_triangulation(std::shared_ptr<Feature> feat,
 
   // Get the position of the anchor pose
   ClonePose anchorclone = clonesCAM.at(feat->anchor_cam_id).at(feat->anchor_clone_timestamp);
-  const Eigen::Matrix<double, 3, 3> &R_GtoA = anchorclone.Rot();
-  const Eigen::Matrix<double, 3, 1> &p_AinG = anchorclone.pos();
+  const Eigen::Matrix<double, 3, 3>& R_GtoA = anchorclone.Rot();
+  const Eigen::Matrix<double, 3, 1>& p_AinG = anchorclone.pos();
 
   // Loop through each camera for this feature
-  for (auto const &pair : feat->timestamps) {
-
+  for (auto const& pair : feat->timestamps)
+  {
     // Add CAM_I features
-    for (size_t m = 0; m < feat->timestamps.at(pair.first).size(); m++) {
-
+    for (size_t m = 0; m < feat->timestamps.at(pair.first).size(); m++)
+    {
       // Get the position of this clone in the global
-      const Eigen::Matrix<double, 3, 3> &R_GtoCi = clonesCAM.at(pair.first).at(feat->timestamps.at(pair.first).at(m)).Rot();
-      const Eigen::Matrix<double, 3, 1> &p_CiinG = clonesCAM.at(pair.first).at(feat->timestamps.at(pair.first).at(m)).pos();
+      const Eigen::Matrix<double, 3, 3>& R_GtoCi =
+          clonesCAM.at(pair.first).at(feat->timestamps.at(pair.first).at(m)).Rot();
+      const Eigen::Matrix<double, 3, 1>& p_CiinG =
+          clonesCAM.at(pair.first).at(feat->timestamps.at(pair.first).at(m)).pos();
 
       // Convert current position relative to anchor
       Eigen::Matrix<double, 3, 3> R_AtoCi;
@@ -101,7 +105,8 @@ bool FeatureInitializer::single_triangulation(std::shared_ptr<Feature> feat,
   // If we have a bad condition number, or it is too close
   // Then set the flag for bad (i.e. set z-axis to nan)
   if (std::abs(condA) > _options.max_cond_number || p_f(2, 0) < _options.min_dist || p_f(2, 0) > _options.max_dist ||
-      std::isnan(p_f.norm())) {
+      std::isnan(p_f.norm()))
+  {
     return false;
   }
 
@@ -111,17 +116,19 @@ bool FeatureInitializer::single_triangulation(std::shared_ptr<Feature> feat,
   return true;
 }
 
-bool FeatureInitializer::single_triangulation_1d(std::shared_ptr<Feature> feat,
-                                                 std::unordered_map<size_t, std::unordered_map<double, ClonePose>> &clonesCAM) {
-
+bool FeatureInitializer::single_triangulation_1d(
+    std::shared_ptr<Feature> feat, std::unordered_map<size_t, std::unordered_map<double, ClonePose>>& clonesCAM)
+{
   // Total number of measurements
   // Also set the first measurement to be the anchor frame
   int total_meas = 0;
   size_t anchor_most_meas = 0;
   size_t most_meas = 0;
-  for (auto const &pair : feat->timestamps) {
+  for (auto const& pair : feat->timestamps)
+  {
     total_meas += (int)pair.second.size();
-    if (pair.second.size() > most_meas) {
+    if (pair.second.size() > most_meas)
+    {
       anchor_most_meas = pair.first;
       most_meas = pair.second.size();
     }
@@ -136,8 +143,8 @@ bool FeatureInitializer::single_triangulation_1d(std::shared_ptr<Feature> feat,
 
   // Get the position of the anchor pose
   ClonePose anchorclone = clonesCAM.at(feat->anchor_cam_id).at(feat->anchor_clone_timestamp);
-  const Eigen::Matrix<double, 3, 3> &R_GtoA = anchorclone.Rot();
-  const Eigen::Matrix<double, 3, 1> &p_AinG = anchorclone.pos();
+  const Eigen::Matrix<double, 3, 3>& R_GtoA = anchorclone.Rot();
+  const Eigen::Matrix<double, 3, 1>& p_AinG = anchorclone.pos();
 
   // Get bearing in anchor frame
   Eigen::Matrix<double, 3, 1> bearing_inA;
@@ -146,18 +153,20 @@ bool FeatureInitializer::single_triangulation_1d(std::shared_ptr<Feature> feat,
   bearing_inA = bearing_inA / bearing_inA.norm();
 
   // Loop through each camera for this feature
-  for (auto const &pair : feat->timestamps) {
-
+  for (auto const& pair : feat->timestamps)
+  {
     // Add CAM_I features
-    for (size_t m = 0; m < feat->timestamps.at(pair.first).size(); m++) {
-
+    for (size_t m = 0; m < feat->timestamps.at(pair.first).size(); m++)
+    {
       // Skip the anchor bearing
       if ((int)pair.first == feat->anchor_cam_id && m == idx_anchor_bearing)
         continue;
 
       // Get the position of this clone in the global
-      const Eigen::Matrix<double, 3, 3> &R_GtoCi = clonesCAM.at(pair.first).at(feat->timestamps.at(pair.first).at(m)).Rot();
-      const Eigen::Matrix<double, 3, 1> &p_CiinG = clonesCAM.at(pair.first).at(feat->timestamps.at(pair.first).at(m)).pos();
+      const Eigen::Matrix<double, 3, 3>& R_GtoCi =
+          clonesCAM.at(pair.first).at(feat->timestamps.at(pair.first).at(m)).Rot();
+      const Eigen::Matrix<double, 3, 1>& p_CiinG =
+          clonesCAM.at(pair.first).at(feat->timestamps.at(pair.first).at(m)).pos();
 
       // Convert current position relative to anchor
       Eigen::Matrix<double, 3, 3> R_AtoCi;
@@ -184,7 +193,8 @@ bool FeatureInitializer::single_triangulation_1d(std::shared_ptr<Feature> feat,
   Eigen::MatrixXd p_f = depth * bearing_inA;
 
   // Then set the flag for bad (i.e. set z-axis to nan)
-  if (p_f(2, 0) < _options.min_dist || p_f(2, 0) > _options.max_dist || std::isnan(p_f.norm())) {
+  if (p_f(2, 0) < _options.min_dist || p_f(2, 0) > _options.max_dist || std::isnan(p_f.norm()))
+  {
     return false;
   }
 
@@ -194,9 +204,9 @@ bool FeatureInitializer::single_triangulation_1d(std::shared_ptr<Feature> feat,
   return true;
 }
 
-bool FeatureInitializer::single_gaussnewton(std::shared_ptr<Feature> feat,
-                                            std::unordered_map<size_t, std::unordered_map<double, ClonePose>> &clonesCAM) {
-
+bool FeatureInitializer::single_gaussnewton(
+    std::shared_ptr<Feature> feat, std::unordered_map<size_t, std::unordered_map<double, ClonePose>>& clonesCAM)
+{
   // Get into inverse depth
   double rho = 1 / feat->p_FinA(2);
   double alpha = feat->p_FinA(0) / feat->p_FinA(2);
@@ -216,35 +226,37 @@ bool FeatureInitializer::single_gaussnewton(std::shared_ptr<Feature> feat,
   double cost_old = compute_error(clonesCAM, feat, alpha, beta, rho);
 
   // Get the position of the anchor pose
-  const Eigen::Matrix<double, 3, 3> &R_GtoA = clonesCAM.at(feat->anchor_cam_id).at(feat->anchor_clone_timestamp).Rot();
-  const Eigen::Matrix<double, 3, 1> &p_AinG = clonesCAM.at(feat->anchor_cam_id).at(feat->anchor_clone_timestamp).pos();
+  const Eigen::Matrix<double, 3, 3>& R_GtoA = clonesCAM.at(feat->anchor_cam_id).at(feat->anchor_clone_timestamp).Rot();
+  const Eigen::Matrix<double, 3, 1>& p_AinG = clonesCAM.at(feat->anchor_cam_id).at(feat->anchor_clone_timestamp).pos();
 
   // Loop till we have either
   // 1. Reached our max iteration count
   // 2. System is unstable
   // 3. System has converged
-  while (runs < _options.max_runs && lam < _options.max_lamda && eps > _options.min_dx) {
-
+  while (runs < _options.max_runs && lam < _options.max_lamda && eps > _options.min_dx)
+  {
     // Triggers a recomputation of jacobians/information/gradients
-    if (recompute) {
-
+    if (recompute)
+    {
       Hess.setZero();
       grad.setZero();
 
       double err = 0;
 
       // Loop through each camera for this feature
-      for (auto const &pair : feat->timestamps) {
-
+      for (auto const& pair : feat->timestamps)
+      {
         // Add CAM_I features
-        for (size_t m = 0; m < feat->timestamps.at(pair.first).size(); m++) {
-
+        for (size_t m = 0; m < feat->timestamps.at(pair.first).size(); m++)
+        {
           //=====================================================================================
           //=====================================================================================
 
           // Get the position of this clone in the global
-          const Eigen::Matrix<double, 3, 3> &R_GtoCi = clonesCAM.at(pair.first).at(feat->timestamps[pair.first].at(m)).Rot();
-          const Eigen::Matrix<double, 3, 1> &p_CiinG = clonesCAM.at(pair.first).at(feat->timestamps[pair.first].at(m)).pos();
+          const Eigen::Matrix<double, 3, 3>& R_GtoCi =
+              clonesCAM.at(pair.first).at(feat->timestamps[pair.first].at(m)).Rot();
+          const Eigen::Matrix<double, 3, 1>& p_CiinG =
+              clonesCAM.at(pair.first).at(feat->timestamps[pair.first].at(m)).pos();
           // Convert current position relative to anchor
           Eigen::Matrix<double, 3, 3> R_AtoCi;
           R_AtoCi.noalias() = R_GtoCi * R_GtoA.transpose();
@@ -287,12 +299,14 @@ bool FeatureInitializer::single_gaussnewton(std::shared_ptr<Feature> feat,
 
     // Solve Levenberg iteration
     Eigen::Matrix<double, 3, 3> Hess_l = Hess;
-    for (size_t r = 0; r < (size_t)Hess.rows(); r++) {
+    for (size_t r = 0; r < (size_t)Hess.rows(); r++)
+    {
       Hess_l(r, r) *= (1.0 + lam);
     }
 
     Eigen::Matrix<double, 3, 1> dx = Hess_l.colPivHouseholderQr().solve(grad);
-    // Eigen::Matrix<double,3,1> dx = (Hess+lam*Eigen::MatrixXd::Identity(Hess.rows(), Hess.rows())).colPivHouseholderQr().solve(grad);
+    // Eigen::Matrix<double,3,1> dx = (Hess+lam*Eigen::MatrixXd::Identity(Hess.rows(),
+    // Hess.rows())).colPivHouseholderQr().solve(grad);
 
     // Check if error has gone down
     double cost = compute_error(clonesCAM, feat, alpha + dx(0, 0), beta + dx(1, 0), rho + dx(2, 0));
@@ -303,7 +317,8 @@ bool FeatureInitializer::single_gaussnewton(std::shared_ptr<Feature> feat,
     // PRINT_DEBUG(ss.str().c_str());
 
     // Check if converged
-    if (cost <= cost_old && (cost_old - cost) / cost_old < _options.min_dcost) {
+    if (cost <= cost_old && (cost_old - cost) / cost_old < _options.min_dcost)
+    {
       alpha += dx(0, 0);
       beta += dx(1, 0);
       rho += dx(2, 0);
@@ -313,7 +328,8 @@ bool FeatureInitializer::single_gaussnewton(std::shared_ptr<Feature> feat,
 
     // If cost is lowered, accept step
     // Else inflate lambda (try to make more stable)
-    if (cost <= cost_old) {
+    if (cost <= cost_old)
+    {
       recompute = true;
       cost_old = cost;
       alpha += dx(0, 0);
@@ -322,7 +338,9 @@ bool FeatureInitializer::single_gaussnewton(std::shared_ptr<Feature> feat,
       runs++;
       lam = lam / _options.lam_mult;
       eps = dx.norm();
-    } else {
+    }
+    else
+    {
       recompute = false;
       lam = lam * _options.lam_mult;
       continue;
@@ -343,11 +361,14 @@ bool FeatureInitializer::single_gaussnewton(std::shared_ptr<Feature> feat,
 
   // Check maximum baseline
   // Loop through each camera for this feature
-  for (auto const &pair : feat->timestamps) {
+  for (auto const& pair : feat->timestamps)
+  {
     // Loop through the other clones to see what the max baseline is
-    for (size_t m = 0; m < feat->timestamps.at(pair.first).size(); m++) {
+    for (size_t m = 0; m < feat->timestamps.at(pair.first).size(); m++)
+    {
       // Get the position of this clone in the global
-      const Eigen::Matrix<double, 3, 1> &p_CiinG = clonesCAM.at(pair.first).at(feat->timestamps.at(pair.first).at(m)).pos();
+      const Eigen::Matrix<double, 3, 1>& p_CiinG =
+          clonesCAM.at(pair.first).at(feat->timestamps.at(pair.first).at(m)).pos();
       // Convert current position relative to anchor
       Eigen::Matrix<double, 3, 1> p_CiinA = R_GtoA * (p_CiinG - p_AinG);
       // Dot product camera pose and nullspace
@@ -357,15 +378,16 @@ bool FeatureInitializer::single_gaussnewton(std::shared_ptr<Feature> feat,
     }
   }
   // std::stringstream ss;
-  // ss << feat->featid << " - max base " << (feat->p_FinA.norm() / base_line_max) << " - z " << feat->p_FinA(2) << std::endl;
-  // PRINT_DEBUG(ss.str().c_str());
+  // ss << feat->featid << " - max base " << (feat->p_FinA.norm() / base_line_max) << " - z " << feat->p_FinA(2) <<
+  // std::endl; PRINT_DEBUG(ss.str().c_str());
 
   // Check if this feature is bad or not
   // 1. If the feature is too close
   // 2. If the feature is invalid
   // 3. If the baseline ratio is large
   if (feat->p_FinA(2) < _options.min_dist || feat->p_FinA(2) > _options.max_dist ||
-      (feat->p_FinA.norm() / base_line_max) > _options.max_baseline || std::isnan(feat->p_FinA.norm())) {
+      (feat->p_FinA.norm() / base_line_max) > _options.max_baseline || std::isnan(feat->p_FinA.norm()))
+  {
     return false;
   }
 
@@ -374,27 +396,30 @@ bool FeatureInitializer::single_gaussnewton(std::shared_ptr<Feature> feat,
   return true;
 }
 
-double FeatureInitializer::compute_error(std::unordered_map<size_t, std::unordered_map<double, ClonePose>> &clonesCAM,
-                                         std::shared_ptr<Feature> feat, double alpha, double beta, double rho) {
-
+double FeatureInitializer::compute_error(std::unordered_map<size_t, std::unordered_map<double, ClonePose>>& clonesCAM,
+                                         std::shared_ptr<Feature> feat, double alpha, double beta, double rho)
+{
   // Total error
   double err = 0;
 
   // Get the position of the anchor pose
-  const Eigen::Matrix<double, 3, 3> &R_GtoA = clonesCAM.at(feat->anchor_cam_id).at(feat->anchor_clone_timestamp).Rot();
-  const Eigen::Matrix<double, 3, 1> &p_AinG = clonesCAM.at(feat->anchor_cam_id).at(feat->anchor_clone_timestamp).pos();
+  const Eigen::Matrix<double, 3, 3>& R_GtoA = clonesCAM.at(feat->anchor_cam_id).at(feat->anchor_clone_timestamp).Rot();
+  const Eigen::Matrix<double, 3, 1>& p_AinG = clonesCAM.at(feat->anchor_cam_id).at(feat->anchor_clone_timestamp).pos();
 
   // Loop through each camera for this feature
-  for (auto const &pair : feat->timestamps) {
+  for (auto const& pair : feat->timestamps)
+  {
     // Add CAM_I features
-    for (size_t m = 0; m < feat->timestamps.at(pair.first).size(); m++) {
-
+    for (size_t m = 0; m < feat->timestamps.at(pair.first).size(); m++)
+    {
       //=====================================================================================
       //=====================================================================================
 
       // Get the position of this clone in the global
-      const Eigen::Matrix<double, 3, 3> &R_GtoCi = clonesCAM.at(pair.first).at(feat->timestamps.at(pair.first).at(m)).Rot();
-      const Eigen::Matrix<double, 3, 1> &p_CiinG = clonesCAM.at(pair.first).at(feat->timestamps.at(pair.first).at(m)).pos();
+      const Eigen::Matrix<double, 3, 3>& R_GtoCi =
+          clonesCAM.at(pair.first).at(feat->timestamps.at(pair.first).at(m)).Rot();
+      const Eigen::Matrix<double, 3, 1>& p_CiinG =
+          clonesCAM.at(pair.first).at(feat->timestamps.at(pair.first).at(m)).pos();
       // Convert current position relative to anchor
       Eigen::Matrix<double, 3, 3> R_AtoCi;
       R_AtoCi.noalias() = R_GtoCi * R_GtoA.transpose();

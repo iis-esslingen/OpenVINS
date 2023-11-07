@@ -29,17 +29,18 @@
 #include "utils/print.h"
 #include "utils/quat_ops.h"
 
-namespace ov_core {
-
+namespace ov_core
+{
 /**
  * @brief B-Spline which performs interpolation over SE(3) manifold.
  *
- * This class implements the b-spline functionality that allows for interpolation over the \f$\mathbb{SE}(3)\f$ manifold.
- * This is based off of the derivations from [Continuous-Time Visual-Inertial Odometry for Event
- * Cameras](https://ieeexplore.ieee.org/abstract/document/8432102/) and [A Spline-Based Trajectory Representation for Sensor Fusion and
- * Rolling Shutter Cameras](https://link.springer.com/article/10.1007/s11263-015-0811-3) with some additional derivations being available in
- * [these notes](http://udel.edu/~pgeneva/downloads/notes/2018_notes_mueffler2017arxiv.pdf). The use of b-splines for \f$\mathbb{SE}(3)\f$
- * interpolation has the following properties:
+ * This class implements the b-spline functionality that allows for interpolation over the \f$\mathbb{SE}(3)\f$
+ * manifold. This is based off of the derivations from [Continuous-Time Visual-Inertial Odometry for Event
+ * Cameras](https://ieeexplore.ieee.org/abstract/document/8432102/) and [A Spline-Based Trajectory Representation for
+ * Sensor Fusion and Rolling Shutter Cameras](https://link.springer.com/article/10.1007/s11263-015-0811-3) with some
+ * additional derivations being available in [these
+ * notes](http://udel.edu/~pgeneva/downloads/notes/2018_notes_mueffler2017arxiv.pdf). The use of b-splines for
+ * \f$\mathbb{SE}(3)\f$ interpolation has the following properties:
  *
  * 1. Local control, allowing the system to function online as well as in batch
  * 2. \f$C^2\f$-continuity to enable inertial predictions and calculations
@@ -47,9 +48,9 @@ namespace ov_core {
  * 4. A parameterization of rigid-body motion devoid of singularities
  *
  * The key idea is to convert a set of trajectory points into a continuous-time *uniform cubic cumulative* b-spline.
- * As compared to standard b-spline representations, the cumulative form ensures local continuity which is needed for on-manifold
- * interpolation. We leverage the cubic b-spline to ensure \f$C^2\f$-continuity to ensure that we can calculate accelerations at any point
- * along the trajectory. The general equations are the following
+ * As compared to standard b-spline representations, the cumulative form ensures local continuity which is needed for
+ * on-manifold interpolation. We leverage the cubic b-spline to ensure \f$C^2\f$-continuity to ensure that we can
+ * calculate accelerations at any point along the trajectory. The general equations are the following
  *
  * \f{align*}{
  *  {}^{w}_{s}\mathbf{T}(u(t))
@@ -96,18 +97,21 @@ namespace ov_core {
  * \f}
  *
  * where \f$u(t_s)=(t_s-t_i)/\Delta t=(t_s-t_i)/(t_{i+1}-t_i)\f$ is used for all values of *u*.
- * Note that one needs to ensure that they use the SE(3) matrix expodential, logorithm, and hat operation for all above equations.
- * The indexes correspond to the the two poses that are older and two poses that are newer then the current time we want to get (i.e. i-1
- * and i are less than s, while i+1 and i+2 are both greater than time s). Some additional derivations are available in [these
+ * Note that one needs to ensure that they use the SE(3) matrix expodential, logorithm, and hat operation for all above
+ * equations. The indexes correspond to the the two poses that are older and two poses that are newer then the current
+ * time we want to get (i.e. i-1 and i are less than s, while i+1 and i+2 are both greater than time s). Some additional
+ * derivations are available in [these
  * notes](http://udel.edu/~pgeneva/downloads/notes/2018_notes_mueffler2017arxiv.pdf).
  */
-class BsplineSE3 {
-
+class BsplineSE3
+{
 public:
   /**
    * @brief Default constructor
    */
-  BsplineSE3() {}
+  BsplineSE3()
+  {
+  }
 
   /**
    * @brief Will feed in a series of poses that we will then convert into control points.
@@ -126,7 +130,7 @@ public:
    * @param p_IinG Position of the pose in the global
    * @return False if we can't find it
    */
-  bool get_pose(double timestamp, Eigen::Matrix3d &R_GtoI, Eigen::Vector3d &p_IinG);
+  bool get_pose(double timestamp, Eigen::Matrix3d& R_GtoI, Eigen::Vector3d& p_IinG);
 
   /**
    * @brief Gets the angular and linear velocity at a given timestamp
@@ -137,7 +141,8 @@ public:
    * @param v_IinG Linear velocity in the global frame
    * @return False if we can't find it
    */
-  bool get_velocity(double timestamp, Eigen::Matrix3d &R_GtoI, Eigen::Vector3d &p_IinG, Eigen::Vector3d &w_IinI, Eigen::Vector3d &v_IinG);
+  bool get_velocity(double timestamp, Eigen::Matrix3d& R_GtoI, Eigen::Vector3d& p_IinG, Eigen::Vector3d& w_IinI,
+                    Eigen::Vector3d& v_IinG);
 
   /**
    * @brief Gets the angular and linear acceleration at a given timestamp
@@ -150,11 +155,14 @@ public:
    * @param a_IinG Linear acceleration in the global frame
    * @return False if we can't find it
    */
-  bool get_acceleration(double timestamp, Eigen::Matrix3d &R_GtoI, Eigen::Vector3d &p_IinG, Eigen::Vector3d &w_IinI,
-                        Eigen::Vector3d &v_IinG, Eigen::Vector3d &alpha_IinI, Eigen::Vector3d &a_IinG);
+  bool get_acceleration(double timestamp, Eigen::Matrix3d& R_GtoI, Eigen::Vector3d& p_IinG, Eigen::Vector3d& w_IinI,
+                        Eigen::Vector3d& v_IinG, Eigen::Vector3d& alpha_IinI, Eigen::Vector3d& a_IinG);
 
   /// Returns the simulation start time that we should start simulating from
-  double get_start_time() { return timestamp_start; }
+  double get_start_time()
+  {
+    return timestamp_start;
+  }
 
 protected:
   /// Uniform sampling time for our control points
@@ -164,7 +172,8 @@ protected:
   double timestamp_start;
 
   /// Type defintion of our aligned eigen4d matrix: https://eigen.tuxfamily.org/dox/group__TopicStlContainers.html
-  typedef std::map<double, Eigen::Matrix4d, std::less<double>, Eigen::aligned_allocator<std::pair<const double, Eigen::Matrix4d>>>
+  typedef std::map<double, Eigen::Matrix4d, std::less<double>,
+                   Eigen::aligned_allocator<std::pair<const double, Eigen::Matrix4d>>>
       AlignedEigenMat4d;
 
   /// Our control SE3 control poses (R_ItoG, p_IinG)
@@ -184,8 +193,8 @@ protected:
    * @param pose1 SE(3) pose of the second pose
    * @return False if we are unable to find bounding poses
    */
-  static bool find_bounding_poses(const double timestamp, const AlignedEigenMat4d &poses, double &t0, Eigen::Matrix4d &pose0, double &t1,
-                                  Eigen::Matrix4d &pose1);
+  static bool find_bounding_poses(const double timestamp, const AlignedEigenMat4d& poses, double& t0,
+                                  Eigen::Matrix4d& pose0, double& t1, Eigen::Matrix4d& pose1);
 
   /**
    * @brief Will find two older poses and two newer poses for the current timestamp
@@ -202,11 +211,11 @@ protected:
    * @param pose3 SE(3) pose of the fourth pose
    * @return False if we are unable to find bounding poses
    */
-  static bool find_bounding_control_points(const double timestamp, const AlignedEigenMat4d &poses, double &t0, Eigen::Matrix4d &pose0,
-                                           double &t1, Eigen::Matrix4d &pose1, double &t2, Eigen::Matrix4d &pose2, double &t3,
-                                           Eigen::Matrix4d &pose3);
+  static bool find_bounding_control_points(const double timestamp, const AlignedEigenMat4d& poses, double& t0,
+                                           Eigen::Matrix4d& pose0, double& t1, Eigen::Matrix4d& pose1, double& t2,
+                                           Eigen::Matrix4d& pose2, double& t3, Eigen::Matrix4d& pose3);
 };
 
-} // namespace ov_core
+}  // namespace ov_core
 
-#endif // OV_CORE_BSPLINESE3_H
+#endif  // OV_CORE_BSPLINESE3_H

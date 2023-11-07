@@ -43,11 +43,12 @@ std::shared_ptr<ROS2Visualizer> viz;
 #endif
 
 // Main function
-int main(int argc, char **argv) {
-
+int main(int argc, char** argv)
+{
   // Ensure we have a path, if the user passes it then we should use it
   std::string config_path = "unset_path_to_config.yaml";
-  if (argc > 1) {
+  if (argc > 1)
+  {
     config_path = argv[1];
   }
 
@@ -93,7 +94,8 @@ int main(int argc, char **argv) {
 #endif
 
   // Ensure we read in all parameters required
-  if (!parser->successful()) {
+  if (!parser->successful())
+  {
     PRINT_ERROR(RED "unable to parse all parameters, please fix\n" RESET);
     std::exit(EXIT_FAILURE);
   }

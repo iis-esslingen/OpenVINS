@@ -51,13 +51,14 @@
 #include <boost/filesystem.hpp>
 #include <cv_bridge/cv_bridge.h>
 
-namespace ov_core {
+namespace ov_core
+{
 class YamlParser;
 struct CameraData;
-} // namespace ov_core
+}  // namespace ov_core
 
-namespace ov_msckf {
-
+namespace ov_msckf
+{
 class VioManager;
 class Simulator;
 
@@ -71,8 +72,8 @@ class Simulator;
  * - Our different features (SLAM, MSCKF, ARUCO)
  * - Groundtruth trajectory if we have it
  */
-class ROS1Visualizer {
-
+class ROS1Visualizer
+{
 public:
   /**
    * @brief Default constructor
@@ -80,7 +81,8 @@ public:
    * @param app Core estimator manager
    * @param sim Simulator if we are simulating
    */
-  ROS1Visualizer(std::shared_ptr<ros::NodeHandle> nh, std::shared_ptr<VioManager> app, std::shared_ptr<Simulator> sim = nullptr);
+  ROS1Visualizer(std::shared_ptr<ros::NodeHandle> nh, std::shared_ptr<VioManager> app,
+                 std::shared_ptr<Simulator> sim = nullptr);
 
   /**
    * @brief Will setup ROS subscribers and callbacks
@@ -106,13 +108,14 @@ public:
   void visualize_final();
 
   /// Callback for inertial information
-  void callback_inertial(const sensor_msgs::Imu::ConstPtr &msg);
+  void callback_inertial(const sensor_msgs::Imu::ConstPtr& msg);
 
   /// Callback for monocular cameras information
-  void callback_monocular(const sensor_msgs::ImageConstPtr &msg0, int cam_id0);
+  void callback_monocular(const sensor_msgs::ImageConstPtr& msg0, int cam_id0);
 
   /// Callback for synchronized stereo camera information
-  void callback_stereo(const sensor_msgs::ImageConstPtr &msg0, const sensor_msgs::ImageConstPtr &msg1, int cam_id0, int cam_id1);
+  void callback_stereo(const sensor_msgs::ImageConstPtr& msg0, const sensor_msgs::ImageConstPtr& msg1, int cam_id0,
+                       int cam_id1);
 
 protected:
   /// Publish the current state
@@ -200,6 +203,6 @@ protected:
   std::ofstream of_state_est, of_state_std, of_state_gt;
 };
 
-} // namespace ov_msckf
+}  // namespace ov_msckf
 
-#endif // OV_MSCKF_ROS1VISUALIZER_H
+#endif  // OV_MSCKF_ROS1VISUALIZER_H

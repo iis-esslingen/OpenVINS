@@ -48,14 +48,18 @@ std::shared_ptr<ROS2Visualizer> viz;
 #endif
 
 // Define the function to be called when ctrl-c (SIGINT) is sent to process
-void signal_callback_handler(int signum) { std::exit(signum); }
+void signal_callback_handler(int signum)
+{
+  std::exit(signum);
+}
 
 // Main function
-int main(int argc, char **argv) {
-
+int main(int argc, char** argv)
+{
   // Ensure we have a path, if the user passes it then we should use it
   std::string config_path = "unset_path_to_config.yaml";
-  if (argc > 1) {
+  if (argc > 1)
+  {
     config_path = argv[1];
   }
 
@@ -91,7 +95,7 @@ int main(int argc, char **argv) {
   VioManagerOptions params;
   params.print_and_load(parser);
   params.print_and_load_simulation(parser);
-  params.num_opencv_threads = 0; // for repeatability
+  params.num_opencv_threads = 0;  // for repeatability
   params.use_multi_threading_pubs = false;
   params.use_multi_threading_subs = false;
   sim = std::make_shared<Simulator>(params);
@@ -103,7 +107,8 @@ int main(int argc, char **argv) {
 #endif
 
   // Ensure we read in all parameters required
-  if (!parser->successful()) {
+  if (!parser->successful())
+  {
     PRINT_ERROR(RED "unable to parse all parameters, please fix\n" RESET);
     std::exit(EXIT_FAILURE);
   }
@@ -117,7 +122,8 @@ int main(int argc, char **argv) {
   double next_imu_time = sim->current_timestamp() + 1.0 / params.sim_freq_imu;
   Eigen::Matrix<double, 17, 1> imustate;
   bool success = sim->get_state(next_imu_time, imustate);
-  if (!success) {
+  if (!success)
+  {
     PRINT_ERROR(RED "[SIM]: Could not initialize the filter to the first state\n" RESET);
     PRINT_ERROR(RED "[SIM]: Did the simulator load properly???\n" RESET);
     std::exit(EXIT_FAILURE);
@@ -141,18 +147,22 @@ int main(int argc, char **argv) {
 
   // Step through the rosbag
 #if ROS_AVAILABLE == 1
-  while (sim->ok() && ros::ok()) {
+  while (sim->ok() && ros::ok())
+  {
 #elif ROS_AVAILABLE == 2
-  while (sim->ok() && rclcpp::ok()) {
+  while (sim->ok() && rclcpp::ok())
+  {
 #else
   signal(SIGINT, signal_callback_handler);
-  while (sim->ok()) {
+  while (sim->ok())
+  {
 #endif
 
     // IMU: get the next simulated IMU measurement if we have it
     ov_core::ImuData message_imu;
     bool hasimu = sim->get_next_imu(message_imu.timestamp, message_imu.wm, message_imu.am);
-    if (hasimu) {
+    if (hasimu)
+    {
       sys->feed_measurement_imu(message_imu);
 #if ROS_AVAILABLE == 1 || ROS_AVAILABLE == 2
       // TODO: fix this, can be slow at high frequency...
@@ -165,8 +175,10 @@ int main(int argc, char **argv) {
     std::vector<int> camids;
     std::vector<std::vector<std::pair<size_t, Eigen::VectorXf>>> feats;
     bool hascam = sim->get_next_cam(time_cam, camids, feats);
-    if (hascam) {
-      if (buffer_timecam != -1) {
+    if (hascam)
+    {
+      if (buffer_timecam != -1)
+      {
 #if ROS_AVAILABLE == 1 || ROS_AVAILABLE == 2
         viz->visualize_odometry(buffer_timecam);
 #endif

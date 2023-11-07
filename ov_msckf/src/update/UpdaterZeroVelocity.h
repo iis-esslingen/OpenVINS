@@ -29,16 +29,18 @@
 #include "UpdaterOptions.h"
 #include "utils/NoiseManager.h"
 
-namespace ov_core {
+namespace ov_core
+{
 class Feature;
 class FeatureDatabase;
-} // namespace ov_core
-namespace ov_type {
+}  // namespace ov_core
+namespace ov_type
+{
 class Landmark;
-} // namespace ov_type
+}  // namespace ov_type
 
-namespace ov_msckf {
-
+namespace ov_msckf
+{
 class State;
 class Propagator;
 
@@ -48,11 +50,12 @@ class Propagator;
  * Consider the case that a VIO unit remains stationary for a period time.
  * Typically this can cause issues in a monocular system without SLAM features since no features can be triangulated.
  * Additional, if features could be triangulated (e.g. stereo) the quality can be poor and hurt performance.
- * If we can detect the cases where we are stationary then we can leverage this to prevent the need to do feature update during this period.
- * The main application would be using this on a **wheeled vehicle** which needs to stop (e.g. stop lights or parking).
+ * If we can detect the cases where we are stationary then we can leverage this to prevent the need to do feature update
+ * during this period. The main application would be using this on a **wheeled vehicle** which needs to stop (e.g. stop
+ * lights or parking).
  */
-class UpdaterZeroVelocity {
-
+class UpdaterZeroVelocity
+{
 public:
   /**
    * @brief Default constructor for our zero velocity detector and updater.
@@ -65,17 +68,17 @@ public:
    * @param zupt_noise_multiplier Multiplier of our IMU noise matrix (default should be 1.0)
    * @param zupt_max_disparity Max disparity we should consider to do a update with
    */
-  UpdaterZeroVelocity(UpdaterOptions &options, NoiseManager &noises, std::shared_ptr<ov_core::FeatureDatabase> db,
-                      std::shared_ptr<Propagator> prop, double gravity_mag, double zupt_max_velocity, double zupt_noise_multiplier,
-                      double zupt_max_disparity);
+  UpdaterZeroVelocity(UpdaterOptions& options, NoiseManager& noises, std::shared_ptr<ov_core::FeatureDatabase> db,
+                      std::shared_ptr<Propagator> prop, double gravity_mag, double zupt_max_velocity,
+                      double zupt_noise_multiplier, double zupt_max_disparity);
 
   /**
    * @brief Feed function for inertial data
    * @param message Contains our timestamp and inertial information
    * @param oldest_time Time that we can discard measurements before
    */
-  void feed_imu(const ov_core::ImuData &message, double oldest_time = -1) {
-
+  void feed_imu(const ov_core::ImuData& message, double oldest_time = -1)
+  {
     // Append it to our vector
     imu_data.emplace_back(message);
 
@@ -93,14 +96,19 @@ public:
    * @brief This will remove any IMU measurements that are older then the given measurement time
    * @param oldest_time Time that we can discard measurements before (in IMU clock)
    */
-  void clean_old_imu_measurements(double oldest_time) {
+  void clean_old_imu_measurements(double oldest_time)
+  {
     if (oldest_time < 0)
       return;
     auto it0 = imu_data.begin();
-    while (it0 != imu_data.end()) {
-      if (it0->timestamp < oldest_time) {
+    while (it0 != imu_data.end())
+    {
+      if (it0->timestamp < oldest_time)
+      {
         it0 = imu_data.erase(it0);
-      } else {
+      }
+      else
+      {
         it0++;
       }
     }
@@ -156,6 +164,6 @@ protected:
   int last_zupt_count = 0;
 };
 
-} // namespace ov_msckf
+}  // namespace ov_msckf
 
-#endif // OV_MSCKF_UPDATER_ZEROVELOCITY_H
+#endif  // OV_MSCKF_UPDATER_ZEROVELOCITY_H
