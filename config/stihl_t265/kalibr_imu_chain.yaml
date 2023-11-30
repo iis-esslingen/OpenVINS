@@ -1,17 +1,30 @@
 %YAML:1.0
 
-imu0:
+imu0:  # vn100
   T_i_b:
-    - [1.0, 0.0, 0.0, 0.0]
-    - [0.0, 1.0, 0.0, 0.0]
-    - [0.0, 0.0, 1.0, 0.0]
-    - [0.0, 0.0, 0.0, 1.0]
-  accelerometer_noise_density: 0.001056
-  accelerometer_random_walk: 0.000289
-  gyroscope_noise_density: 0.000183
-  gyroscope_random_walk: 2.0e-06
-  model: calibrated
+  - [1.0, 0.0, 0.0, 0.0]
+  - [0.0, 1.0, 0.0, 0.0]
+  - [0.0, 0.0, 1.0, 0.0]
+  - [0.0, 0.0, 0.0, 1.0]
+  accelerometer_noise_density: 0.022943696261362133
+  accelerometer_random_walk: 0.003183408958479904
+  gyroscope_noise_density: 0.0010803000133061877
+  gyroscope_random_walk: 2.094774838616867e-05
+  model: scale-misalignment
+  rostopic: /vn100/imu
+  time_offset: 0.0
+  update_rate: 65
+imu1:  # t265
+  T_i_b:
+  - [0.00704836858110422, 0.9999670415568278, -0.004029429293381626, 0.06575694469337437]
+  - [0.05767040720449779, 0.003616333532197674, 0.9983291272244096, -0.021818782382739304]
+  - [0.9983107956108721, -0.007268970482080861, -0.057643017226012006, -0.39581533567323074]
+  - [0.0, 0.0, 0.0, 1.0]
+  accelerometer_noise_density: 0.017406273886926244
+  accelerometer_random_walk: 0.012393508837042726
+  gyroscope_noise_density: 0.003235643391462107
+  gyroscope_random_walk: 7.056778665898092e-05
+  model: scale-misalignment
   rostopic: /t265/imu
   time_offset: 0.0
-  update_rate: 65.0
-
+  update_rate: 65

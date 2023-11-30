@@ -1,0 +1,30 @@
+%YAML:1.0
+
+imu0:  # vn100
+  T_i_b:
+  - [1.0, 0.0, 0.0, 0.0]
+  - [0.0, 1.0, 0.0, 0.0]
+  - [0.0, 0.0, 1.0, 0.0]
+  - [0.0, 0.0, 0.0, 1.0]
+  accelerometer_noise_density: 0.011471848130681066
+  accelerometer_random_walk: 0.001591704479239952
+  gyroscope_noise_density: 0.0005401500066530939
+  gyroscope_random_walk: 1.0473874193084335e-05
+  model: scale-misalignment
+  rostopic: /vn100/imu
+  time_offset: 0.0
+  update_rate: 65
+imu1:  # oak_d
+  T_i_b:
+  - [-0.014920641643804715, -0.007207031006661972, -0.9998627071538405, -0.03495780494655138]
+  - [-0.02392152555078251, -0.9996852333617213, 0.007562725292136458, -0.1307703166213138]
+  - [-0.9996024885264446, 0.024031082010389664, 0.014743541947222357, 0.37326929591396635]
+  - [0.0, 0.0, 0.0, 1.0]
+  accelerometer_noise_density: 0.006659122105928324
+  accelerometer_random_walk: 0.0021452270477743873
+  gyroscope_noise_density: 0.0006607460100998002
+  gyroscope_random_walk: 0.00030458325035522893
+  model: scale-misalignment
+  rostopic: /oak_d/imu
+  time_offset: 0.0
+  update_rate: 100
