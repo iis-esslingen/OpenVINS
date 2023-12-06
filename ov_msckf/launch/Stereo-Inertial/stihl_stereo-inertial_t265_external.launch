@@ -2,7 +2,7 @@
     <!-- what config we are going to run (should match folder name) -->
     <arg name="verbosity"   default="INFO" />           <!-- ALL, DEBUG, INFO, WARNING, ERROR, SILENT -->
     <arg name="config"      default="stihl_stereo-inertial_t265_external" />     <!-- euroc_mav, tum_vi, rpng_aruco -->
-    <arg name="config_path" default="$(find ov_msckf)/../config/Stereo-Inertial/$(arg config)/stereo_estimator_config.yaml" />
+    <arg name="config_path" default="$(find ov_msckf)/../config/Stereo-Inertial/$(arg config)/estimator_config.yaml" />
 
     <!-- mono or stereo and what ros bag to play -->
     <arg name="max_cameras" default="2" />
