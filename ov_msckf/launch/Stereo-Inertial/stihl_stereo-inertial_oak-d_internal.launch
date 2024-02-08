@@ -25,6 +25,12 @@
     <arg name="dolivetraj"  default="false" />
     <arg name="path_gt"     default="" />
 
+    <!-- enable loop closure detection and correction -->
+    <arg name="do_lc"               default="false" />
+    <arg name="lc_config_path"      default="$(find loop_fusion)/../config/master_config.yaml" />
+    <arg name="do_save_lc_traj"     default="false" />
+    <arg name="lc_traj_file_name"   default="" />
+
     <group if="$(arg show_rviz)">
         <node type="rviz" name="rviz" pkg="rviz" args="-d $(find ov_msckf)/rviz/stihl.rviz" />
     </group>
@@ -64,5 +70,34 @@
             <param name="alignment_type"    type="str"  value="posyaw" />
             <param name="path_gt"           type="str"  value="$(arg path_gt)" />
         </node>
+    </group>
+
+    <!-- Loop Closure Detection and Correction -->
+    <group if="$(arg do_lc)">
+        <node name="loop_fusion_node" pkg="loop_fusion" type="loop_fusion_node" output="screen" args="$(arg lc_config_path)" required="true">
+            <!-- INPUT: keyframe poses / marginalized poses -->
+            <remap from="/cam0/image_raw"                  to="/oak_d/image_left"/>
+            <remap from="/vins_estimator/extrinsic"        to="/ov_msckf/loop_extrinsic"/>
+            <remap from="/vins_estimator/keyframe_point"   to="/ov_msckf/loop_feats"/>
+            <remap from="/vins_estimator/keyframe_pose"    to="/ov_msckf/loop_pose"/>
+            <remap from="/vins_estimator/intrinsics"       to="/ov_msckf/loop_intrinsics"/>
+
+            <!-- INPUT: current system pose and points -->
+            <remap from="/vins_estimator/pose"             to="/ov_msckf/poseimu"/>
+
+            <!-- OUTPUT: visualization topics -->
+            <remap from="/loop_fusion_node/match_image"    to="/ov_secondary/match_image"/>
+            <remap from="/loop_fusion_node/pose_rect"      to="/ov_secondary/poseimu"/>
+            <remap from="/loop_fusion_node/odometry_rect"  to="/ov_secondary/odomimu"/>
+        </node>
+
+        <!-- OOUTPUT: path viz of loop closure -->
+        <group if="$(arg do_save_lc_traj)">
+            <node name="recorder_estimate2" pkg="ov_eval" type="pose_to_file" output="screen" required="true">
+                <param name="topic"         type="str"  value="/ov_secondary/poseimu" />
+                <param name="topic_type"    type="str"  value="PoseWithCovarianceStampedTUM" />
+                <param name="output"        type="str"  value="$(arg lc_traj_file_name)" />
+            </node>
+        </group>
     </group>
 </launch>
