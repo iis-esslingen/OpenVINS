@@ -56,10 +56,8 @@
     <!-- record the trajectory if enabled -->
     <group if="$(arg do_save_traj)">
         <group unless="$(arg do_lc)">
-            <node name="recorder_estimate" pkg="ov_eval" type="pose_to_file" output="screen" required="true">
-                <param name="topic"         type="str"  value="/ov_msckf/poseimu" />
-                <param name="topic_type"    type="str"  value="PoseWithCovarianceStampedTUM" />
-                <param name="output"        type="str"  value="$(arg traj_file_name)" />
+            <node name="recorder_estimate3" pkg="loop_fusion" type="save_trajectory_node.py" output="screen" required="true">
+                <param name="file_name"   type="string"   value="$(arg traj_file_name)" />
             </node>
         </group>
     </group>
