@@ -1,0 +1,4 @@
+{
+    "dockerfile": "docker/dockerfile",
+    "package": "ov_msckf"
+}
