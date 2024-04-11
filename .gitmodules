@@ -1,3 +1,4 @@
 [submodule "ov_secondary"]
 	path = ov_secondary
-	url = git@gitlab.hs-esslingen.de:stihl-projekte/slam/ov-secondary.git
+	url = ../ov-secondary.git
+	branch = main
