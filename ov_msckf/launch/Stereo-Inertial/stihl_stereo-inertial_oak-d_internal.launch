@@ -15,10 +15,12 @@
     <arg name="bag"         default="" />
 
     <!-- saving trajectory path and timing information -->
-    <arg name="do_save_traj"    default="false" />
-    <arg name="dotime"          default="false" />
-    <arg name="traj_file_name"  default="" />
-    <arg name="path_time"       default="" />
+    <arg name="do_save_traj"        default="false" />
+    <arg name="do_save_resource"    default="false" />
+    <arg name="do_save_timing"      default="false" />
+    <arg name="traj_file_name"      default="" />
+    <arg name="resource_file_name"  default="resource_usage.csv" />
+    <arg name="timing_file_name"    default="timing.txt" />
 
     <!-- if we should viz the groundtruth -->
     <arg name="show_rviz"   default="true" />
@@ -44,8 +46,8 @@
         <param name="max_cameras"   type="int"  value="$(arg max_cameras)" />
 
         <!-- timing statistics recording -->
-        <param name="record_timing_information" type="bool"     value="$(arg dotime)" />
-        <param name="record_timing_filepath"    type="string"   value="$(arg path_time)" />
+        <param name="record_timing_information" type="bool"     value="$(arg do_save_timing)" />
+        <param name="record_timing_filepath"    type="string"   value="$(arg timing_file_name)" />
     </node>
 
     <!-- play the dataset -->
@@ -98,4 +100,11 @@
             </node>
         </group>
     </group>
+
+    <group if="$(arg do_save_resource)">
+        <include file="$(find cpu_monitor)/launch/cpu_monitor.launch">
+            <arg name="csv_file" value="$(arg resource_file_name)"/>
+        </include>
+    </group>
+
 </launch>
