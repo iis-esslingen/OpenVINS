@@ -96,7 +96,7 @@
         <!-- OOUTPUT: path viz of loop closure -->
         <group if="$(arg do_save_traj)">
             <node name="recorder_estimate3" pkg="loop_fusion" type="save_trajectory_node.py" output="screen" required="true">
-                <param name="file_name"   type="string"   value="$(arg traj_file_name)" />
+                <param name="file_name"   type="string"   value="$(arg traj_file_name)_lc" />
             </node>
         </group>
     </group>
