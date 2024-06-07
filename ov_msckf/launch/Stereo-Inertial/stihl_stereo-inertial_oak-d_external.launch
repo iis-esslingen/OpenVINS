@@ -58,8 +58,10 @@
     <!-- record the trajectory if enabled -->
     <group if="$(arg do_save_traj)">
         <group unless="$(arg do_lc)">
-            <node name="recorder_estimate3" pkg="loop_fusion" type="save_trajectory_node.py" output="screen" required="true">
-                <param name="file_name"   type="string"   value="$(arg traj_file_name)" />
+            <node name="recorder_estimate" pkg="ov_eval" type="pose_to_file" output="screen" required="true">
+                <param name="topic"         type="str"  value="/ov_msckf/poseimu" />
+                <param name="topic_type"    type="str"  value="PoseWithCovarianceStampedTUM" />
+                <param name="output"        type="str"  value="$(arg traj_file_name)" />
             </node>
         </group>
     </group>
@@ -74,7 +76,7 @@
 
     <!-- Loop Closure Detection and Correction -->
     <group if="$(arg do_lc)">
-        <node name="loop_fusion_node" pkg="loop_fusion" type="loop_fusion_node" output="screen" args="$(arg lc_config_path)" required="true">
+        <node name="loop_fusion_node" pkg="ov_loop_fusion" type="loop_fusion_node" output="screen" args="$(arg lc_config_path)" required="true">
             <!-- INPUT: keyframe poses / marginalized poses -->
             <remap from="/cam0/image_raw"                  to="/oak_d/image_left"/>
             <remap from="/vins_estimator/extrinsic"        to="/ov_msckf/loop_extrinsic"/>
@@ -93,8 +95,8 @@
 
         <!-- OOUTPUT: path viz of loop closure -->
         <group if="$(arg do_save_traj)">
-            <node name="recorder_estimate3" pkg="loop_fusion" type="save_trajectory_node.py" output="screen" required="true">
-                <param name="file_name"   type="string"   value="$(arg traj_file_name)_lc" />
+            <node name="recorder_estimate3" pkg="ov_loop_fusion" type="save_trajectory_node.py" output="screen" required="true">
+                <param name="file_name"   type="string"   value="$(arg traj_file_name)" />
             </node>
         </group>
     </group>
