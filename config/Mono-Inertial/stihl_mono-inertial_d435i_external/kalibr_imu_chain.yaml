@@ -6,10 +6,10 @@ imu0:  # vn100
     - [0.0, 1.0, 0.0, 0.0]
     - [0.0, 0.0, 1.0, 0.0]
     - [0.0, 0.0, 0.0, 1.0]
-  accelerometer_noise_density: 0.022943696261362133
-  accelerometer_random_walk: 0.003183408958479904
-  gyroscope_noise_density: 0.0010803000133061877
-  gyroscope_random_walk: 2.094774838616867e-05
+  accelerometer_noise_density: 0.0022943696261362133
+  accelerometer_random_walk: 0.0001591704479239952
+  gyroscope_noise_density: 0.00010803000133061877
+  gyroscope_random_walk: 1.0473874193084336e-06
   model: scale-misalignment
   rostopic: /vn100/imu
   time_offset: 0.0

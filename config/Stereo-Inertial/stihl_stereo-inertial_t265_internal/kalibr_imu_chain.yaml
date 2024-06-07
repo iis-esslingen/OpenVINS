@@ -13,4 +13,4 @@ imu0:  # t265
   model: scale-misalignment
   rostopic: /t265/imu
   time_offset: 0.0
-  update_rate: 65
+  update_rate: 265

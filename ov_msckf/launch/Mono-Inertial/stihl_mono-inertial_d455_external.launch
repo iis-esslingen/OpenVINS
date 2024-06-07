@@ -1,12 +1,12 @@
 <launch>
     <!-- what config we are going to run (should match folder name) -->
     <arg name="verbosity"   default="INFO" />           <!-- ALL, DEBUG, INFO, WARNING, ERROR, SILENT -->
-    <arg name="config"      default="stihl_stereo-inertial_t265_internal" />     <!-- euroc_mav, tum_vi, rpng_aruco -->
-    <arg name="config_path" default="$(find ov_msckf)/../config/Stereo-Inertial/$(arg config)/estimator_config.yaml" />
+    <arg name="config"      default="stihl_mono-inertial_d455_external" />    <!-- euroc_mav, tum_vi, rpng_aruco -->
+    <arg name="config_path" default="$(find ov_msckf)/../config/Mono-Inertial/$(arg config)/estimator_config.yaml" />
 
     <!-- mono or stereo and what ros bag to play -->
-    <arg name="max_cameras" default="2" />
-    <arg name="use_stereo"  default="true" />
+    <arg name="max_cameras" default="1" />
+    <arg name="use_stereo"  default="false" />
     <arg name="bag_start"   default="0" />              <!-- v1-2: 0, mh1: 40, mh2: 35, mh3: 17.5, mh4-5: 15 -->
     <arg name="duration"    default="10000" />
     <arg name="bag_rate"    default="1" />
@@ -78,7 +78,7 @@
     <group if="$(arg do_lc)">
         <node name="loop_fusion_node" pkg="loop_fusion" type="loop_fusion_node" output="screen" args="$(arg lc_config_path)" required="true">
             <!-- INPUT: keyframe poses / marginalized poses -->
-            <remap from="/cam0/image_raw"                  to="/t265/image_left"/>
+            <remap from="/cam0/image_raw"                  to="/pi_cam_02/rgb_image"/>
             <remap from="/vins_estimator/extrinsic"        to="/ov_msckf/loop_extrinsic"/>
             <remap from="/vins_estimator/keyframe_point"   to="/ov_msckf/loop_feats"/>
             <remap from="/vins_estimator/keyframe_pose"    to="/ov_msckf/loop_pose"/>
@@ -96,7 +96,7 @@
         <!-- OOUTPUT: path viz of loop closure -->
         <group if="$(arg do_save_traj)">
             <node name="recorder_estimate3" pkg="loop_fusion" type="save_trajectory_node.py" output="screen" required="true">
-                <param name="file_name"   type="string"   value="$(arg traj_file_name)" />
+                <param name="file_name"   type="string"   value="$(arg traj_file_name)_lc" />
             </node>
         </group>
     </group>
