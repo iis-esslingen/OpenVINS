@@ -95,11 +95,7 @@
 
         <!-- OOUTPUT: path viz of loop closure -->
         <group if="$(arg do_save_traj)">
-<<<<<<< HEAD
-            <node name="recorder_estimate3" pkg="loop_fusion" type="save_trajectory_node.py" output="screen" required="true">
-=======
             <node name="recorder_estimate3" pkg="ov_loop_fusion" type="save_trajectory_node.py" output="screen" required="true">
->>>>>>> 8620e86fe370dd9eeda055b0aea72103a09ed8c1
                 <param name="file_name"   type="string"   value="$(arg traj_file_name)" />
             </node>
         </group>
