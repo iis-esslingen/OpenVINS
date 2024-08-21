@@ -1,7 +1,7 @@
 <launch>
     <!-- what config we are going to run (should match folder name) -->
     <arg name="verbosity"   default="INFO" />           <!-- ALL, DEBUG, INFO, WARNING, ERROR, SILENT -->
-    <arg name="config"      default="stihl_mono-inertial_t265_external" />    <!-- euroc_mav, tum_vi, rpng_aruco -->
+    <arg name="config"      default="stihl_mono-inertial_t265_external_masked" />    <!-- euroc_mav, tum_vi, rpng_aruco -->
     <arg name="config_path" default="$(find ov_msckf)/../config/Mono-Inertial/$(arg config)/estimator_config.yaml" />
 
     <!-- mono or stereo and what ros bag to play -->

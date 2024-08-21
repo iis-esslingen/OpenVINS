@@ -29,7 +29,7 @@
 
     <!-- enable loop closure detection and correction -->
     <arg name="do_lc"               default="false" />
-    <arg name="lc_config_path"      default="$(find loop_fusion)/../config/master_config.yaml" />
+    <arg name="lc_config_path"      default="$(find ov_loop_fusion)/../config/master_config.yaml" />
 
     <group if="$(arg show_rviz)">
         <node type="rviz" name="rviz" pkg="rviz" args="-d $(find ov_msckf)/rviz/stihl.rviz" />
