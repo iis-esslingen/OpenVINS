@@ -1,0 +1,16 @@
+%YAML:1.0
+
+imu0:  # vn100
+  T_i_b:
+    - [1.0, 0.0, 0.0, 0.0]
+    - [0.0, 1.0, 0.0, 0.0]
+    - [0.0, 0.0, 1.0, 0.0]
+    - [0.0, 0.0, 0.0, 1.0]
+  accelerometer_noise_density: 0.006064288735250874
+  accelerometer_random_walk: 0.0005354903138724063
+  gyroscope_noise_density: 0.0010662953470339657
+  gyroscope_random_walk: 5.776283991470186e-05
+  model: scale-misalignment
+  rostopic: /d435i/imu
+  time_offset: 0.0
+  update_rate: 300
