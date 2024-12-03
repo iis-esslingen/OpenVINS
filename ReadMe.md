@@ -204,7 +204,7 @@ roslaunch ov_msckf <launch_file> \
 ```
 
 Parameter
-- `launch_file` $\in$ ["stihl_d435i_mono.launch", "stihl_d455_mono.launch", "stihl_t265_mono.launch", "stihl_t265_stereo.launch"]: specifies launch file.
+- `launch_file` $\in$ ["rover_mono-inertial_d435i_external.launch", "rover_mono-inertial_d435i_internal.launch", "rover_mono-inertial_pi-cam-02_external.launch", "rover_mono-inertial_t265_external.launch", "rover_mono-inertial_t265_internal.launch", "rover_stereo-inertial_t265_external.launch", "rover_stereo-inertial_t265_internal.launch"]: specifies launch file.
 - `do_bag` $\in$ ["true", "false"], OPTIONAL: specifies to replay a bag.
 - `bag`, OPTIONAL: specifies path to rosbag.
 - `bag_start`, OPTIONAL: specifies where to start rosbag from [s]
